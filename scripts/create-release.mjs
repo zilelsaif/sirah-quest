@@ -1,4 +1,4 @@
-import { cp, mkdir, rename, rm, stat } from 'node:fs/promises'
+import { cp, mkdir, rm, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
@@ -15,7 +15,6 @@ const projectRoot = fileURLToPath(new URL('../', import.meta.url))
 const releasesDirectory = path.join(projectRoot, 'releases')
 const releaseDirectory = path.join(releasesDirectory, version)
 const temporaryBuildDirectory = path.join(projectRoot, '.release-build')
-const stagedReleaseDirectory = path.join(releasesDirectory, `.${version}.tmp`)
 
 async function exists(filePath) {
   try {
@@ -46,7 +45,6 @@ if (await exists(releaseDirectory)) {
 
 await mkdir(releasesDirectory, { recursive: true })
 await rm(temporaryBuildDirectory, { recursive: true, force: true })
-await rm(stagedReleaseDirectory, { recursive: true, force: true })
 
 try {
   const typeScriptPath = path.join(projectRoot, 'node_modules', 'typescript', 'bin', 'tsc')
@@ -68,8 +66,11 @@ try {
     throw new Error('Vite build failed.')
   }
 
-  await cp(temporaryBuildDirectory, stagedReleaseDirectory, { recursive: true })
-  await rename(stagedReleaseDirectory, releaseDirectory)
+  await cp(temporaryBuildDirectory, releaseDirectory, {
+    recursive: true,
+    errorOnExist: true,
+    force: false,
+  })
 
   console.log(`Release ${version} created successfully in releases/${version}/`)
 } catch (error) {
@@ -77,6 +78,4 @@ try {
   process.exitCode = 1
 } finally {
   await rm(temporaryBuildDirectory, { recursive: true, force: true })
-  await rm(stagedReleaseDirectory, { recursive: true, force: true })
 }
-
