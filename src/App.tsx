@@ -2,7 +2,7 @@ function App() {
   return (
     <main className="app-shell">
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build</p>
+        <p className="build-label">Development Build v0.0.1 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
