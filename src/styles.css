@@ -22,6 +22,7 @@ body,
 body {
   min-height: 100vh;
   min-height: 100dvh;
+  overflow-x: hidden;
 }
 
 button,
@@ -32,17 +33,16 @@ textarea {
 }
 
 .app-shell {
-  display: grid;
   min-height: 100vh;
   min-height: 100dvh;
-  place-items: center;
-  padding: 1.5rem;
+  padding: 1rem;
   background: linear-gradient(145deg, #172033, #263653);
 }
 
 .starter-card {
-  width: min(100%, 40rem);
-  padding: clamp(2rem, 8vw, 4rem) 1.5rem;
+  width: min(100%, 64rem);
+  margin: 0 auto 1rem;
+  padding: clamp(1.25rem, 5vw, 2.5rem) 1.5rem;
   text-align: center;
   border: 1px solid rgb(255 255 255 / 14%);
   border-radius: 1rem;
@@ -71,4 +71,71 @@ h1 {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+.game-panel {
+  width: min(100%, 64rem);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 1rem;
+  background: #0f172a;
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 20%);
+}
+
+.game-panel__header {
+  display: flex;
+  gap: 0.5rem 1.5rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+}
+
+.game-panel__header h2,
+.game-panel__header p {
+  margin: 0;
+}
+
+.game-panel__header h2 {
+  font-size: 1rem;
+}
+
+.game-panel__header p {
+  color: #b9c8da;
+  font-size: 0.8rem;
+}
+
+.game-canvas {
+  width: 100%;
+  height: min(68dvh, 44rem);
+  min-height: 22rem;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+
+.game-canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
+@media (max-width: 40rem) {
+  .app-shell {
+    padding: 0.65rem;
+  }
+
+  .game-panel__header {
+    display: block;
+  }
+
+  .game-panel__header p {
+    margin-top: 0.3rem;
+  }
+
+  .game-canvas {
+    height: 62dvh;
+    min-height: 20rem;
+  }
 }

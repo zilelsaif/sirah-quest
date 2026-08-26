@@ -3,9 +3,9 @@
 A future bilingual Bahasa Melayu / English educational exploration RPG with a
 classic fantasy JRPG feel.
 
-This repository currently contains only the web application foundation. The game
-engine, game content, backend services, authentication, database, and mobile
-packaging have not been added yet.
+This repository contains the web application foundation and a small Phaser
+movement prototype. Sirah content, backend services, authentication, database,
+and mobile packaging have not been added yet.
 
 ## Requirements
 
@@ -31,6 +31,17 @@ npm run dev
 
 Vite will print a local address, usually `http://localhost:5173`. Open it in a
 browser. The server automatically refreshes the page when source files change.
+
+## Play the movement prototype
+
+The test map supports both desktop and touch-friendly controls:
+
+- Move with WASD or the arrow keys.
+- Click a map destination with a mouse.
+- Tap a map destination on a phone or tablet.
+
+Keyboard movement cancels an active click or tap destination. The prototype uses
+placeholder shapes only; it does not contain final game art or content.
 
 ## Create a production build
 
@@ -70,7 +81,7 @@ the example archive is available at `/releases/v0.0.1/`.
 
 ```text
 src/
-├── game/        Reserved for the future game runtime and Phaser integration
+├── game/        Phaser bootstrap, scene, input, and movement controller
 ├── App.tsx      Starter screen
 ├── main.tsx     React entry point
 └── styles.css   Responsive global styles
