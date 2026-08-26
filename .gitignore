@@ -4,6 +4,7 @@ node_modules/
 
 # Production output
 dist/
+.release-build/
 
 # Local environment files
 .env
