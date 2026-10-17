@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { DEFAULT_PLAYER_STATS } from '../config/playerStats'
+import { FogOfWar } from '../fog/FogOfWar'
 import { KeyboardInput } from '../input/KeyboardInput'
 import { PointerInput } from '../input/PointerInput'
 import { MovementController } from '../player/MovementController'
@@ -17,6 +18,9 @@ const OBSTACLES = [
 export class TestScene extends Phaser.Scene {
   private keyboardInput?: KeyboardInput
   private movementController?: MovementController
+  private fogOfWar?: FogOfWar
+  private player?: Phaser.GameObjects.Container
+  private debugText?: Phaser.GameObjects.Text
 
   constructor() {
     super('movement-prototype')
@@ -32,7 +36,11 @@ export class TestScene extends Phaser.Scene {
       .setVisible(false)
 
     const player = this.createPlayer(300, 300)
+    this.player = player
     const gameContainer = this.game.canvas.parentElement
+
+    this.fogOfWar = new FogOfWar(this, MAP_WIDTH, MAP_HEIGHT)
+    this.fogOfWar.update(player.x, player.y, DEFAULT_PLAYER_STATS.visionRadius)
 
     this.movementController = new MovementController(
       player,
@@ -41,9 +49,15 @@ export class TestScene extends Phaser.Scene {
       DEFAULT_PLAYER_STATS,
       targetMarker,
       (x, y) => {
+        this.fogOfWar?.update(x, y, DEFAULT_PLAYER_STATS.visionRadius)
+
         if (gameContainer) {
           gameContainer.dataset.playerX = x.toFixed(1)
           gameContainer.dataset.playerY = y.toFixed(1)
+          gameContainer.dataset.visionRadius = String(DEFAULT_PLAYER_STATS.visionRadius)
+          gameContainer.dataset.discoveryUpdates = String(
+            this.fogOfWar?.getDebugState().discoveryUpdates ?? 0,
+          )
         }
       },
     )
@@ -53,11 +67,32 @@ export class TestScene extends Phaser.Scene {
 
     this.cameras.main.startFollow(player, true, 0.12, 0.12)
     this.cameras.main.setRoundPixels(true)
+
+    if (import.meta.env.DEV) {
+      this.debugText = this.add
+        .text(10, 10, '', {
+          color: '#dbe4f0',
+          fontFamily: 'monospace',
+          fontSize: '12px',
+          backgroundColor: '#07101dcc',
+          padding: { x: 7, y: 5 },
+        })
+        .setScrollFactor(0)
+        .setDepth(200)
+    }
   }
 
   update(_time: number, delta: number) {
     this.keyboardInput?.update()
     this.movementController?.update(delta)
+
+    if (this.debugText && this.player) {
+      this.debugText.setText([
+        `speed  ${DEFAULT_PLAYER_STATS.movementSpeed}`,
+        `vision ${DEFAULT_PLAYER_STATS.visionRadius}`,
+        `x ${this.player.x.toFixed(0)}  y ${this.player.y.toFixed(0)}`,
+      ])
+    }
   }
 
   private drawMap() {

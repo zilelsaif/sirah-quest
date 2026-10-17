@@ -4,8 +4,8 @@ A future bilingual Bahasa Melayu / English educational exploration RPG with a
 classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
-movement prototype. Sirah content, backend services, authentication, database,
-and mobile packaging have not been added yet.
+movement prototype with radial fog of war. Sirah content, backend services,
+authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
 
@@ -42,6 +42,9 @@ The test map supports both desktop and touch-friendly controls:
 
 Keyboard movement cancels an active click or tap destination. The prototype uses
 placeholder shapes only; it does not contain final game art or content.
+
+The player's configurable vision radius reveals unexplored map areas. Previously
+visited areas remain visible in a dimmed explored state.
 
 ## Create a production build
 
