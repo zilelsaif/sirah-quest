@@ -4,8 +4,9 @@ A future bilingual Bahasa Melayu / English educational exploration RPG with a
 classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
-movement prototype with radial fog of war. Sirah content, backend services,
-authentication, database, and mobile packaging have not been added yet.
+exploration prototype with movement, radial fog of war, and reusable placeholder
+clue interactions. Sirah lesson content, backend services, authentication,
+database, and mobile packaging have not been added yet.
 
 ## Requirements
 
@@ -39,6 +40,8 @@ The test map supports both desktop and touch-friendly controls:
 - Move with WASD or the arrow keys.
 - Click a map destination with a mouse.
 - Tap a map destination on a phone or tablet.
+- Press E near a discovered clue, or click/tap its marker or prompt.
+- Close or mark the placeholder clue as found from the responsive clue panel.
 
 Keyboard movement cancels an active click or tap destination. The prototype uses
 placeholder shapes only; it does not contain final game art or content.
@@ -84,7 +87,7 @@ the example archive is available at `/releases/v0.0.1/`.
 
 ```text
 src/
-├── game/        Phaser bootstrap, scene, input, and movement controller
+├── game/        Phaser bootstrap, scene, clues, fog, input, and movement
 ├── App.tsx      Starter screen
 ├── main.tsx     React entry point
 └── styles.css   Responsive global styles

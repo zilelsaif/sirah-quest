@@ -1,4 +1,7 @@
 import Phaser from 'phaser'
+import { CLUE_DATA, CLUE_DISCOVERY_RADIUS } from '../clues/clueData'
+import { ClueManager } from '../clues/ClueManager'
+import type { CluePanelData } from '../clues/types'
 import { DEFAULT_PLAYER_STATS } from '../config/playerStats'
 import { FogOfWar } from '../fog/FogOfWar'
 import { KeyboardInput } from '../input/KeyboardInput'
@@ -21,8 +24,9 @@ export class TestScene extends Phaser.Scene {
   private fogOfWar?: FogOfWar
   private player?: Phaser.GameObjects.Container
   private debugText?: Phaser.GameObjects.Text
+  private clueManager?: ClueManager
 
-  constructor() {
+  constructor(private readonly onCluePanelChange: (clue: CluePanelData | null) => void) {
     super('movement-prototype')
   }
 
@@ -62,8 +66,26 @@ export class TestScene extends Phaser.Scene {
       },
     )
 
-    this.keyboardInput = new KeyboardInput(this, this.movementController)
-    new PointerInput(this, this.movementController)
+    this.clueManager = new ClueManager(
+      this,
+      CLUE_DATA,
+      CLUE_DISCOVERY_RADIUS,
+      this.onCluePanelChange,
+      (locked) => this.movementController?.setEnabled(!locked),
+    )
+
+    this.keyboardInput = new KeyboardInput(
+      this,
+      this.movementController,
+      () => this.clueManager?.interactWithActiveClue(),
+    )
+    new PointerInput(
+      this,
+      this.movementController,
+      (pointer, gameObjects) => (
+        this.clueManager?.handlePointerDown(pointer, gameObjects) ?? false
+      ),
+    )
 
     this.cameras.main.startFollow(player, true, 0.12, 0.12)
     this.cameras.main.setRoundPixels(true)
@@ -86,13 +108,26 @@ export class TestScene extends Phaser.Scene {
     this.keyboardInput?.update()
     this.movementController?.update(delta)
 
+    if (this.player) this.clueManager?.update(this.player.x, this.player.y)
+
     if (this.debugText && this.player) {
+      const clueCounts = this.clueManager?.getCounts()
       this.debugText.setText([
         `speed  ${DEFAULT_PLAYER_STATS.movementSpeed}`,
         `vision ${DEFAULT_PLAYER_STATS.visionRadius}`,
         `x ${this.player.x.toFixed(0)}  y ${this.player.y.toFixed(0)}`,
+        `clues ${clueCounts?.discovered ?? 0}/${clueCounts?.total ?? 0} discovered`,
+        `done   ${clueCounts?.completed ?? 0}/${clueCounts?.total ?? 0} completed`,
       ])
     }
+  }
+
+  closeClue() {
+    this.clueManager?.closeOpenClue()
+  }
+
+  completeClue() {
+    this.clueManager?.completeOpenClue()
   }
 
   private drawMap() {

@@ -7,6 +7,7 @@ const TARGET_REACHED_DISTANCE = 5
 export class MovementController {
   private keyboardDirection = new Phaser.Math.Vector2()
   private pointerTarget?: Phaser.Math.Vector2
+  private enabled = true
 
   constructor(
     private readonly player: Phaser.GameObjects.Container,
@@ -18,6 +19,8 @@ export class MovementController {
   ) {}
 
   setKeyboardDirection(x: number, y: number) {
+    if (!this.enabled) return
+
     this.keyboardDirection.set(x, y)
 
     if (this.keyboardDirection.lengthSq() > 0) {
@@ -27,6 +30,7 @@ export class MovementController {
   }
 
   setPointerTarget(x: number, y: number) {
+    if (!this.enabled) return
     if (!this.isPositionWalkable(x, y)) return
 
     this.pointerTarget = new Phaser.Math.Vector2(x, y)
@@ -34,6 +38,11 @@ export class MovementController {
   }
 
   update(deltaMs: number) {
+    if (!this.enabled) {
+      this.onPositionChange?.(this.player.x, this.player.y)
+      return
+    }
+
     const deltaSeconds = Math.min(deltaMs, 50) / 1000
     const direction = this.getMovementDirection()
     const distance = this.stats.movementSpeed * deltaSeconds
@@ -97,7 +106,15 @@ export class MovementController {
     )
   }
 
-  private cancelPointerTarget() {
+  setEnabled(enabled: boolean) {
+    this.enabled = enabled
+    if (!enabled) {
+      this.keyboardDirection.set(0, 0)
+      this.cancelPointerTarget()
+    }
+  }
+
+  cancelPointerTarget() {
     this.pointerTarget = undefined
     this.targetMarker.setVisible(false)
   }
