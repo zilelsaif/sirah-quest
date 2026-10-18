@@ -1,10 +1,12 @@
 import Phaser from 'phaser'
 import type { CluePanelData } from './clues/types'
 import { TestScene } from './scenes/TestScene'
+import type { QuestionAssignment } from './questions/types'
 
 export function createGame(
   parent: HTMLElement,
   onCluePanelChange: (clue: CluePanelData | null) => void,
+  questionAssignments: QuestionAssignment[],
 ) {
   return new Phaser.Game({
     type: Phaser.AUTO,
@@ -22,6 +24,6 @@ export function createGame(
       antialias: true,
       roundPixels: true,
     },
-    scene: new TestScene(onCluePanelChange),
+    scene: new TestScene(onCluePanelChange, questionAssignments),
   })
 }

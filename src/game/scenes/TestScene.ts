@@ -7,6 +7,7 @@ import { FogOfWar } from '../fog/FogOfWar'
 import { KeyboardInput } from '../input/KeyboardInput'
 import { PointerInput } from '../input/PointerInput'
 import { MovementController } from '../player/MovementController'
+import type { QuestionAssignment } from '../questions/types'
 
 const MAP_WIDTH = 1600
 const MAP_HEIGHT = 1200
@@ -26,7 +27,10 @@ export class TestScene extends Phaser.Scene {
   private debugText?: Phaser.GameObjects.Text
   private clueManager?: ClueManager
 
-  constructor(private readonly onCluePanelChange: (clue: CluePanelData | null) => void) {
+  constructor(
+    private readonly onCluePanelChange: (clue: CluePanelData | null) => void,
+    private readonly questionAssignments: QuestionAssignment[],
+  ) {
     super('movement-prototype')
   }
 
@@ -69,6 +73,7 @@ export class TestScene extends Phaser.Scene {
     this.clueManager = new ClueManager(
       this,
       CLUE_DATA,
+      this.questionAssignments,
       CLUE_DISCOVERY_RADIUS,
       this.onCluePanelChange,
       (locked) => this.movementController?.setEnabled(!locked),
@@ -126,8 +131,8 @@ export class TestScene extends Phaser.Scene {
     this.clueManager?.closeOpenClue()
   }
 
-  completeClue() {
-    this.clueManager?.completeOpenClue()
+  answerClue(optionId: string) {
+    this.clueManager?.answerOpenClue(optionId)
   }
 
   private drawMap() {

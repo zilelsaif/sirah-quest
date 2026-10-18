@@ -1,11 +1,14 @@
 import Phaser from 'phaser'
+import type { QuestionAssignment } from '../questions/types'
 import type { ClueCounts, ClueDefinition, CluePanelData, ClueState } from './types'
 
 interface ClueRuntime {
   definition: ClueDefinition
+  assignment: QuestionAssignment
   state: ClueState
   visual: Phaser.GameObjects.Container
   marker: Phaser.GameObjects.Arc
+  lastAnswerWasIncorrect: boolean
 }
 
 export class ClueManager {
@@ -17,11 +20,18 @@ export class ClueManager {
   constructor(
     private readonly scene: Phaser.Scene,
     clueData: ClueDefinition[],
+    questionAssignments: QuestionAssignment[],
     private readonly discoveryRadius: number,
     private readonly onPanelChange: (clue: CluePanelData | null) => void,
     private readonly onMovementLockChange: (locked: boolean) => void,
   ) {
-    this.clues = clueData.map((definition) => this.createClue(definition))
+    if (clueData.length !== questionAssignments.length) {
+      throw new Error('Every clue must receive exactly one question assignment')
+    }
+
+    this.clues = clueData.map((definition, index) =>
+      this.createClue(definition, questionAssignments[index]),
+    )
     this.interactionPrompt = scene.add
       .text(0, 0, 'E / Tap: Open clue', {
         color: '#172033',
@@ -104,11 +114,22 @@ export class ClueManager {
       : false
   }
 
-  completeOpenClue() {
-    if (!this.openClue) return
+  answerOpenClue(optionId: string) {
+    if (!this.openClue || this.openClue.state === 'completed') return
 
-    this.openClue.state = 'completed'
-    this.updateVisual(this.openClue)
+    const isKnownOption = this.openClue.assignment.shuffledOptions.some(
+      (option) => option.id === optionId,
+    )
+    if (!isKnownOption) return
+
+    if (optionId === this.openClue.assignment.question.correctOptionId) {
+      this.openClue.state = 'completed'
+      this.openClue.lastAnswerWasIncorrect = false
+      this.updateVisual(this.openClue)
+    } else {
+      this.openClue.lastAnswerWasIncorrect = true
+    }
+
     this.onPanelChange(this.toPanelData(this.openClue))
   }
 
@@ -128,7 +149,7 @@ export class ClueManager {
     }
   }
 
-  private createClue(definition: ClueDefinition) {
+  private createClue(definition: ClueDefinition, assignment: QuestionAssignment) {
     const glow = this.scene.add.circle(0, 0, 26, 0xf4d58d, 0.15)
     const marker = this.scene.add
       .circle(0, 0, 15, 0xe0b44c)
@@ -151,7 +172,14 @@ export class ClueManager {
     marker.setData('clueId', definition.id)
     symbol.setData('clueId', definition.id).setInteractive({ useHandCursor: true })
 
-    const clue = { definition, state: definition.state, visual, marker }
+    const clue = {
+      definition,
+      assignment,
+      state: definition.state,
+      visual,
+      marker,
+      lastAnswerWasIncorrect: false,
+    }
     this.updateVisual(clue)
     return clue
   }
@@ -209,11 +237,38 @@ export class ClueManager {
   }
 
   private toPanelData(clue: ClueRuntime): CluePanelData {
+    const isCompleted = clue.state === 'completed'
+    const question = clue.assignment.question
+
     return {
       id: clue.definition.id,
       title: clue.definition.title,
-      text: clue.definition.text,
       state: clue.state,
+      questionId: question.id,
+      topicId: question.topicId,
+      difficulty: question.difficulty,
+      prompt: question.prompt,
+      options: clue.assignment.shuffledOptions,
+      correctOptionId: isCompleted ? question.correctOptionId : undefined,
+      explanation: isCompleted ? question.explanation : undefined,
+      feedback: isCompleted
+        ? {
+            tone: 'correct',
+            message: {
+              bm: 'Betul! Clue ini telah diselesaikan.',
+              en: 'Correct! This clue is now complete.',
+            },
+          }
+        : clue.lastAnswerWasIncorrect
+          ? {
+              tone: 'incorrect',
+              message: {
+                bm: 'Belum tepat. Cuba lagi dan teliti setiap pilihan.',
+                en: 'Not quite. Try again and consider each choice carefully.',
+              },
+            }
+          : undefined,
+      reviewStatus: question.reviewStatus,
     }
   }
 }

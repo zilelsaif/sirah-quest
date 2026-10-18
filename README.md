@@ -4,8 +4,8 @@ A future bilingual Bahasa Melayu / English educational exploration RPG with a
 classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
-exploration prototype with movement, radial fog of war, and reusable placeholder
-clue interactions. Sirah lesson content, backend services, authentication,
+exploration prototype with movement, radial fog of war, and reusable Sirah
+question interactions. Backend services, authentication,
 database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -41,13 +41,37 @@ The test map supports both desktop and touch-friendly controls:
 - Click a map destination with a mouse.
 - Tap a map destination on a phone or tablet.
 - Press E near a discovered clue, or click/tap its marker or prompt.
-- Close or mark the placeholder clue as found from the responsive clue panel.
+- Answer the bilingual multiple-choice question to complete a clue.
+- An incorrect answer provides feedback and can be attempted again.
+- Reopen a completed clue to review its correct answer and learning explanation.
 
 Keyboard movement cancels an active click or tap destination. The prototype uses
 placeholder shapes only; it does not contain final game art or content.
 
+During development, **New Test Run** selects a fresh set of three questions and
+resets the clue session. The control is excluded from production builds.
+
 The player's configurable vision radius reveals unexplored map areas. Previously
 visited areas remain visible in a dimmed explored state.
+
+## Question content and replay
+
+The starter bank contains 24 bilingual editorial drafts covering early life,
+the first revelation, and Hijrah. All items are pending editorial review; their
+presence is not a claim of religious or historical approval. The review process
+is documented in [docs/QUESTION_EDITORIAL_REVIEW.md](docs/QUESTION_EDITORIAL_REVIEW.md).
+
+Each run assigns a unique question to each of the three clues and shuffles the
+answer order while checking correctness through stable option IDs. The current
+run remains stable until a new test run or page reload. Only the previous run's
+question IDs are stored in the browser; no personal information is stored. The
+selector prefers questions not used in the previous run. If too few alternatives
+exist, it fills the remaining slots from the full bank without duplicating a
+question within the current run.
+
+The two-mode map design is documented in
+[docs/WORLD_STRUCTURE.md](docs/WORLD_STRUCTURE.md). The World Map is not yet
+implemented.
 
 ## Create a production build
 
@@ -87,10 +111,11 @@ the example archive is available at `/releases/v0.0.1/`.
 
 ```text
 src/
-├── game/        Phaser bootstrap, scene, clues, fog, input, and movement
+├── game/        Phaser scene, clues, questions, fog, input, and movement
 ├── App.tsx      Starter screen
 ├── main.tsx     React entry point
 └── styles.css   Responsive global styles
 releases/         Self-contained, immutable release archives
 scripts/          Release creation and production-copy scripts
+docs/             Editorial workflow and locked world structure
 ```
