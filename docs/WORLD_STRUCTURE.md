@@ -1,7 +1,7 @@
 # Sirah Quest World Structure
 
 Sirah Quest has two deliberately separate map modes. This separation is locked
-for future development even though only the Area Map prototype exists today.
+and introduced as a working foundation in v0.5.0.
 
 ## Area Map
 
@@ -11,12 +11,14 @@ not need to know how the illustrated world map is rendered.
 
 ## World Map
 
-The World Map will use a large illustrated WebP image with selectable travel
+The World Map uses a large illustrated WebP image with selectable travel
 nodes, following a node-based navigation concept similar to classic tactical
 JRPG world maps. It will choose destinations and open Area Maps; it will not use
 free player movement or Area Map fog.
 
-The World Map is not implemented in v0.4.0.
+React owns the World Map and shared session state. Phaser is created only while
+an Area Map is active, then cleanly destroyed when returning to the World Map.
+World travel is node-based; free movement and fog remain exclusive to Area Maps.
 
 ## Future data boundaries
 
@@ -26,6 +28,8 @@ Map entry information, availability rules, and links to relevant quests.
 
 The design must support multiple concurrent quests and returning to previously
 visited areas. Quest state therefore belongs outside an individual Area Map, and
-travel availability should be evaluated separately from local clue state. These
-capabilities are documented here only and are not implemented in this version.
+travel availability should be evaluated separately from local clue state.
+Returning to an Area Map during the same browser session preserves its question
+assignments, shuffled choices, clue progress and player position. Future save-game
+work can persist this same boundary without coupling world navigation to Phaser.
 

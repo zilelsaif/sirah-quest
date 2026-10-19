@@ -1,48 +1,54 @@
 import { useEffect, useRef, useState } from 'react'
 import type Phaser from 'phaser'
 import { createGame } from './bootstrap'
-import { CLUE_DATA } from './clues/clueData'
 import type { CluePanelData } from './clues/types'
-import { createQuestionRun } from './questions/questionRun'
-import type { QuestionRun } from './questions/types'
+import type { AreaSessionState } from './session/types'
 import { TestScene } from './scenes/TestScene'
 
-const INITIAL_QUESTION_RUN = createQuestionRun(CLUE_DATA.length)
+interface GameCanvasProps {
+  session: AreaSessionState
+  onSessionChange: (session: AreaSessionState) => void
+  onNewTestRun: () => void
+}
 
-export function GameCanvas() {
+export function GameCanvas({ session, onSessionChange, onNewTestRun }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
+  const resetRequestedRef = useRef(false)
   const [openClue, setOpenClue] = useState<CluePanelData | null>(null)
-  const [questionRun, setQuestionRun] = useState<QuestionRun>(INITIAL_QUESTION_RUN)
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    const game = createGame(container, setOpenClue, questionRun.assignments)
+    const game = createGame(container, setOpenClue, session, (nextSession) => {
+      if (!resetRequestedRef.current) onSessionChange(nextSession)
+    })
     gameRef.current = game
+    resetRequestedRef.current = false
 
     return () => {
       game.destroy(true)
       gameRef.current = null
     }
-  }, [questionRun])
+  }, [session.questionRun, onSessionChange])
 
   const getScene = () =>
     gameRef.current?.scene.getScene('movement-prototype') as TestScene | undefined
 
   const startNewTestRun = () => {
+    resetRequestedRef.current = true
     setOpenClue(null)
-    setQuestionRun(createQuestionRun(CLUE_DATA.length))
+    onNewTestRun()
   }
 
   return (
     <div
       className="game-stage"
-      data-question-ids={questionRun.assignments
+      data-question-ids={session.questionRun.assignments
         .map(({ question }) => question.id)
         .join(',')}
-      data-selection-fallback={String(questionRun.usedFallback)}
+      data-selection-fallback={String(session.questionRun.usedFallback)}
     >
       {import.meta.env.DEV && (
         <div className="test-run-toolbar">

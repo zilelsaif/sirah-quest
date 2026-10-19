@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import type { QuestionAssignment } from '../questions/types'
+import type { ClueSessionState } from '../session/types'
 import type { ClueCounts, ClueDefinition, CluePanelData, ClueState } from './types'
 
 interface ClueRuntime {
@@ -24,13 +25,15 @@ export class ClueManager {
     private readonly discoveryRadius: number,
     private readonly onPanelChange: (clue: CluePanelData | null) => void,
     private readonly onMovementLockChange: (locked: boolean) => void,
+    initialState: Record<string, ClueSessionState>,
+    private readonly onStateChange: (state: Record<string, ClueSessionState>) => void,
   ) {
     if (clueData.length !== questionAssignments.length) {
       throw new Error('Every clue must receive exactly one question assignment')
     }
 
     this.clues = clueData.map((definition, index) =>
-      this.createClue(definition, questionAssignments[index]),
+      this.createClue(definition, questionAssignments[index], initialState[definition.id]),
     )
     this.interactionPrompt = scene.add
       .text(0, 0, 'E / Tap: Open clue', {
@@ -85,6 +88,7 @@ export class ClueManager {
     this.openClue = this.activeClue
     this.setActiveClue(undefined)
     this.onMovementLockChange(true)
+    this.onStateChange(this.getSessionState())
     this.onPanelChange(this.toPanelData(this.openClue))
     return true
   }
@@ -149,7 +153,23 @@ export class ClueManager {
     }
   }
 
-  private createClue(definition: ClueDefinition, assignment: QuestionAssignment) {
+  getSessionState(): Record<string, ClueSessionState> {
+    return Object.fromEntries(
+      this.clues.map((clue) => [
+        clue.definition.id,
+        {
+          state: clue.state,
+          lastAnswerWasIncorrect: clue.lastAnswerWasIncorrect,
+        },
+      ]),
+    )
+  }
+
+  private createClue(
+    definition: ClueDefinition,
+    assignment: QuestionAssignment,
+    initialState?: ClueSessionState,
+  ) {
     const glow = this.scene.add.circle(0, 0, 26, 0xf4d58d, 0.15)
     const marker = this.scene.add
       .circle(0, 0, 15, 0xe0b44c)
@@ -167,7 +187,7 @@ export class ClueManager {
     const visual = this.scene.add
       .container(definition.x, definition.y, [glow, marker, symbol])
       .setDepth(8)
-      .setVisible(definition.state !== 'hidden')
+      .setVisible((initialState?.state ?? definition.state) !== 'hidden')
 
     marker.setData('clueId', definition.id)
     symbol.setData('clueId', definition.id).setInteractive({ useHandCursor: true })
@@ -175,10 +195,10 @@ export class ClueManager {
     const clue = {
       definition,
       assignment,
-      state: definition.state,
+      state: initialState?.state ?? definition.state,
       visual,
       marker,
-      lastAnswerWasIncorrect: false,
+      lastAnswerWasIncorrect: initialState?.lastAnswerWasIncorrect ?? false,
     }
     this.updateVisual(clue)
     return clue
@@ -212,6 +232,7 @@ export class ClueManager {
       duration: 1200,
       onComplete: () => notice.destroy(),
     })
+    this.onStateChange(this.getSessionState())
   }
 
   private setActiveClue(clue?: ClueRuntime) {

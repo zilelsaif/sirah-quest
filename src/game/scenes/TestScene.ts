@@ -7,7 +7,7 @@ import { FogOfWar } from '../fog/FogOfWar'
 import { KeyboardInput } from '../input/KeyboardInput'
 import { PointerInput } from '../input/PointerInput'
 import { MovementController } from '../player/MovementController'
-import type { QuestionAssignment } from '../questions/types'
+import type { AreaSessionState } from '../session/types'
 
 const MAP_WIDTH = 1600
 const MAP_HEIGHT = 1200
@@ -26,10 +26,12 @@ export class TestScene extends Phaser.Scene {
   private player?: Phaser.GameObjects.Container
   private debugText?: Phaser.GameObjects.Text
   private clueManager?: ClueManager
+  private lastSessionUpdate = 0
 
   constructor(
     private readonly onCluePanelChange: (clue: CluePanelData | null) => void,
-    private readonly questionAssignments: QuestionAssignment[],
+    private readonly initialSession: AreaSessionState,
+    private readonly onSessionChange: (session: AreaSessionState) => void,
   ) {
     super('movement-prototype')
   }
@@ -43,7 +45,10 @@ export class TestScene extends Phaser.Scene {
       .setStrokeStyle(3, 0xf4d58d)
       .setVisible(false)
 
-    const player = this.createPlayer(300, 300)
+    const player = this.createPlayer(
+      this.initialSession.playerPosition.x,
+      this.initialSession.playerPosition.y,
+    )
     this.player = player
     const gameContainer = this.game.canvas.parentElement
 
@@ -67,16 +72,23 @@ export class TestScene extends Phaser.Scene {
             this.fogOfWar?.getDebugState().discoveryUpdates ?? 0,
           )
         }
+
+        if (this.time.now - this.lastSessionUpdate >= 150) {
+          this.lastSessionUpdate = this.time.now
+          this.emitSessionState(x, y)
+        }
       },
     )
 
     this.clueManager = new ClueManager(
       this,
       CLUE_DATA,
-      this.questionAssignments,
+      this.initialSession.questionRun.assignments,
       CLUE_DISCOVERY_RADIUS,
       this.onCluePanelChange,
       (locked) => this.movementController?.setEnabled(!locked),
+      this.initialSession.clues,
+      (clues) => this.emitSessionState(player.x, player.y, clues),
     )
 
     this.keyboardInput = new KeyboardInput(
@@ -107,6 +119,11 @@ export class TestScene extends Phaser.Scene {
         .setScrollFactor(0)
         .setDepth(200)
     }
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.emitSessionState(player.x, player.y)
+      this.onCluePanelChange(null)
+    })
   }
 
   update(_time: number, delta: number) {
@@ -133,6 +150,18 @@ export class TestScene extends Phaser.Scene {
 
   answerClue(optionId: string) {
     this.clueManager?.answerOpenClue(optionId)
+  }
+
+  private emitSessionState(
+    x: number,
+    y: number,
+    clues = this.clueManager?.getSessionState() ?? this.initialSession.clues,
+  ) {
+    this.onSessionChange({
+      ...this.initialSession,
+      playerPosition: { x, y },
+      clues,
+    })
   }
 
   private drawMap() {

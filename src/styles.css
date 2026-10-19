@@ -96,6 +96,245 @@ h1 {
   margin: 0;
 }
 
+.game-panel__header > div {
+  min-width: 0;
+}
+
+.return-world-button,
+.location-panel button {
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  color: #172033;
+  font-weight: 800;
+  border: 0;
+  border-radius: 0.55rem;
+  background: #f4d58d;
+  cursor: pointer;
+}
+
+.return-world-button {
+  flex: 0 0 auto;
+}
+
+.world-map {
+  width: min(100%, 75rem);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 1rem;
+  background: #0f172a;
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 20%);
+}
+
+.world-map__header {
+  display: flex;
+  gap: 0.75rem 2rem;
+  align-items: end;
+  justify-content: space-between;
+  padding: 1rem 1.15rem;
+}
+
+.world-map__header h2,
+.world-map__header p,
+.location-panel h3,
+.location-panel p {
+  margin: 0;
+}
+
+.world-map__header h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.25rem, 4vw, 1.85rem);
+}
+
+.world-map__header > p {
+  max-width: 25rem;
+  color: #b9c8da;
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+.world-map__eyebrow {
+  margin-bottom: 0.2rem !important;
+  color: #f4d58d;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.world-map__viewport {
+  width: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: #07101d;
+  touch-action: pan-x pan-y;
+}
+
+.world-map__canvas {
+  position: relative;
+  width: 100%;
+  min-width: 44rem;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.world-map__canvas > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+
+.world-map__routes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.world-map__routes path {
+  fill: none;
+  stroke: #fff1bd;
+  stroke-width: 0.7;
+  stroke-dasharray: 1.6 1.2;
+  filter: drop-shadow(0 0.3px 0.5px #172033);
+  vector-effect: non-scaling-stroke;
+}
+
+.world-node {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 0.15rem;
+  place-items: center;
+  min-width: 6.5rem;
+  min-height: 3.5rem;
+  padding: 0.35rem;
+  color: #fff9e7;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.world-node:focus-visible {
+  outline: 3px solid #fff1bd;
+  outline-offset: 2px;
+  border-radius: 0.6rem;
+}
+
+.world-node__marker {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  color: #172033;
+  border: 3px solid #fff1bd;
+  border-radius: 50%;
+  background: #e0b44c;
+  box-shadow: 0 0.35rem 1rem rgb(0 0 0 / 45%);
+}
+
+.world-node__label {
+  padding: 0.18rem 0.42rem;
+  color: #fff;
+  font-size: clamp(0.7rem, 1.4vw, 0.85rem);
+  font-weight: 800;
+  white-space: nowrap;
+  border-radius: 0.3rem;
+  background: rgb(7 16 29 / 82%);
+}
+
+.world-node.is-locked .world-node__marker {
+  color: #dbe4f0;
+  border-color: #a5b2c2;
+  background: #52647b;
+}
+
+.world-node.is-current .world-node__marker,
+.world-node.is-selected .world-node__marker {
+  box-shadow: 0 0 0 0.35rem rgb(244 213 141 / 35%), 0 0.35rem 1rem rgb(0 0 0 / 45%);
+}
+
+.world-node.is-visited .world-node__label::after {
+  content: "  ✓";
+  color: #9ee0b2;
+}
+
+.world-player-marker {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  color: #fff;
+  border: 2px solid #172033;
+  border-radius: 50%;
+  background: #2c7a67;
+  box-shadow: 0 0.35rem 0.8rem rgb(0 0 0 / 50%);
+  pointer-events: none;
+  transform: translate(-50%, -155%);
+  transition: left 700ms ease-in-out, top 700ms ease-in-out;
+}
+
+.world-player-marker.is-travelling {
+  animation: travel-bob 350ms ease-in-out infinite alternate;
+}
+
+@keyframes travel-bob {
+  to { transform: translate(-50%, -180%); }
+}
+
+.location-panel {
+  display: flex;
+  gap: 1rem 2rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.15rem;
+  color: #172033;
+  border-top: 1px solid rgb(255 255 255 / 14%);
+  background: #fff9e7;
+}
+
+.location-panel h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.25rem;
+}
+
+.location-panel > div > p:last-child {
+  margin-top: 0.3rem;
+  color: #52606d;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.location-panel__status {
+  color: #7c5b18;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.location-panel__actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.6rem;
+}
+
+.location-panel button:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.location-panel .button-secondary {
+  color: #f8fafc;
+  background: #52647b;
+}
+
 .game-panel__header h2 {
   font-size: 1rem;
 }
@@ -308,6 +547,32 @@ h1 {
 
   .game-panel__header {
     display: block;
+  }
+
+  .return-world-button {
+    width: 100%;
+    margin-top: 0.75rem;
+  }
+
+  .world-map__header,
+  .location-panel {
+    display: grid;
+  }
+
+  .world-map__header > p {
+    text-align: left;
+  }
+
+  .world-map__canvas {
+    min-width: 48rem;
+  }
+
+  .location-panel__actions {
+    width: 100%;
+  }
+
+  .location-panel__actions button {
+    flex: 1;
   }
 
   .game-panel__header p {
