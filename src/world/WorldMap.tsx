@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import worldMapImage from '../assets/world-map.webp'
 import { getWorldLocation, WORLD_LOCATIONS } from './locationData'
 import type { WorldLocation } from './types'
@@ -6,6 +6,7 @@ import type { WorldLocation } from './types'
 interface WorldMapProps {
   currentLocationId: string
   visitedLocationIds: string[]
+  hasEnteredArea: boolean
   onTravel: (locationId: string) => void
   onEnterArea: (areaId: string) => void
 }
@@ -19,12 +20,14 @@ const STATUS_LABELS = {
 export function WorldMap({
   currentLocationId,
   visitedLocationIds,
+  hasEnteredArea,
   onTravel,
   onEnterArea,
 }: WorldMapProps) {
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
   const [markerLocationId, setMarkerLocationId] = useState(currentLocationId)
   const [isTravelling, setIsTravelling] = useState(false)
+  const travelTimerRef = useRef<number | undefined>(undefined)
   const selectedLocation = selectedLocationId
     ? getWorldLocation(selectedLocationId)
     : undefined
@@ -39,15 +42,23 @@ export function WorldMap({
     if (!isTravelling) setMarkerLocationId(currentLocationId)
   }, [currentLocationId, isTravelling])
 
+  useEffect(
+    () => () => {
+      if (travelTimerRef.current !== undefined) window.clearTimeout(travelTimerRef.current)
+    },
+    [],
+  )
+
   const travelTo = (location: WorldLocation) => {
     if (isTravelling || location.status === 'locked' || !connectedIds.has(location.id)) return
 
     setIsTravelling(true)
     setSelectedLocationId(location.id)
     setMarkerLocationId(location.id)
-    window.setTimeout(() => {
+    travelTimerRef.current = window.setTimeout(() => {
       onTravel(location.id)
       setIsTravelling(false)
+      travelTimerRef.current = undefined
     }, 700)
   }
 
@@ -60,7 +71,7 @@ export function WorldMap({
     if (isCurrent && selectedLocation.status === 'playable' && selectedLocation.areaId) {
       return (
         <button type="button" onClick={() => onEnterArea(selectedLocation.areaId!)}>
-          Masuk Kawasan
+          {hasEnteredArea ? 'Masuk Kawasan' : 'Mula Pengembaraan'}
         </button>
       )
     }
@@ -123,9 +134,18 @@ export function WorldMap({
                 onClick={() => setSelectedLocationId(location.id)}
               >
                 <span className="world-node__marker" aria-hidden="true">
-                  {location.status === 'locked' ? '◆' : '●'}
+                  {location.status === 'locked' ? '◆' : isCurrent ? '★' : '●'}
                 </span>
                 <span className="world-node__label">{location.nameBM}</span>
+                <span className="world-node__state">
+                  {isCurrent
+                    ? 'Lokasi semasa'
+                    : location.status === 'locked'
+                      ? 'Terkunci'
+                      : isVisited
+                        ? 'Pernah dilawati'
+                        : STATUS_LABELS[location.status]}
+                </span>
               </button>
             )
           })}
@@ -142,6 +162,12 @@ export function WorldMap({
           </div>
         </div>
       </div>
+
+      <p className="travel-feedback" role="status" aria-live="polite">
+        {isTravelling
+          ? `Bergerak ke ${selectedLocation?.nameBM ?? 'lokasi dipilih'}…`
+          : `Lokasi semasa: ${currentLocation.nameBM}`}
+      </p>
 
       {selectedLocation && (
         <aside className="location-panel" aria-live="polite">

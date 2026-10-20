@@ -22,4 +22,5 @@ export interface AreaSessionState {
 export interface WorldSessionState {
   currentLocationId: string
   visitedLocationIds: string[]
+  hasEnteredArea: boolean
 }

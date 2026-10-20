@@ -11,6 +11,7 @@ function App() {
   const [worldSession, setWorldSession] = useState<WorldSessionState>({
     currentLocationId: STARTING_LOCATION_ID,
     visitedLocationIds: [STARTING_LOCATION_ID],
+    hasEnteredArea: false,
   })
 
   const updateAreaSession = useCallback((session: AreaSessionState) => {
@@ -23,6 +24,7 @@ function App() {
 
   const travelTo = (locationId: string) => {
     setWorldSession((current) => ({
+      ...current,
       currentLocationId: locationId,
       visitedLocationIds: current.visitedLocationIds.includes(locationId)
         ? current.visitedLocationIds
@@ -30,8 +32,13 @@ function App() {
     }))
   }
 
+  const enterArea = () => {
+    setWorldSession((current) => ({ ...current, hasEnteredArea: true }))
+    setMode('AREA_MAP')
+  }
+
   return (
-    <main className="app-shell">
+    <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
         <p className="build-label">Development Build v0.5.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
@@ -41,8 +48,9 @@ function App() {
         <WorldMap
           currentLocationId={worldSession.currentLocationId}
           visitedLocationIds={worldSession.visitedLocationIds}
+          hasEnteredArea={worldSession.hasEnteredArea}
           onTravel={travelTo}
-          onEnterArea={() => setMode('AREA_MAP')}
+          onEnterArea={enterArea}
         />
       ) : (
         <section className="game-panel" aria-labelledby="prototype-title">
