@@ -70,8 +70,17 @@ exist, it fills the remaining slots from the full bank without duplicating a
 question within the current run.
 
 The two-mode map design is documented in
-[docs/WORLD_STRUCTURE.md](docs/WORLD_STRUCTURE.md). The World Map is not yet
-implemented.
+[docs/WORLD_STRUCTURE.md](docs/WORLD_STRUCTURE.md). The React World Map connects
+to the Phaser Area Map while preserving the current session during transitions.
+
+## Development releases
+
+### v0.5.1 — Final World Map polish
+
+- Adds a clearer first-entry **Mula Pengembaraan** call to action.
+- Improves World Map location status, travel feedback, touch targets, and
+  responsive spacing without changing gameplay or question content.
+- Preserves the v0.5.0 World Map Foundation as an immutable archived build.
 
 ## Create a production build
 
