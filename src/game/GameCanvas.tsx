@@ -9,9 +9,15 @@ interface GameCanvasProps {
   session: AreaSessionState
   onSessionChange: (session: AreaSessionState) => void
   onNewTestRun: () => void
+  interfaceLocked: boolean
 }
 
-export function GameCanvas({ session, onSessionChange, onNewTestRun }: GameCanvasProps) {
+export function GameCanvas({
+  session,
+  onSessionChange,
+  onNewTestRun,
+  interfaceLocked,
+}: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
   const resetRequestedRef = useRef(false)
@@ -35,6 +41,10 @@ export function GameCanvas({ session, onSessionChange, onNewTestRun }: GameCanva
 
   const getScene = () =>
     gameRef.current?.scene.getScene('movement-prototype') as TestScene | undefined
+
+  useEffect(() => {
+    getScene()?.setInterfaceLocked(interfaceLocked)
+  }, [interfaceLocked])
 
   const startNewTestRun = () => {
     resetRequestedRef.current = true

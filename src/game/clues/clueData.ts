@@ -6,6 +6,7 @@ export const CLUE_DATA: ClueDefinition[] = [
   {
     id: 'clue-1',
     title: 'Clue 1',
+    questionTopicId: 'early-life',
     x: 430,
     y: 400,
     interactionRadius: 78,
@@ -14,6 +15,7 @@ export const CLUE_DATA: ClueDefinition[] = [
   {
     id: 'clue-2',
     title: 'Clue 2',
+    questionTopicId: 'first-revelation',
     x: 820,
     y: 430,
     interactionRadius: 78,
@@ -22,6 +24,7 @@ export const CLUE_DATA: ClueDefinition[] = [
   {
     id: 'clue-3',
     title: 'Clue 3',
+    questionTopicId: 'hijrah',
     x: 1100,
     y: 740,
     interactionRadius: 78,

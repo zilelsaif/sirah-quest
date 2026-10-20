@@ -27,6 +27,8 @@ export class TestScene extends Phaser.Scene {
   private debugText?: Phaser.GameObjects.Text
   private clueManager?: ClueManager
   private lastSessionUpdate = 0
+  private cluePanelLocked = false
+  private interfaceLocked = false
 
   constructor(
     private readonly onCluePanelChange: (clue: CluePanelData | null) => void,
@@ -86,7 +88,10 @@ export class TestScene extends Phaser.Scene {
       this.initialSession.questionRun.assignments,
       CLUE_DISCOVERY_RADIUS,
       this.onCluePanelChange,
-      (locked) => this.movementController?.setEnabled(!locked),
+      (locked) => {
+        this.cluePanelLocked = locked
+        this.applyMovementLock()
+      },
       this.initialSession.clues,
       (clues) => this.emitSessionState(player.x, player.y, clues),
     )
@@ -150,6 +155,15 @@ export class TestScene extends Phaser.Scene {
 
   answerClue(optionId: string) {
     this.clueManager?.answerOpenClue(optionId)
+  }
+
+  setInterfaceLocked(locked: boolean) {
+    this.interfaceLocked = locked
+    this.applyMovementLock()
+  }
+
+  private applyMovementLock() {
+    this.movementController?.setEnabled(!this.cluePanelLocked && !this.interfaceLocked)
   }
 
   private emitSessionState(

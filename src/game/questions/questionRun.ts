@@ -1,6 +1,6 @@
 import { QUESTION_BANK } from './questionBank'
-import { selectQuestionsForRun } from './questionSelection'
-import type { QuestionRun } from './types'
+import { selectQuestionsForTopics } from './questionSelection'
+import type { QuestionRun, QuestionTopicId } from './types'
 
 const PREVIOUS_RUN_STORAGE_KEY = 'sirah-quest.previous-question-ids.v1'
 
@@ -26,8 +26,8 @@ function rememberQuestionIds(questionIds: string[]) {
   }
 }
 
-export function createQuestionRun(questionCount: number): QuestionRun {
-  const run = selectQuestionsForRun(QUESTION_BANK, questionCount, readPreviousQuestionIds())
+export function createQuestionRun(topicIds: readonly QuestionTopicId[]): QuestionRun {
+  const run = selectQuestionsForTopics(QUESTION_BANK, topicIds, readPreviousQuestionIds())
   rememberQuestionIds(run.assignments.map(({ question }) => question.id))
   return run
 }

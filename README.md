@@ -5,7 +5,8 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Backend services, authentication,
+question interactions. Version 0.6.0 adds a session-based multi-quest system
+with independent quest progress and one optional tracked quest. Backend services, authentication,
 database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -49,7 +50,7 @@ Keyboard movement cancels an active click or tap destination. The prototype uses
 placeholder shapes only; it does not contain final game art or content.
 
 During development, **New Test Run** selects a fresh set of three questions and
-resets the clue session. The control is excluded from production builds.
+resets the clue and quest session. The control is excluded from production builds.
 
 The player's configurable vision radius reveals unexplored map areas. Previously
 visited areas remain visible in a dimmed explored state.
@@ -61,7 +62,7 @@ the first revelation, and Hijrah. All items are pending editorial review; their
 presence is not a claim of religious or historical approval. The review process
 is documented in [docs/QUESTION_EDITORIAL_REVIEW.md](docs/QUESTION_EDITORIAL_REVIEW.md).
 
-Each run assigns a unique question to each of the three clues and shuffles the
+Each run assigns one topic-correct question to each of the three clues and shuffles the
 answer order while checking correctness through stable option IDs. The current
 run remains stable until a new test run or page reload. Only the previous run's
 question IDs are stored in the browser; no personal information is stored. The
@@ -73,7 +74,52 @@ The two-mode map design is documented in
 [docs/WORLD_STRUCTURE.md](docs/WORLD_STRUCTURE.md). The React World Map connects
 to the Phaser Area Map while preserving the current session during transitions.
 
+## Multi-quest prototype
+
+Open **Log Quest** from either the World Map or Area Map. Three demonstration
+quests are available in Kampung Ilmu. Players explicitly accept quests, may keep
+up to three active quests at once, and may track one active quest or none.
+Completing a related clue progresses its active quest without blocking other
+quests. A clue completed before quest acceptance is recognized when that quest
+is accepted. Quest, clue, question-order, player-position, and travel state are
+kept while switching maps. Permanent refresh persistence is not implemented yet.
+
+## Sirah question editorial review
+
+The printable review snapshot is
+[docs/SIRAH_QUESTIONS_FOR_REVIEW.md](docs/SIRAH_QUESTIONS_FOR_REVIEW.md). It
+contains all questions and stable IDs directly exported from
+`src/game/questions/questionBank.ts`. It is pending review by a qualified ustaz
+and must not be treated as approved content.
+
+For a new, unreviewed snapshot, first preserve or rename any existing reviewed
+document, then run:
+
+```bash
+npm run questions:export
+```
+
+The exporter deliberately refuses to overwrite the existing Markdown file so
+human notes cannot be lost silently. Apply approved corrections to the source
+bank by stable question ID, create a fresh snapshot, and submit changed content
+for review again.
+
+Verify that the snapshot still contains every exact source record and no checked
+approval boxes with:
+
+```bash
+npm run questions:verify
+```
+
 ## Development releases
+
+### v0.6.0 — Multi-Quest development
+
+- Adds three data-driven Kampung Ilmu quests with independent progress.
+- Adds a responsive BM Quest Log shared by World Map and Area Map.
+- Keeps clue questions randomized but aligned with each quest topic.
+- Adds a complete pending-review question-bank export for manual ustaz review.
+- This development version has not been archived yet.
 
 ### v0.5.1 — Final World Map polish
 
@@ -120,7 +166,7 @@ the example archive is available at `/releases/v0.0.1/`.
 
 ```text
 src/
-├── game/        Phaser scene, clues, questions, fog, input, and movement
+├── game/        Phaser scene, clues, questions, quests, fog, input, and movement
 ├── App.tsx      Starter screen
 ├── main.tsx     React entry point
 └── styles.css   Responsive global styles

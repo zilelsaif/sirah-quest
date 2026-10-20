@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import worldMapImage from '../assets/world-map.webp'
+import { QUEST_DATA } from '../game/quests/questData'
+import type { QuestSessionState } from '../game/quests/types'
 import { getWorldLocation, WORLD_LOCATIONS } from './locationData'
 import type { WorldLocation } from './types'
 
@@ -9,6 +11,8 @@ interface WorldMapProps {
   hasEnteredArea: boolean
   onTravel: (locationId: string) => void
   onEnterArea: (areaId: string) => void
+  quests: QuestSessionState
+  onOpenQuestLog: () => void
 }
 
 const STATUS_LABELS = {
@@ -23,6 +27,8 @@ export function WorldMap({
   hasEnteredArea,
   onTravel,
   onEnterArea,
+  quests,
+  onOpenQuestLog,
 }: WorldMapProps) {
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
   const [markerLocationId, setMarkerLocationId] = useState(currentLocationId)
@@ -101,7 +107,12 @@ export function WorldMap({
           <p className="world-map__eyebrow">Mod Peta Dunia</p>
           <h2 id="world-map-title">Peta Dunia Sirah Quest</h2>
         </div>
-        <p>Pilih nod yang bersambung untuk bergerak antara lokasi.</p>
+        <div className="world-map__header-actions">
+          <p>Pilih nod yang bersambung untuk bergerak antara lokasi.</p>
+          <button type="button" className="quest-log-button" onClick={onOpenQuestLog}>
+            Log Quest
+          </button>
+        </div>
       </div>
 
       <div className="world-map__viewport" aria-busy={isTravelling}>
@@ -117,6 +128,15 @@ export function WorldMap({
             const isCurrent = location.id === currentLocationId
             const isVisited = visitedLocationIds.includes(location.id) || location.visited
             const isSelected = location.id === selectedLocationId
+            const locationQuests = QUEST_DATA.filter(
+              (quest) => location.areaId && quest.areaIds.includes(location.areaId),
+            )
+            const availableCount = locationQuests.filter(
+              (quest) => quests.quests[quest.id]?.status === 'AVAILABLE',
+            ).length
+            const activeCount = locationQuests.filter(
+              (quest) => quests.quests[quest.id]?.status === 'ACTIVE',
+            ).length
             return (
               <button
                 key={location.id}
@@ -146,6 +166,11 @@ export function WorldMap({
                         ? 'Pernah dilawati'
                         : STATUS_LABELS[location.status]}
                 </span>
+                {(availableCount > 0 || activeCount > 0) && (
+                  <span className="world-node__quests">
+                    {activeCount > 0 ? `${activeCount} aktif` : `${availableCount} tersedia`}
+                  </span>
+                )}
               </button>
             )
           })}

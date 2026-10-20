@@ -1,4 +1,9 @@
-import type { QuestionAssignment, QuestionRun, SirahQuestion } from './types'
+import type {
+  QuestionAssignment,
+  QuestionRun,
+  QuestionTopicId,
+  SirahQuestion,
+} from './types'
 
 export type RandomSource = () => number
 
@@ -71,6 +76,38 @@ export function selectQuestionsForRun(
     question,
     shuffledOptions: shuffle(question.options, random),
   }))
+
+  return { assignments, usedFallback }
+}
+
+export function selectQuestionsForTopics(
+  questionBank: readonly SirahQuestion[],
+  topicIds: readonly QuestionTopicId[],
+  previousQuestionIds: readonly string[],
+  random: RandomSource = Math.random,
+): QuestionRun {
+  validateQuestionBank(questionBank)
+
+  const previousIds = new Set(previousQuestionIds)
+  const selectedIds = new Set<string>()
+  let usedFallback = false
+
+  const assignments = topicIds.map((topicId) => {
+    const topicQuestions = questionBank.filter(
+      (question) => question.topicId === topicId && !selectedIds.has(question.id),
+    )
+    if (topicQuestions.length === 0) {
+      throw new Error(`No unused questions are available for topic ${topicId}`)
+    }
+
+    const freshQuestions = topicQuestions.filter((question) => !previousIds.has(question.id))
+    const candidates = freshQuestions.length > 0 ? freshQuestions : topicQuestions
+    if (freshQuestions.length === 0) usedFallback = true
+
+    const question = shuffle(candidates, random)[0]
+    selectedIds.add(question.id)
+    return { question, shuffledOptions: shuffle(question.options, random) }
+  })
 
   return { assignments, usedFallback }
 }

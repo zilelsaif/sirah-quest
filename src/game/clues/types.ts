@@ -1,10 +1,16 @@
-import type { BilingualText, QuestionOption, QuestionReviewStatus } from '../questions/types'
+import type {
+  BilingualText,
+  QuestionOption,
+  QuestionReviewStatus,
+  QuestionTopicId,
+} from '../questions/types'
 
 export type ClueState = 'hidden' | 'discovered' | 'completed'
 
 export interface ClueDefinition {
   id: string
   title: string
+  questionTopicId: QuestionTopicId
   x: number
   y: number
   interactionRadius: number
