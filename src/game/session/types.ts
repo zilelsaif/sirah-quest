@@ -9,6 +9,10 @@ export interface PlayerPosition {
   y: number
 }
 
+export interface FogDiscoveryPoint extends PlayerPosition {
+  radius: number
+}
+
 export interface ClueSessionState {
   state: ClueState
   lastAnswerWasIncorrect: boolean
@@ -21,6 +25,7 @@ export interface AreaSessionState {
   clues: Record<string, ClueSessionState>
   quests: QuestSessionState
   remainingHints: number
+  fogDiscoveryPoints: FogDiscoveryPoint[]
 }
 
 export interface WorldSessionState {

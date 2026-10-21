@@ -30,6 +30,7 @@ export class TestScene extends Phaser.Scene {
   private cluePanelLocked = false
   private interfaceLocked = false
   private remainingHints: number
+  private fogDiscoveryPoints: AreaSessionState['fogDiscoveryPoints']
 
   constructor(
     private readonly onCluePanelChange: (clue: CluePanelData | null) => void,
@@ -39,6 +40,7 @@ export class TestScene extends Phaser.Scene {
   ) {
     super('movement-prototype')
     this.remainingHints = initialSession.remainingHints
+    this.fogDiscoveryPoints = initialSession.fogDiscoveryPoints
   }
 
   create() {
@@ -57,7 +59,15 @@ export class TestScene extends Phaser.Scene {
     this.player = player
     const gameContainer = this.game.canvas.parentElement
 
-    this.fogOfWar = new FogOfWar(this, MAP_WIDTH, MAP_HEIGHT)
+    this.fogOfWar = new FogOfWar(
+      this,
+      MAP_WIDTH,
+      MAP_HEIGHT,
+      this.initialSession.fogDiscoveryPoints,
+      (points) => {
+        this.fogDiscoveryPoints = points
+      },
+    )
     this.fogOfWar.update(player.x, player.y, this.effectiveStats.visionRadius)
 
     this.movementController = new MovementController(
@@ -200,6 +210,7 @@ export class TestScene extends Phaser.Scene {
       playerPosition: { x, y },
       clues,
       remainingHints: this.remainingHints,
+      fogDiscoveryPoints: this.fogDiscoveryPoints,
     })
   }
 

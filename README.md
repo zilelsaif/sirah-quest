@@ -5,8 +5,8 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.8.0 adds functional Movement Speed, Vision
-Radius, and Hint Capacity upgrades. Backend services, authentication,
+question interactions. Version 0.9.0 adds local, versioned save persistence for
+gameplay and progression. Backend services, authentication,
 database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -67,8 +67,8 @@ is documented in [docs/QUESTION_EDITORIAL_REVIEW.md](docs/QUESTION_EDITORIAL_REV
 
 Each run assigns one topic-correct question to each of the three clues and shuffles the
 answer order while checking correctness through stable option IDs. The current
-run remains stable until a new test run or page reload. Only the previous run's
-question IDs are stored in the browser; no personal information is stored. The
+run remains stable across map transitions and browser refreshes. Question
+assignments and answer order are stored locally; no personal information is stored. The
 selector prefers questions not used in the previous run. If too few alternatives
 exist, it fills the remaining slots from the full bank without duplicating a
 question within the current run.
@@ -85,7 +85,7 @@ up to three active quests at once, and may track one active quest or none.
 Completing a related clue progresses its active quest without blocking other
 quests. A clue completed before quest acceptance is recognized when that quest
 is accepted. Quest, clue, question-order, player-position, and travel state are
-kept while switching maps. Permanent refresh persistence is not implemented yet.
+kept while switching maps and browser refreshes.
 
 ## Player XP and levels
 
@@ -121,8 +121,8 @@ Movement Speed adds 10% of the base speed per rank without compounding. Vision
 Radius adds 40 pixels per rank. Hint Capacity begins at one Hint per run and
 adds one per rank. Purchased ranks survive World Map/Area Map transitions and
 New Test Run. A New Test Run refills Hints to the current capacity, while map
-travel and closing a question do not. All progression still resets after a full
-browser refresh because permanent saving is not implemented.
+travel and closing a question do not. Progression is restored from local browser
+storage after a refresh.
 
 ## Sirah question editorial review
 
@@ -152,6 +152,16 @@ npm run questions:verify
 ```
 
 ## Development releases
+
+### v0.9.0 — Save & Persistence System development
+
+- Saves progression, upgrades, quests, clues, questions, hints, map state,
+  player position, and explored fog locally in the browser.
+- Validates stored data before loading and safely falls back from corrupt or
+  incompatible saves.
+- Autosaves with a short delay and flushes pending state when the page is hidden.
+- Adds a Bahasa Melayu confirmation flow to delete only Sirah Quest save data.
+- No account, cloud synchronization, database, or v0.9.0 archive has been added.
 
 ### v0.8.0 — Upgrade System development
 

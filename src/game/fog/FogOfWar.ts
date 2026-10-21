@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { FOG_APPEARANCE } from './visibility'
+import type { FogDiscoveryPoint } from '../session/types'
 
 const VISIBILITY_UPDATE_DISTANCE = 2
 const MIN_DISCOVERY_STEP = 12
@@ -13,7 +14,13 @@ export class FogOfWar {
   private lastVisionRadius?: number
   private discoveryUpdates = 0
 
-  constructor(scene: Phaser.Scene, mapWidth: number, mapHeight: number) {
+  constructor(
+    scene: Phaser.Scene,
+    mapWidth: number,
+    mapHeight: number,
+    initialDiscoveryPoints: readonly FogDiscoveryPoint[] = [],
+    private readonly onDiscoveryChange?: (points: FogDiscoveryPoint[]) => void,
+  ) {
     this.exploredMaskSource = new Phaser.GameObjects.Graphics(scene)
     this.visibleMaskSource = new Phaser.GameObjects.Graphics(scene)
 
@@ -34,7 +41,14 @@ export class FogOfWar {
     const exploredMask = this.exploredMaskSource.createGeometryMask()
     exploredMask.invertAlpha = true
     unexploredFog.setMask(exploredMask)
+
+    initialDiscoveryPoints.forEach(({ x, y, radius }) => {
+      this.exploredMaskSource.fillStyle(0xffffff).fillCircle(x, y, radius)
+    })
+    this.discoveryPoints = initialDiscoveryPoints.map((point) => ({ ...point }))
   }
+
+  private discoveryPoints: FogDiscoveryPoint[] = []
 
   update(playerX: number, playerY: number, visionRadius: number) {
     const position = new Phaser.Math.Vector2(playerX, playerY)
@@ -63,6 +77,8 @@ export class FogOfWar {
       this.exploredMaskSource.fillStyle(0xffffff).fillCircle(playerX, playerY, visionRadius)
       this.lastDiscoveredPosition = position.clone()
       this.discoveryUpdates += 1
+      this.discoveryPoints.push({ x: playerX, y: playerY, radius: visionRadius })
+      this.onDiscoveryChange?.(this.discoveryPoints.map((point) => ({ ...point })))
     }
 
     this.lastVisionRadius = visionRadius

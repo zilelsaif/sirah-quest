@@ -11,7 +11,6 @@ import { PlayerProgressionHUD } from './game/progression/PlayerProgressionHUD'
 import { UpgradePanel } from './game/progression/UpgradePanel'
 import { XP_REWARDS } from './game/progression/progressionConfig'
 import type {
-  PlayerProgressionState,
   UpgradeId,
   XPRewardEvent,
 } from './game/progression/types'
@@ -27,10 +26,26 @@ import { createAreaSession } from './game/session/createSession'
 import type { AreaSessionState, GameMode, WorldSessionState } from './game/session/types'
 import { STARTING_LOCATION_ID } from './world/locationData'
 import { WorldMap } from './world/WorldMap'
+import { SAVE_DEBOUNCE_MS } from './game/save/config'
+import { clearSirahQuestStorage, loadGameSave, saveGame } from './game/save/SaveManager'
+import type { PersistedGameState, PlayerSessionState, SaveLoadResult } from './game/save/types'
 
-interface PlayerSession {
-  run: AreaSessionState
-  progression: PlayerProgressionState
+type PlayerSession = PlayerSessionState
+
+function createFreshState(): PersistedGameState {
+  const progression = createPlayerProgression()
+  return {
+    mode: 'WORLD_MAP',
+    playerSession: {
+      run: createAreaSession(getEffectivePlayerStats(progression).maxHints),
+      progression,
+    },
+    worldSession: {
+      currentLocationId: STARTING_LOCATION_ID,
+      visitedLocationIds: [STARTING_LOCATION_ID],
+      hasEnteredArea: false,
+    },
+  }
 }
 
 function collectCompletionRewards(
@@ -58,19 +73,15 @@ function collectCompletionRewards(
 }
 
 function App() {
-  const [mode, setMode] = useState<GameMode>('WORLD_MAP')
-  const [playerSession, setPlayerSession] = useState<PlayerSession>(() => {
-    const progression = createPlayerProgression()
-    return {
-      run: createAreaSession(getEffectivePlayerStats(progression).maxHints),
-      progression,
-    }
-  })
-  const [worldSession, setWorldSession] = useState<WorldSessionState>({
-    currentLocationId: STARTING_LOCATION_ID,
-    visitedLocationIds: [STARTING_LOCATION_ID],
-    hasEnteredArea: false,
-  })
+  const [initialLoad] = useState<SaveLoadResult>(() => loadGameSave())
+  const [initialState] = useState<PersistedGameState>(() => initialLoad.state ?? createFreshState())
+  const [mode, setMode] = useState<GameMode>(initialState.mode)
+  const [playerSession, setPlayerSession] = useState<PlayerSession>(initialState.playerSession)
+  const [worldSession, setWorldSession] = useState<WorldSessionState>(initialState.worldSession)
+  const [saveMessage, setSaveMessage] = useState(initialLoad.message ?? '')
+  const [saveBlocked, setSaveBlocked] = useState(initialLoad.status === 'incompatible')
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false)
+  const latestSaveStateRef = useRef<PersistedGameState>(initialState)
   const [isQuestLogOpen, setIsQuestLogOpen] = useState(false)
   const [isUpgradePanelOpen, setIsUpgradePanelOpen] = useState(false)
   const [levelUpNotification, setLevelUpNotification] = useState<{
@@ -84,7 +95,36 @@ function App() {
     [playerSession.progression],
   )
   const isInterfaceLocked =
-    isQuestLogOpen || isUpgradePanelOpen || levelUpNotification !== null
+    isQuestLogOpen || isUpgradePanelOpen || levelUpNotification !== null || isResetConfirmOpen
+
+  useEffect(() => {
+    const state = { mode, playerSession, worldSession }
+    latestSaveStateRef.current = state
+    if (saveBlocked) return
+    const timer = window.setTimeout(() => {
+      try {
+        saveGame(state)
+        setSaveMessage('Kemajuan disimpan pada peranti ini.')
+      } catch {
+        setSaveMessage('Kemajuan tidak dapat disimpan. Semak tetapan storan pelayar.')
+      }
+    }, SAVE_DEBOUNCE_MS)
+    return () => window.clearTimeout(timer)
+  }, [mode, playerSession, worldSession, saveBlocked])
+
+  useEffect(() => {
+    const flush = () => {
+      if (saveBlocked) return
+      try { saveGame(latestSaveStateRef.current) } catch { /* best effort during exit */ }
+    }
+    const handleVisibility = () => { if (document.visibilityState === 'hidden') flush() }
+    window.addEventListener('pagehide', flush)
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => {
+      window.removeEventListener('pagehide', flush)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
+  }, [saveBlocked])
 
   useEffect(() => {
     const previousLevel = previousLevelRef.current
@@ -211,10 +251,30 @@ function App() {
     setMode('AREA_MAP')
   }
 
+  const resetAllProgress = () => {
+    try { clearSirahQuestStorage() } catch { /* a clean in-memory reset still works */ }
+    const fresh = createFreshState()
+    setMode(fresh.mode)
+    setPlayerSession(fresh.playerSession)
+    setWorldSession(fresh.worldSession)
+    previousLevelRef.current = fresh.playerSession.progression.level
+    setLevelUpNotification(null)
+    setIsQuestLogOpen(false)
+    setIsUpgradePanelOpen(false)
+    setIsResetConfirmOpen(false)
+    setSaveBlocked(false)
+    try {
+      saveGame(fresh)
+      setSaveMessage('Semua kemajuan telah dipadam dan permainan baharu dimulakan.')
+    } catch {
+      setSaveMessage('Kemajuan ditetapkan semula, tetapi storan pelayar tidak tersedia.')
+    }
+  }
+
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.8.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.9.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -299,6 +359,27 @@ function App() {
           onGrantTestPoints={grantTestUpgradePoints}
           onResetTestProgression={resetTestProgression}
         />
+      )}
+      <section className="save-controls" aria-label="Data simpanan">
+        <div>
+          <strong>Data simpanan</strong>
+          <small role="status">{saveMessage || 'Kemajuan disimpan secara automatik pada peranti ini.'}</small>
+        </div>
+        <button type="button" onClick={() => setIsResetConfirmOpen(true)}>
+          Padam Semua Kemajuan
+        </button>
+      </section>
+      {isResetConfirmOpen && (
+        <div className="clue-overlay" role="presentation">
+          <section className="reset-confirm" role="dialog" aria-modal="true" aria-labelledby="reset-title">
+            <h2 id="reset-title">Padam semua kemajuan?</h2>
+            <p>Tindakan ini memadam XP, tahap, naik taraf, quest, petunjuk, jawapan, kedudukan pemain dan kawasan kabus yang telah diterokai pada peranti ini. Tindakan ini tidak boleh dibatalkan.</p>
+            <div className="reset-confirm__actions">
+              <button type="button" onClick={() => setIsResetConfirmOpen(false)}>Batal</button>
+              <button type="button" className="is-danger" onClick={resetAllProgress}>Ya, Padam Kemajuan</button>
+            </div>
+          </section>
+        </div>
       )}
     </main>
   )
