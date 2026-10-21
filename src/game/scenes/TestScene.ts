@@ -2,12 +2,12 @@ import Phaser from 'phaser'
 import { CLUE_DATA, CLUE_DISCOVERY_RADIUS } from '../clues/clueData'
 import { ClueManager } from '../clues/ClueManager'
 import type { CluePanelData } from '../clues/types'
-import { DEFAULT_PLAYER_STATS } from '../config/playerStats'
 import { FogOfWar } from '../fog/FogOfWar'
 import { KeyboardInput } from '../input/KeyboardInput'
 import { PointerInput } from '../input/PointerInput'
 import { MovementController } from '../player/MovementController'
 import type { AreaSessionState } from '../session/types'
+import type { EffectivePlayerStats } from '../progression/types'
 
 const MAP_WIDTH = 1600
 const MAP_HEIGHT = 1200
@@ -29,13 +29,16 @@ export class TestScene extends Phaser.Scene {
   private lastSessionUpdate = 0
   private cluePanelLocked = false
   private interfaceLocked = false
+  private remainingHints: number
 
   constructor(
     private readonly onCluePanelChange: (clue: CluePanelData | null) => void,
     private readonly initialSession: AreaSessionState,
     private readonly onSessionChange: (session: AreaSessionState) => void,
+    private effectiveStats: EffectivePlayerStats,
   ) {
     super('movement-prototype')
+    this.remainingHints = initialSession.remainingHints
   }
 
   create() {
@@ -55,21 +58,25 @@ export class TestScene extends Phaser.Scene {
     const gameContainer = this.game.canvas.parentElement
 
     this.fogOfWar = new FogOfWar(this, MAP_WIDTH, MAP_HEIGHT)
-    this.fogOfWar.update(player.x, player.y, DEFAULT_PLAYER_STATS.visionRadius)
+    this.fogOfWar.update(player.x, player.y, this.effectiveStats.visionRadius)
 
     this.movementController = new MovementController(
       player,
       new Phaser.Geom.Rectangle(0, 0, MAP_WIDTH, MAP_HEIGHT),
       OBSTACLES,
-      DEFAULT_PLAYER_STATS,
+      {
+        movementSpeed: this.effectiveStats.movementSpeed,
+        visionRadius: this.effectiveStats.visionRadius,
+      },
       targetMarker,
       (x, y) => {
-        this.fogOfWar?.update(x, y, DEFAULT_PLAYER_STATS.visionRadius)
+        this.fogOfWar?.update(x, y, this.effectiveStats.visionRadius)
 
         if (gameContainer) {
           gameContainer.dataset.playerX = x.toFixed(1)
           gameContainer.dataset.playerY = y.toFixed(1)
-          gameContainer.dataset.visionRadius = String(DEFAULT_PLAYER_STATS.visionRadius)
+          gameContainer.dataset.visionRadius = String(this.effectiveStats.visionRadius)
+          gameContainer.dataset.movementSpeed = String(this.effectiveStats.movementSpeed)
           gameContainer.dataset.discoveryUpdates = String(
             this.fogOfWar?.getDebugState().discoveryUpdates ?? 0,
           )
@@ -140,8 +147,9 @@ export class TestScene extends Phaser.Scene {
     if (this.debugText && this.player) {
       const clueCounts = this.clueManager?.getCounts()
       this.debugText.setText([
-        `speed  ${DEFAULT_PLAYER_STATS.movementSpeed}`,
-        `vision ${DEFAULT_PLAYER_STATS.visionRadius}`,
+        `speed  ${this.effectiveStats.movementSpeed}`,
+        `vision ${this.effectiveStats.visionRadius}`,
+        `hints  ${this.remainingHints}/${this.effectiveStats.maxHints}`,
         `x ${this.player.x.toFixed(0)}  y ${this.player.y.toFixed(0)}`,
         `clues ${clueCounts?.discovered ?? 0}/${clueCounts?.total ?? 0} discovered`,
         `done   ${clueCounts?.completed ?? 0}/${clueCounts?.total ?? 0} completed`,
@@ -155,6 +163,22 @@ export class TestScene extends Phaser.Scene {
 
   answerClue(optionId: string) {
     this.clueManager?.answerOpenClue(optionId)
+  }
+
+  useHint() {
+    if (this.remainingHints <= 0 || !this.clueManager?.useHint()) return false
+    this.remainingHints -= 1
+    if (this.player) this.emitSessionState(this.player.x, this.player.y)
+    return true
+  }
+
+  setEffectiveStats(stats: EffectivePlayerStats) {
+    this.effectiveStats = stats
+    this.movementController?.setStats({
+      movementSpeed: stats.movementSpeed,
+      visionRadius: stats.visionRadius,
+    })
+    if (this.player) this.fogOfWar?.update(this.player.x, this.player.y, stats.visionRadius)
   }
 
   setInterfaceLocked(locked: boolean) {
@@ -175,6 +199,7 @@ export class TestScene extends Phaser.Scene {
       ...this.initialSession,
       playerPosition: { x, y },
       clues,
+      remainingHints: this.remainingHints,
     })
   }
 

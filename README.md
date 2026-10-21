@@ -5,8 +5,8 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.7.0 adds session-based player XP, levels, and
-an Upgrade Point foundation on top of the multi-quest system. Backend services, authentication,
+question interactions. Version 0.8.0 adds functional Movement Speed, Vision
+Radius, and Hint Capacity upgrades. Backend services, authentication,
 database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -43,6 +43,7 @@ The test map supports both desktop and touch-friendly controls:
 - Tap a map destination on a phone or tablet.
 - Press E near a discovered clue, or click/tap its marker or prompt.
 - Answer the bilingual multiple-choice question to complete a clue.
+- Use **PETUNJUK** to eliminate one incorrect answer when enough choices remain.
 - An incorrect answer provides feedback and can be attempted again.
 - Reopen a completed clue to review its correct answer and learning explanation.
 
@@ -50,9 +51,9 @@ Keyboard movement cancels an active click or tap destination. The prototype uses
 placeholder shapes only; it does not contain final game art or content.
 
 During development, **New Test Run** selects a fresh set of three questions and
-resets clue, quest, answer-order, and player-position run state. It deliberately
-preserves player XP, level, Upgrade Points, and the reward ledger. The control
-is excluded from production builds.
+resets clue, quest, answer-order, player-position, and remaining-Hint run state.
+It deliberately preserves player XP, level, purchased upgrade ranks, Upgrade
+Points, and the reward ledger. The control is excluded from production builds.
 
 The player's configurable vision radius reveals unexplored map areas. Previously
 visited areas remain visible in a dimmed explored state.
@@ -112,11 +113,16 @@ Cumulative level thresholds are:
 | 9 | 1360 |
 | 10 | 1620 |
 
-Each level gained after Level 1 grants one unspent Upgrade Point. Points are
-displayed but cannot be spent yet; movement, vision, and hints are unchanged.
-The upgrade-selection system is planned for v0.8.0. Progression survives World
-Map/Area Map transitions and New Test Run, but still resets after a full browser
-refresh because permanent saving is not implemented.
+Each level gained after Level 1 grants one unspent Upgrade Point. Open **Naik
+Taraf** from either map to spend points on Movement Speed, Vision Radius, or
+Hint Capacity. Each category has five ranks and costs one point per rank.
+
+Movement Speed adds 10% of the base speed per rank without compounding. Vision
+Radius adds 40 pixels per rank. Hint Capacity begins at one Hint per run and
+adds one per rank. Purchased ranks survive World Map/Area Map transitions and
+New Test Run. A New Test Run refills Hints to the current capacity, while map
+travel and closing a question do not. All progression still resets after a full
+browser refresh because permanent saving is not implemented.
 
 ## Sirah question editorial review
 
@@ -147,13 +153,21 @@ npm run questions:verify
 
 ## Development releases
 
-### v0.7.0 — XP and Level System development
+### v0.8.0 — Upgrade System development
+
+- Makes Upgrade Points spendable through a responsive BM upgrade panel.
+- Adds immediate Movement Speed and Vision Radius effects from centralized stats.
+- Adds consumable per-run Hints that safely eliminate incorrect answer options.
+- Preserves purchases across map transitions and New Test Run.
+- This development version has not been archived yet.
+
+### v0.7.0 — XP and Level System
 
 - Adds idempotent XP rewards for clue and quest completion.
 - Adds the configurable Level 1–10 curve and one Upgrade Point per level gained.
 - Adds responsive progression HUD and level-up notification to both map modes.
 - Separates persistent-in-session player progression from resettable run state.
-- This development version has not been archived yet.
+- Preserved as an immutable archived release.
 
 ### v0.6.0 — Multi-Quest development
 

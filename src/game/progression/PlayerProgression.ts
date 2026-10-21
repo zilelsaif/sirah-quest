@@ -1,9 +1,20 @@
-import { LEVEL_XP_THRESHOLDS, MAX_LEVEL } from './progressionConfig'
+import { DEFAULT_PLAYER_STATS } from '../config/playerStats'
+import {
+  BASE_HINT_CAPACITY,
+  HINT_CAPACITY_PER_RANK,
+  LEVEL_XP_THRESHOLDS,
+  MAX_LEVEL,
+  MOVEMENT_SPEED_PERCENT_PER_RANK,
+  UPGRADE_DEFINITIONS,
+  VISION_RADIUS_PER_RANK,
+} from './progressionConfig'
 import type {
   CurrentLevelProgress,
   PlayerProgressionState,
   ProgressionAwardResult,
   XPRewardEvent,
+  EffectivePlayerStats,
+  UpgradeId,
 } from './types'
 
 export function getLevelForTotalXP(totalXP: number) {
@@ -23,7 +34,70 @@ export function createPlayerProgression(): PlayerProgressionState {
     level: 1,
     unspentUpgradePoints: 0,
     awardedXPEventIds: [],
+    movementSpeedRank: 0,
+    visionRadiusRank: 0,
+    hintCapacityRank: 0,
   }
+}
+
+export function getUpgradeRank(progression: PlayerProgressionState, upgradeId: UpgradeId) {
+  if (upgradeId === 'movement-speed') return progression.movementSpeedRank
+  if (upgradeId === 'vision-radius') return progression.visionRadiusRank
+  return progression.hintCapacityRank
+}
+
+export function purchaseUpgrade(
+  current: PlayerProgressionState,
+  upgradeId: UpgradeId,
+): PlayerProgressionState {
+  const definition = UPGRADE_DEFINITIONS.find((upgrade) => upgrade.id === upgradeId)
+  if (!definition) return current
+
+  const rank = getUpgradeRank(current, upgradeId)
+  if (
+    rank >= definition.maxRank ||
+    current.unspentUpgradePoints < definition.costPerRank
+  ) {
+    return current
+  }
+
+  const rankKey = upgradeId === 'movement-speed'
+    ? 'movementSpeedRank'
+    : upgradeId === 'vision-radius'
+      ? 'visionRadiusRank'
+      : 'hintCapacityRank'
+
+  return {
+    ...current,
+    unspentUpgradePoints: current.unspentUpgradePoints - definition.costPerRank,
+    [rankKey]: rank + 1,
+  }
+}
+
+export function getEffectivePlayerStats(
+  progression: PlayerProgressionState,
+): EffectivePlayerStats {
+  return {
+    movementSpeed:
+      DEFAULT_PLAYER_STATS.movementSpeed *
+      (1 + progression.movementSpeedRank * MOVEMENT_SPEED_PERCENT_PER_RANK / 100),
+    visionRadius:
+      DEFAULT_PLAYER_STATS.visionRadius +
+      progression.visionRadiusRank * VISION_RADIUS_PER_RANK,
+    maxHints:
+      BASE_HINT_CAPACITY + progression.hintCapacityRank * HINT_CAPACITY_PER_RANK,
+  }
+}
+
+export function getUpgradeEffectLabel(upgradeId: UpgradeId, rank: number) {
+  const safeRank = Math.max(0, rank)
+  if (upgradeId === 'movement-speed') {
+    return `${100 + safeRank * MOVEMENT_SPEED_PERCENT_PER_RANK}%`
+  }
+  if (upgradeId === 'vision-radius') {
+    return `${DEFAULT_PLAYER_STATS.visionRadius + safeRank * VISION_RADIUS_PER_RANK}px`
+  }
+  return `${BASE_HINT_CAPACITY + safeRank * HINT_CAPACITY_PER_RANK} setiap run`
 }
 
 export function awardXP(
@@ -46,6 +120,7 @@ export function awardXP(
 
   return {
     progression: {
+      ...current,
       totalXP,
       level,
       unspentUpgradePoints: current.unspentUpgradePoints + levelsGained,

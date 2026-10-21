@@ -10,6 +10,7 @@ interface ClueRuntime {
   visual: Phaser.GameObjects.Container
   marker: Phaser.GameObjects.Arc
   lastAnswerWasIncorrect: boolean
+  eliminatedOptionIds: string[]
 }
 
 export class ClueManager {
@@ -122,7 +123,7 @@ export class ClueManager {
     if (!this.openClue || this.openClue.state === 'completed') return
 
     const isKnownOption = this.openClue.assignment.shuffledOptions.some(
-      (option) => option.id === optionId,
+      (option) => option.id === optionId && !this.openClue?.eliminatedOptionIds.includes(option.id),
     )
     if (!isKnownOption) return
 
@@ -135,6 +136,23 @@ export class ClueManager {
     }
 
     this.onPanelChange(this.toPanelData(this.openClue))
+  }
+
+  useHint() {
+    if (!this.openClue || this.openClue.state === 'completed') return false
+
+    const incorrectOptions = this.openClue.assignment.shuffledOptions.filter(
+      (option) =>
+        option.id !== this.openClue?.assignment.question.correctOptionId &&
+        !this.openClue?.eliminatedOptionIds.includes(option.id),
+    )
+    if (incorrectOptions.length <= 1) return false
+
+    this.openClue.eliminatedOptionIds.push(incorrectOptions[0].id)
+    this.openClue.lastAnswerWasIncorrect = false
+    this.onStateChange(this.getSessionState())
+    this.onPanelChange(this.toPanelData(this.openClue))
+    return true
   }
 
   closeOpenClue() {
@@ -160,6 +178,7 @@ export class ClueManager {
         {
           state: clue.state,
           lastAnswerWasIncorrect: clue.lastAnswerWasIncorrect,
+          eliminatedOptionIds: [...clue.eliminatedOptionIds],
         },
       ]),
     )
@@ -199,6 +218,7 @@ export class ClueManager {
       visual,
       marker,
       lastAnswerWasIncorrect: initialState?.lastAnswerWasIncorrect ?? false,
+      eliminatedOptionIds: [...(initialState?.eliminatedOptionIds ?? [])],
     }
     this.updateVisual(clue)
     return clue
@@ -270,6 +290,14 @@ export class ClueManager {
       difficulty: question.difficulty,
       prompt: question.prompt,
       options: clue.assignment.shuffledOptions,
+      eliminatedOptionIds: [...clue.eliminatedOptionIds],
+      canUseHint:
+        !isCompleted &&
+        clue.assignment.shuffledOptions.filter(
+          (option) =>
+            option.id !== question.correctOptionId &&
+            !clue.eliminatedOptionIds.includes(option.id),
+        ).length > 1,
       correctOptionId: isCompleted ? question.correctOptionId : undefined,
       explanation: isCompleted ? question.explanation : undefined,
       feedback: isCompleted

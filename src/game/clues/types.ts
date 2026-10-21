@@ -26,6 +26,8 @@ export interface CluePanelData {
   difficulty: string
   prompt: BilingualText
   options: QuestionOption[]
+  eliminatedOptionIds: string[]
+  canUseHint: boolean
   correctOptionId?: string
   explanation?: BilingualText
   feedback?: {

@@ -2,12 +2,14 @@ import Phaser from 'phaser'
 import type { CluePanelData } from './clues/types'
 import { TestScene } from './scenes/TestScene'
 import type { AreaSessionState } from './session/types'
+import type { EffectivePlayerStats } from './progression/types'
 
 export function createGame(
   parent: HTMLElement,
   onCluePanelChange: (clue: CluePanelData | null) => void,
   session: AreaSessionState,
   onSessionChange: (session: AreaSessionState) => void,
+  effectiveStats: EffectivePlayerStats,
 ) {
   return new Phaser.Game({
     type: Phaser.AUTO,
@@ -25,6 +27,6 @@ export function createGame(
       antialias: true,
       roundPixels: true,
     },
-    scene: new TestScene(onCluePanelChange, session, onSessionChange),
+    scene: new TestScene(onCluePanelChange, session, onSessionChange, effectiveStats),
   })
 }

@@ -13,7 +13,7 @@ export class MovementController {
     private readonly player: Phaser.GameObjects.Container,
     private readonly mapBounds: Phaser.Geom.Rectangle,
     private readonly obstacles: Phaser.Geom.Rectangle[],
-    private readonly stats: PlayerStats,
+    private stats: PlayerStats,
     private readonly targetMarker: Phaser.GameObjects.Arc,
     private readonly onPositionChange?: (x: number, y: number) => void,
   ) {}
@@ -112,6 +112,10 @@ export class MovementController {
       this.keyboardDirection.set(0, 0)
       this.cancelPointerTarget()
     }
+  }
+
+  setStats(stats: PlayerStats) {
+    this.stats = stats
   }
 
   cancelPointerTarget() {

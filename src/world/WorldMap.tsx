@@ -13,6 +13,8 @@ interface WorldMapProps {
   onEnterArea: (areaId: string) => void
   quests: QuestSessionState
   onOpenQuestLog: () => void
+  onOpenUpgrades: () => void
+  interfaceLocked: boolean
 }
 
 const STATUS_LABELS = {
@@ -29,6 +31,8 @@ export function WorldMap({
   onEnterArea,
   quests,
   onOpenQuestLog,
+  onOpenUpgrades,
+  interfaceLocked,
 }: WorldMapProps) {
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
   const [markerLocationId, setMarkerLocationId] = useState(currentLocationId)
@@ -56,7 +60,12 @@ export function WorldMap({
   )
 
   const travelTo = (location: WorldLocation) => {
-    if (isTravelling || location.status === 'locked' || !connectedIds.has(location.id)) return
+    if (
+      interfaceLocked ||
+      isTravelling ||
+      location.status === 'locked' ||
+      !connectedIds.has(location.id)
+    ) return
 
     setIsTravelling(true)
     setSelectedLocationId(location.id)
@@ -76,7 +85,11 @@ export function WorldMap({
 
     if (isCurrent && selectedLocation.status === 'playable' && selectedLocation.areaId) {
       return (
-        <button type="button" onClick={() => onEnterArea(selectedLocation.areaId!)}>
+        <button
+          type="button"
+          disabled={interfaceLocked}
+          onClick={() => onEnterArea(selectedLocation.areaId!)}
+        >
           {hasEnteredArea ? 'Masuk Kawasan' : 'Mula Pengembaraan'}
         </button>
       )
@@ -92,7 +105,7 @@ export function WorldMap({
     return (
       <button
         type="button"
-        disabled={!canTravel || isTravelling}
+        disabled={interfaceLocked || !canTravel || isTravelling}
         onClick={() => travelTo(selectedLocation)}
       >
         {isTravelling ? 'Bergerak…' : canTravel ? 'Pergi ke Lokasi' : 'Laluan Tidak Tersedia'}
@@ -109,8 +122,11 @@ export function WorldMap({
         </div>
         <div className="world-map__header-actions">
           <p>Pilih nod yang bersambung untuk bergerak antara lokasi.</p>
-          <button type="button" className="quest-log-button" onClick={onOpenQuestLog}>
+          <button type="button" className="quest-log-button" disabled={interfaceLocked} onClick={onOpenQuestLog}>
             Log Quest
+          </button>
+          <button type="button" className="upgrade-button" disabled={interfaceLocked} onClick={onOpenUpgrades}>
+            Naik Taraf
           </button>
         </div>
       </div>
@@ -150,7 +166,7 @@ export function WorldMap({
                 }}
                 aria-pressed={isSelected}
                 aria-label={`${location.nameBM}, ${STATUS_LABELS[location.status]}`}
-                disabled={isTravelling}
+                disabled={interfaceLocked || isTravelling}
                 onClick={() => setSelectedLocationId(location.id)}
               >
                 <span className="world-node__marker" aria-hidden="true">
@@ -206,6 +222,7 @@ export function WorldMap({
             <button
               type="button"
               className="button-secondary"
+              disabled={interfaceLocked}
               onClick={() => setSelectedLocationId(null)}
             >
               Tutup

@@ -3,6 +3,17 @@ export interface PlayerProgressionState {
   level: number
   unspentUpgradePoints: number
   awardedXPEventIds: string[]
+  movementSpeedRank: number
+  visionRadiusRank: number
+  hintCapacityRank: number
+}
+
+export type UpgradeId = 'movement-speed' | 'vision-radius' | 'hint-capacity'
+
+export interface EffectivePlayerStats {
+  movementSpeed: number
+  visionRadius: number
+  maxHints: number
 }
 
 export interface XPRewardEvent {

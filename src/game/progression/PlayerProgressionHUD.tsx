@@ -3,9 +3,15 @@ import type { PlayerProgressionState } from './types'
 
 interface PlayerProgressionHUDProps {
   progression: PlayerProgressionState
+  remainingHints: number
+  maxHints: number
 }
 
-export function PlayerProgressionHUD({ progression }: PlayerProgressionHUDProps) {
+export function PlayerProgressionHUD({
+  progression,
+  remainingHints,
+  maxHints,
+}: PlayerProgressionHUDProps) {
   const levelProgress = getCurrentLevelProgress(progression)
   const percentage = levelProgress.isMaxLevel
     ? 100
@@ -21,6 +27,7 @@ export function PlayerProgressionHUD({ progression }: PlayerProgressionHUDProps)
             : `${levelProgress.currentXP} / ${levelProgress.requiredXP} XP`}
         </span>
         <span>Mata Naik Taraf: {progression.unspentUpgradePoints}</span>
+        <span>Petunjuk: {remainingHints} / {maxHints}</span>
       </div>
       <div
         className="progression-hud__bar"
@@ -32,7 +39,7 @@ export function PlayerProgressionHUD({ progression }: PlayerProgressionHUDProps)
       >
         <span style={{ width: `${percentage}%` }} />
       </div>
-      <small>Mata Naik Taraf boleh digunakan dalam sistem naik taraf akan datang.</small>
+      <small>Gunakan Mata Naik Taraf untuk menguatkan statistik pemain.</small>
       {import.meta.env.DEV && (
         <code>
           totalXP={progression.totalXP} · events={progression.awardedXPEventIds.length}

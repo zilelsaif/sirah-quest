@@ -12,6 +12,7 @@ export interface PlayerPosition {
 export interface ClueSessionState {
   state: ClueState
   lastAnswerWasIncorrect: boolean
+  eliminatedOptionIds: string[]
 }
 
 export interface AreaSessionState {
@@ -19,6 +20,7 @@ export interface AreaSessionState {
   playerPosition: PlayerPosition
   clues: Record<string, ClueSessionState>
   quests: QuestSessionState
+  remainingHints: number
 }
 
 export interface WorldSessionState {

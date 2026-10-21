@@ -119,6 +119,17 @@ h1 {
   margin-left: auto;
 }
 
+.upgrade-button {
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  color: #172033;
+  font-weight: 900;
+  border: 1px solid #e0b44c;
+  border-radius: 0.55rem;
+  background: #f4d58d;
+  cursor: pointer;
+}
+
 .progression-hud__bar {
   height: 0.45rem;
   margin-top: 0.45rem;
@@ -627,6 +638,19 @@ h1 {
   opacity: 1;
 }
 
+.clue-panel .clue-panel__options button.is-eliminated {
+  color: #677284;
+  text-decoration: line-through;
+  border-color: #8b94a5;
+  background: #e5e7eb;
+  opacity: 0.68;
+}
+
+.clue-panel .hint-button {
+  color: #172033;
+  background: #e0b44c;
+}
+
 .clue-panel__feedback,
 .clue-panel__explanation {
   display: grid;
@@ -771,6 +795,146 @@ h1 {
   border-radius: 0.55rem;
   background: #e0b44c;
   cursor: pointer;
+}
+
+.upgrade-overlay {
+  position: fixed;
+  z-index: 1150;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(3 7 18 / 82%);
+}
+
+.upgrade-panel {
+  width: min(100%, 64rem);
+  max-height: calc(100dvh - 2rem);
+  padding: 1.2rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: #172033;
+  border: 3px solid #e0b44c;
+  border-radius: 1rem;
+  background: #fff9e7;
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 48%);
+}
+
+.upgrade-panel__header {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.upgrade-panel__header p,
+.upgrade-card__eyebrow {
+  margin: 0;
+  color: #7c5b18;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.upgrade-panel__header h2 {
+  margin: 0.2rem 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 5vw, 2.6rem);
+}
+
+.upgrade-panel__header > button {
+  flex: 0 0 auto;
+  min-height: 2.75rem;
+}
+
+.upgrade-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.upgrade-card {
+  display: flex;
+  min-width: 0;
+  padding: 1rem;
+  flex-direction: column;
+  border: 1px solid #d6bd7b;
+  border-radius: 0.75rem;
+  background: #fffef8;
+}
+
+.upgrade-card h3 {
+  margin: 0.25rem 0;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.upgrade-card > p:not(.upgrade-card__eyebrow) {
+  min-height: 2.8rem;
+  margin: 0.25rem 0 0.75rem;
+  color: #566174;
+  line-height: 1.4;
+}
+
+.upgrade-card dl {
+  margin: auto 0 0.8rem;
+}
+
+.upgrade-card dl div {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #eee2bd;
+}
+
+.upgrade-card dt {
+  color: #667085;
+}
+
+.upgrade-card dd {
+  margin: 0;
+  font-weight: 800;
+  text-align: right;
+}
+
+.upgrade-card > button {
+  min-height: 2.8rem;
+  border: 0;
+  border-radius: 0.55rem;
+  color: #172033;
+  font-weight: 900;
+  background: #e0b44c;
+  cursor: pointer;
+}
+
+.upgrade-card > button:disabled {
+  cursor: not-allowed;
+  background: #d4d6da;
+}
+
+.upgrade-dev-tools {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 1px dashed #8b6a25;
+  border-radius: 0.6rem;
+  background: #f8edcc;
+}
+
+.upgrade-dev-tools code {
+  display: block;
+  margin: 0.35rem 0;
+  overflow-wrap: anywhere;
+}
+
+.upgrade-dev-tools div {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.upgrade-dev-tools button {
+  min-height: 2.6rem;
 }
 
 .quest-log {
@@ -986,6 +1150,14 @@ h1 {
     margin-left: 0;
   }
 
+  .upgrade-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .upgrade-card > p:not(.upgrade-card__eyebrow) {
+    min-height: 0;
+  }
+
   .tracked-quest-summary {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -1088,6 +1260,19 @@ h1 {
 
   .level-up-overlay {
     padding: 0.55rem;
+  }
+
+  .upgrade-overlay {
+    padding: 0.45rem;
+  }
+
+  .upgrade-panel {
+    max-height: calc(100dvh - 0.9rem);
+    padding: 0.8rem;
+  }
+
+  .upgrade-panel__header {
+    align-items: center;
   }
 
   .quest-log {

@@ -4,12 +4,14 @@ import { createGame } from './bootstrap'
 import type { CluePanelData } from './clues/types'
 import type { AreaSessionState } from './session/types'
 import { TestScene } from './scenes/TestScene'
+import type { EffectivePlayerStats } from './progression/types'
 
 interface GameCanvasProps {
   session: AreaSessionState
   onSessionChange: (session: AreaSessionState) => void
   onNewTestRun: () => void
   interfaceLocked: boolean
+  effectiveStats: EffectivePlayerStats
 }
 
 export function GameCanvas({
@@ -17,6 +19,7 @@ export function GameCanvas({
   onSessionChange,
   onNewTestRun,
   interfaceLocked,
+  effectiveStats,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
@@ -27,9 +30,15 @@ export function GameCanvas({
     const container = containerRef.current
     if (!container) return
 
-    const game = createGame(container, setOpenClue, session, (nextSession) => {
-      if (!resetRequestedRef.current) onSessionChange(nextSession)
-    })
+    const game = createGame(
+      container,
+      setOpenClue,
+      session,
+      (nextSession) => {
+        if (!resetRequestedRef.current) onSessionChange(nextSession)
+      },
+      effectiveStats,
+    )
     gameRef.current = game
     resetRequestedRef.current = false
 
@@ -45,6 +54,10 @@ export function GameCanvas({
   useEffect(() => {
     getScene()?.setInterfaceLocked(interfaceLocked)
   }, [interfaceLocked])
+
+  useEffect(() => {
+    getScene()?.setEffectiveStats(effectiveStats)
+  }, [effectiveStats])
 
   const startNewTestRun = () => {
     resetRequestedRef.current = true
@@ -97,8 +110,13 @@ export function GameCanvas({
                   <button
                     key={option.id}
                     type="button"
-                    className={isCorrectReview ? 'is-correct' : undefined}
-                    disabled={openClue.state === 'completed'}
+                    disabled={
+                      openClue.state === 'completed' ||
+                      openClue.eliminatedOptionIds.includes(option.id)
+                    }
+                    className={`${isCorrectReview ? 'is-correct' : ''}${
+                      openClue.eliminatedOptionIds.includes(option.id) ? ' is-eliminated' : ''
+                    }`.trim() || undefined}
                     aria-label={`${option.text.bm} / ${option.text.en}${
                       isCorrectReview ? ' — correct answer' : ''
                     }`}
@@ -135,6 +153,18 @@ export function GameCanvas({
             </p>
 
             <div className="clue-panel__actions">
+              <button
+                type="button"
+                className="hint-button"
+                disabled={
+                  session.remainingHints <= 0 ||
+                  !openClue.canUseHint ||
+                  openClue.state === 'completed'
+                }
+                onClick={() => getScene()?.useHint()}
+              >
+                PETUNJUK ({session.remainingHints})
+              </button>
               <button type="button" onClick={() => getScene()?.closeClue()}>
                 Close
               </button>
