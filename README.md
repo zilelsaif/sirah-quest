@@ -5,8 +5,8 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.6.0 adds a session-based multi-quest system
-with independent quest progress and one optional tracked quest. Backend services, authentication,
+question interactions. Version 0.7.0 adds session-based player XP, levels, and
+an Upgrade Point foundation on top of the multi-quest system. Backend services, authentication,
 database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -50,7 +50,9 @@ Keyboard movement cancels an active click or tap destination. The prototype uses
 placeholder shapes only; it does not contain final game art or content.
 
 During development, **New Test Run** selects a fresh set of three questions and
-resets the clue and quest session. The control is excluded from production builds.
+resets clue, quest, answer-order, and player-position run state. It deliberately
+preserves player XP, level, Upgrade Points, and the reward ledger. The control
+is excluded from production builds.
 
 The player's configurable vision radius reveals unexplored map areas. Previously
 visited areas remain visible in a dimmed explored state.
@@ -84,6 +86,38 @@ quests. A clue completed before quest acceptance is recognized when that quest
 is accepted. Quest, clue, question-order, player-position, and travel state are
 kept while switching maps. Permanent refresh persistence is not implemented yet.
 
+## Player XP and levels
+
+Player progression is separate from the replayable run state. Completing a clue
+awards 10 XP once, a main quest awards 60 XP once, and a side quest awards 40 XP
+once. Wrong answers, clue discovery, travel, tracking changes, and reopening
+completed content award no XP and apply no penalty.
+
+Every reward uses a stable event ID recorded in an in-memory ledger. This stops
+map transitions, repeated processing, and **New Test Run** from farming the same
+normal clue or quest reward during the current application session.
+
+Cumulative level thresholds are:
+
+| Level | Total XP required |
+| --- | ---: |
+| 1 | 0 |
+| 2 | 100 |
+| 3 | 220 |
+| 4 | 360 |
+| 5 | 520 |
+| 6 | 700 |
+| 7 | 900 |
+| 8 | 1120 |
+| 9 | 1360 |
+| 10 | 1620 |
+
+Each level gained after Level 1 grants one unspent Upgrade Point. Points are
+displayed but cannot be spent yet; movement, vision, and hints are unchanged.
+The upgrade-selection system is planned for v0.8.0. Progression survives World
+Map/Area Map transitions and New Test Run, but still resets after a full browser
+refresh because permanent saving is not implemented.
+
 ## Sirah question editorial review
 
 The printable review snapshot is
@@ -113,13 +147,21 @@ npm run questions:verify
 
 ## Development releases
 
+### v0.7.0 — XP and Level System development
+
+- Adds idempotent XP rewards for clue and quest completion.
+- Adds the configurable Level 1–10 curve and one Upgrade Point per level gained.
+- Adds responsive progression HUD and level-up notification to both map modes.
+- Separates persistent-in-session player progression from resettable run state.
+- This development version has not been archived yet.
+
 ### v0.6.0 — Multi-Quest development
 
 - Adds three data-driven Kampung Ilmu quests with independent progress.
 - Adds a responsive BM Quest Log shared by World Map and Area Map.
 - Keeps clue questions randomized but aligned with each quest topic.
 - Adds a complete pending-review question-bank export for manual ustaz review.
-- This development version has not been archived yet.
+- Preserved as an immutable archived release.
 
 ### v0.5.1 — Final World Map polish
 

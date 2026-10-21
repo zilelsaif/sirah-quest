@@ -22,6 +22,7 @@ export interface QuestDefinition {
   objectives: QuestObjectiveDefinition[]
   prerequisiteQuestIds: string[]
   initialStatus: QuestStatus
+  completionXP: number
 }
 
 export interface QuestProgressState {

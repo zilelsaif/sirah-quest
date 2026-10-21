@@ -1,5 +1,10 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { GameCanvas } from './game/GameCanvas'
+import { LevelUpNotification } from './game/progression/LevelUpNotification'
+import { applyXPRewards, createPlayerProgression } from './game/progression/PlayerProgression'
+import { PlayerProgressionHUD } from './game/progression/PlayerProgressionHUD'
+import { XP_REWARDS } from './game/progression/progressionConfig'
+import type { PlayerProgressionState, XPRewardEvent } from './game/progression/types'
 import { QuestLog } from './game/quests/QuestLog'
 import { QUEST_DATA } from './game/quests/questData'
 import {
@@ -13,15 +18,66 @@ import type { AreaSessionState, GameMode, WorldSessionState } from './game/sessi
 import { STARTING_LOCATION_ID } from './world/locationData'
 import { WorldMap } from './world/WorldMap'
 
+interface PlayerSession {
+  run: AreaSessionState
+  progression: PlayerProgressionState
+}
+
+function collectCompletionRewards(
+  previous: AreaSessionState,
+  next: AreaSessionState,
+): XPRewardEvent[] {
+  const rewards: XPRewardEvent[] = []
+
+  Object.entries(next.clues).forEach(([clueId, clue]) => {
+    if (clue.state === 'completed' && previous.clues[clueId]?.state !== 'completed') {
+      rewards.push({ id: `clue:${clueId}`, amount: XP_REWARDS.clueCompletion })
+    }
+  })
+
+  QUEST_DATA.forEach((quest) => {
+    if (
+      next.quests.quests[quest.id]?.status === 'COMPLETED' &&
+      previous.quests.quests[quest.id]?.status !== 'COMPLETED'
+    ) {
+      rewards.push({ id: `quest:${quest.id}`, amount: quest.completionXP })
+    }
+  })
+
+  return rewards
+}
+
 function App() {
   const [mode, setMode] = useState<GameMode>('WORLD_MAP')
-  const [areaSession, setAreaSession] = useState<AreaSessionState>(createAreaSession)
+  const [playerSession, setPlayerSession] = useState<PlayerSession>(() => ({
+    run: createAreaSession(),
+    progression: createPlayerProgression(),
+  }))
   const [worldSession, setWorldSession] = useState<WorldSessionState>({
     currentLocationId: STARTING_LOCATION_ID,
     visitedLocationIds: [STARTING_LOCATION_ID],
     hasEnteredArea: false,
   })
   const [isQuestLogOpen, setIsQuestLogOpen] = useState(false)
+  const [levelUpNotification, setLevelUpNotification] = useState<{
+    level: number
+    levelsGained: number
+  } | null>(null)
+  const previousLevelRef = useRef(playerSession.progression.level)
+  const areaSession = playerSession.run
+
+  useEffect(() => {
+    const previousLevel = previousLevelRef.current
+    const currentLevel = playerSession.progression.level
+    if (currentLevel > previousLevel) {
+      setLevelUpNotification({
+        level: currentLevel,
+        levelsGained: currentLevel - previousLevel,
+      })
+    }
+    previousLevelRef.current = currentLevel
+  }, [playerSession.progression.level])
+
   const trackedQuest = QUEST_DATA.find(
     (quest) => quest.id === areaSession.quests.trackedQuestId,
   )
@@ -30,14 +86,23 @@ function App() {
     : undefined
 
   const updateAreaSession = useCallback((session: AreaSessionState) => {
-    setAreaSession((current) => ({
-      ...session,
-      quests: syncQuestProgress(current.quests, session.clues),
-    }))
+    setPlayerSession((current) => {
+      const run = {
+        ...session,
+        quests: syncQuestProgress(current.run.quests, session.clues),
+      }
+      return {
+        run,
+        progression: applyXPRewards(
+          current.progression,
+          collectCompletionRewards(current.run, run),
+        ),
+      }
+    })
   }, [])
 
   const startNewTestRun = useCallback(() => {
-    setAreaSession(createAreaSession())
+    setPlayerSession((current) => ({ ...current, run: createAreaSession() }))
     setWorldSession({
       currentLocationId: STARTING_LOCATION_ID,
       visitedLocationIds: [STARTING_LOCATION_ID],
@@ -47,16 +112,28 @@ function App() {
   }, [])
 
   const handleAcceptQuest = (questId: string) => {
-    setAreaSession((current) => ({
-      ...current,
-      quests: acceptQuest(current.quests, questId, current.clues),
-    }))
+    setPlayerSession((current) => {
+      const run = {
+        ...current.run,
+        quests: acceptQuest(current.run.quests, questId, current.run.clues),
+      }
+      return {
+        run,
+        progression: applyXPRewards(
+          current.progression,
+          collectCompletionRewards(current.run, run),
+        ),
+      }
+    })
   }
 
   const handleTrackQuest = (questId: string | null) => {
-    setAreaSession((current) => ({
+    setPlayerSession((current) => ({
       ...current,
-      quests: setTrackedQuest(current.quests, questId),
+      run: {
+        ...current.run,
+        quests: setTrackedQuest(current.run.quests, questId),
+      },
     }))
   }
 
@@ -78,10 +155,11 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.6.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.7.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
+      <PlayerProgressionHUD progression={playerSession.progression} />
       {trackedQuest && trackedProgress && (
         <button
           type="button"
@@ -123,7 +201,7 @@ function App() {
             session={areaSession}
             onSessionChange={updateAreaSession}
             onNewTestRun={startNewTestRun}
-            interfaceLocked={isQuestLogOpen}
+            interfaceLocked={isQuestLogOpen || levelUpNotification !== null}
           />
         </section>
       )}
@@ -134,6 +212,13 @@ function App() {
           onAccept={handleAcceptQuest}
           onTrack={handleTrackQuest}
           onClose={() => setIsQuestLogOpen(false)}
+        />
+      )}
+      {levelUpNotification && (
+        <LevelUpNotification
+          level={levelUpNotification.level}
+          levelsGained={levelUpNotification.levelsGained}
+          onClose={() => setLevelUpNotification(null)}
         />
       )}
     </main>

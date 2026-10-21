@@ -1,4 +1,5 @@
 import type { QuestDefinition } from './types'
+import { XP_REWARDS } from '../progression/progressionConfig'
 
 export const MAX_ACTIVE_QUESTS = 3
 export const KAMPUNG_ILMU_AREA_ID = 'kampung-ilmu-area'
@@ -23,6 +24,7 @@ export const QUEST_DATA: QuestDefinition[] = [
     ],
     prerequisiteQuestIds: [],
     initialStatus: 'AVAILABLE',
+    completionXP: XP_REWARDS.mainQuestCompletion,
   },
   {
     id: 'quest-rahsia-wahyu-pertama',
@@ -43,6 +45,7 @@ export const QUEST_DATA: QuestDefinition[] = [
     ],
     prerequisiteQuestIds: [],
     initialStatus: 'AVAILABLE',
+    completionXP: XP_REWARDS.sideQuestCompletion,
   },
   {
     id: 'quest-perjalanan-hijrah',
@@ -63,6 +66,7 @@ export const QUEST_DATA: QuestDefinition[] = [
     ],
     prerequisiteQuestIds: [],
     initialStatus: 'AVAILABLE',
+    completionXP: XP_REWARDS.sideQuestCompletion,
   },
 ]
 
