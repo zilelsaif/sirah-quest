@@ -2,19 +2,22 @@ import { useEffect, useRef, useState } from 'react'
 import type Phaser from 'phaser'
 import { createGame } from './bootstrap'
 import type { CluePanelData } from './clues/types'
-import type { AreaSessionState } from './session/types'
+import type { AreaPlaySession } from './session/types'
 import { TestScene } from './scenes/TestScene'
 import type { EffectivePlayerStats } from './progression/types'
+import type { AreaDefinition } from './areas/types'
 
 interface GameCanvasProps {
-  session: AreaSessionState
-  onSessionChange: (session: AreaSessionState) => void
+  area: AreaDefinition
+  session: AreaPlaySession
+  onSessionChange: (session: AreaPlaySession) => void
   onNewTestRun: () => void
   interfaceLocked: boolean
   effectiveStats: EffectivePlayerStats
 }
 
 export function GameCanvas({
+  area,
   session,
   onSessionChange,
   onNewTestRun,
@@ -33,6 +36,7 @@ export function GameCanvas({
     const game = createGame(
       container,
       setOpenClue,
+      area,
       session,
       (nextSession) => {
         if (!resetRequestedRef.current) onSessionChange(nextSession)
@@ -46,7 +50,7 @@ export function GameCanvas({
       game.destroy(true)
       gameRef.current = null
     }
-  }, [session.questionRun, onSessionChange])
+  }, [area.id, session.questionRun.assignments, onSessionChange])
 
   const getScene = () =>
     gameRef.current?.scene.getScene('movement-prototype') as TestScene | undefined
@@ -72,6 +76,7 @@ export function GameCanvas({
         .map(({ question }) => question.id)
         .join(',')}
       data-selection-fallback={String(session.questionRun.usedFallback)}
+      data-area-id={area.id}
     >
       {import.meta.env.DEV && (
         <div className="test-run-toolbar">

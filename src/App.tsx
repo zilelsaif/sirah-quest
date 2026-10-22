@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { GameCanvas } from './game/GameCanvas'
-import { CLUE_DATA } from './game/clues/clueData'
 import { LevelUpNotification } from './game/progression/LevelUpNotification'
 import {
   applyXPRewards,
@@ -23,9 +22,9 @@ import {
   setTrackedQuest,
   syncQuestProgress,
 } from './game/quests/QuestManager'
-import { createAreaSession } from './game/session/createSession'
-import type { AreaSessionState, GameMode, WorldSessionState } from './game/session/types'
-import { STARTING_LOCATION_ID } from './world/locationData'
+import { createAreaSession, getAllClueStates } from './game/session/createSession'
+import type { AreaPlaySession, AreaSessionState, GameMode, WorldSessionState } from './game/session/types'
+import { getWorldLocation, STARTING_LOCATION_ID } from './world/locationData'
 import { WorldMap } from './world/WorldMap'
 import { SAVE_DEBOUNCE_MS } from './game/save/config'
 import { clearSirahQuestStorage, loadGameSave, saveGame } from './game/save/SaveManager'
@@ -33,6 +32,7 @@ import type { PersistedGameState, PlayerSessionState, SaveLoadResult } from './g
 import { SirahMasteryPanel } from './game/mastery/SirahMasteryPanel'
 import { calculateEncounterScore, createSirahMastery, recordQuestionMastery } from './game/mastery/SirahMastery'
 import type { SirahMasteryState } from './game/mastery/types'
+import { ALL_AREA_CLUES, getAreaDefinition, KAMPUNG_ILMU_AREA_ID } from './game/areas/areaRegistry'
 
 type PlayerSession = PlayerSessionState
 
@@ -59,8 +59,9 @@ function collectCompletionRewards(
 ): XPRewardEvent[] {
   const rewards: XPRewardEvent[] = []
 
-  Object.entries(next.clues).forEach(([clueId, clue]) => {
-    if (clue.state === 'completed' && previous.clues[clueId]?.state !== 'completed') {
+  const previousClues = getAllClueStates(previous)
+  Object.entries(getAllClueStates(next)).forEach(([clueId, clue]) => {
+    if (clue.state === 'completed' && previousClues[clueId]?.state !== 'completed') {
       rewards.push({ id: `clue:${clueId}`, amount: XP_REWARDS.clueCompletion })
     }
   })
@@ -97,6 +98,20 @@ function App() {
   } | null>(null)
   const previousLevelRef = useRef(playerSession.progression.level)
   const areaSession = playerSession.run
+  const allClues = useMemo(() => getAllClueStates(areaSession), [areaSession.areaStates])
+  const currentAreaId = getWorldLocation(worldSession.currentLocationId)?.areaId ?? KAMPUNG_ILMU_AREA_ID
+  const currentArea = getAreaDefinition(currentAreaId) ?? getAreaDefinition(KAMPUNG_ILMU_AREA_ID)
+  const currentAreaState = areaSession.areaStates[currentArea.id]
+  const currentAssignments = useMemo(() => currentArea.clues.map((clue) => {
+    const index = ALL_AREA_CLUES.findIndex((candidate) => candidate.id === clue.id)
+    return areaSession.questionRun.assignments[index]
+  }), [areaSession.questionRun, currentArea])
+  const playSession: AreaPlaySession = {
+    areaId: currentArea.id,
+    ...currentAreaState,
+    questionRun: { assignments: currentAssignments, usedFallback: areaSession.questionRun.usedFallback },
+    remainingHints: areaSession.remainingHints,
+  }
   const effectiveStats = useMemo(
     () => getEffectivePlayerStats(playerSession.progression),
     [playerSession.progression],
@@ -152,16 +167,22 @@ function App() {
     ? getQuestProgress(trackedQuest, areaSession.quests)
     : undefined
 
-  const updateAreaSession = useCallback((session: AreaSessionState) => {
+  const updateAreaSession = useCallback((session: AreaPlaySession) => {
     setPlayerSession((current) => {
+      const previousArea = current.run.areaStates[session.areaId]
       const run = {
-        ...session,
-        quests: syncQuestProgress(current.run.quests, session.clues),
+        ...current.run,
+        areaStates: {
+          ...current.run.areaStates,
+          [session.areaId]: { playerPosition: session.playerPosition, clues: session.clues, fogDiscoveryPoints: session.fogDiscoveryPoints },
+        },
+        remainingHints: session.remainingHints,
       }
-      Object.entries(run.clues).forEach(([clueId, clue]) => {
-        if (clue.state !== 'completed' || current.run.clues[clueId]?.state === 'completed') return
-        const index = CLUE_DATA.findIndex((definition) => definition.id === clueId)
-        const questionId = run.questionRun.assignments[index]?.question.id
+      run.quests = syncQuestProgress(current.run.quests, getAllClueStates(run))
+      Object.entries(session.clues).forEach(([clueId, clue]) => {
+        if (clue.state !== 'completed' || previousArea.clues[clueId]?.state === 'completed') return
+        const localIndex = currentArea.clues.findIndex((definition) => definition.id === clueId)
+        const questionId = session.questionRun.assignments[localIndex]?.question.id
         if (!questionId) return
         const score = calculateEncounterScore(clue.incorrectAttemptOccurred, clue.hintUsed)
         setMasteryState((mastery) => recordQuestionMastery(mastery, questionId, score))
@@ -174,7 +195,7 @@ function App() {
         ),
       }
     })
-  }, [])
+  }, [currentArea])
 
   const startNewTestRun = useCallback(() => {
     setPlayerSession((current) => ({
@@ -230,7 +251,7 @@ function App() {
     setPlayerSession((current) => {
       const run = {
         ...current.run,
-        quests: acceptQuest(current.run.quests, questId, current.run.clues),
+        quests: acceptQuest(current.run.quests, questId, getAllClueStates(current.run)),
       }
       return {
         run,
@@ -291,7 +312,7 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.10.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.11.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -329,7 +350,7 @@ function App() {
         <section className="game-panel" aria-labelledby="prototype-title">
           <div className="game-panel__header">
             <div>
-              <h2 id="prototype-title">Kampung Ilmu · Area Map</h2>
+              <h2 id="prototype-title">{currentArea.nameBM} · Area Map</h2>
               <p>Explore with WASD, arrows, or tap. Answer questions at discovered clues.</p>
             </div>
             <div className="game-panel__actions">
@@ -348,7 +369,8 @@ function App() {
             </div>
           </div>
           <GameCanvas
-            session={areaSession}
+            area={currentArea}
+            session={playSession}
             onSessionChange={updateAreaSession}
             onNewTestRun={startNewTestRun}
             interfaceLocked={isInterfaceLocked}
@@ -359,7 +381,7 @@ function App() {
       {isQuestLogOpen && (
         <QuestLog
           session={areaSession.quests}
-          clues={areaSession.clues}
+          clues={allClues}
           onAccept={handleAcceptQuest}
           onTrack={handleTrackQuest}
           onClose={() => setIsQuestLogOpen(false)}

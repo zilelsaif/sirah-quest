@@ -1,4 +1,5 @@
 import type { WorldLocation } from './types'
+import { BAZAR_LAMA_AREA_ID } from '../game/areas/areaRegistry'
 
 export const STARTING_LOCATION_ID = 'kampung-ilmu'
 
@@ -24,7 +25,8 @@ export const WORLD_LOCATIONS: WorldLocation[] = [
     descriptionEN: 'An old trading centre linking travellers from many regions.',
     normalizedPosition: { x: 49, y: 68 },
     connections: ['kampung-ilmu', 'perpustakaan-hikmah', 'bukit-pengintai'],
-    status: 'coming-soon',
+    status: 'playable',
+    areaId: BAZAR_LAMA_AREA_ID,
     unlockRequirements: [],
     visited: false,
   },

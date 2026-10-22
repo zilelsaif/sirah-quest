@@ -1,4 +1,4 @@
-import { getWorldLocation } from '../../world/locationData'
+import { WORLD_LOCATIONS } from '../../world/locationData'
 import type { ClueSessionState } from '../session/types'
 import { MAX_ACTIVE_QUESTS, QUEST_DATA } from './questData'
 import { getQuestProgress } from './QuestManager'
@@ -35,7 +35,7 @@ function QuestCard({
   const state = session.quests[quest.id]
   const progress = getQuestProgress(quest, session)
   const isTracked = session.trackedQuestId === quest.id
-  const relatedLocation = getWorldLocation('kampung-ilmu')
+  const relatedLocation = WORLD_LOCATIONS.find((location) => quest.areaIds.includes(location.areaId ?? ''))
   const activeCount = Object.values(session.quests).filter(
     (quest) => quest.status === 'ACTIVE',
   ).length

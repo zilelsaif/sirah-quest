@@ -5,8 +5,8 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.10.0 adds persistent Sirah learning mastery,
-kept separate from RPG progression. Backend services, authentication,
+question interactions. Version 0.11.0 adds Bazar Lama as a second playable
+area on a reusable multi-area foundation. Backend services, authentication,
 database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -86,6 +86,25 @@ Completing a related clue progresses its active quest without blocking other
 quests. A clue completed before quest acceptance is recognized when that quest
 is accepted. Quest, clue, question-order, player-position, and travel state are
 kept while switching maps and browser refreshes.
+
+## Multi-area foundation
+
+Kampung Ilmu and Bazar Lama are both playable through the same configurable
+Phaser Area Map engine. A centralized area registry supplies each area's stable
+ID, bilingual name, dimensions, spawn, obstacles, landmarks, and three clues.
+Bazar Lama uses a fictional sandstone market layout and is not presented as a
+historical reconstruction or sacred location.
+
+Player position, fog exploration, and clue state are stored separately for each
+area. XP, upgrades, Hints, Sirah Mastery, quests, and the three-active-quest
+limit remain global. The six clue questions are selected together—one pair per
+topic without duplicate question IDs in the same run—and do not reshuffle while
+travelling between areas.
+
+Save schema v3 migrates the existing v2 Kampung Ilmu state into the multi-area
+structure and creates a clean Bazar Lama state. New Test Run resets both areas,
+all six assignments, fog, positions, clues, quests, and Hints while preserving
+RPG progression, the XP reward ledger, upgrade ranks, and Sirah Mastery.
 
 ## Player XP and levels
 
@@ -179,6 +198,16 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.11.0 — Bazar Lama / Multi-Area development
+
+- Makes Bazar Lama the second playable World Map destination.
+- Reuses one Area Map engine through centralized area definitions.
+- Adds three Bazar clues and three data-driven quests using the existing bank.
+- Adds independent position, fog, and clue state for both playable areas.
+- Introduces save schema v3 with a v2→v3 migration.
+- Perpustakaan Hikmah and Bukit Pengintai remain locked.
+- This development version has not been archived yet.
 
 ### v0.10.0 — Sirah Mastery System development
 

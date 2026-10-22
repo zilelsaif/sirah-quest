@@ -158,6 +158,9 @@ export function WorldMap({
             const activeCount = locationQuests.filter(
               (quest) => quests.quests[quest.id]?.status === 'ACTIVE',
             ).length
+            const completedCount = locationQuests.filter(
+              (quest) => quests.quests[quest.id]?.status === 'COMPLETED',
+            ).length
             return (
               <button
                 key={location.id}
@@ -187,9 +190,9 @@ export function WorldMap({
                         ? 'Pernah dilawati'
                         : STATUS_LABELS[location.status]}
                 </span>
-                {(availableCount > 0 || activeCount > 0) && (
+                {(availableCount > 0 || activeCount > 0 || completedCount > 0) && (
                   <span className="world-node__quests">
-                    {activeCount > 0 ? `${activeCount} aktif` : `${availableCount} tersedia`}
+                    {activeCount > 0 ? `${activeCount} aktif` : availableCount > 0 ? `${availableCount} tersedia` : `${completedCount} selesai`}
                   </span>
                 )}
               </button>

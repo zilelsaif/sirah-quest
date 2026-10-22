@@ -1,23 +1,14 @@
 import Phaser from 'phaser'
-import { CLUE_DATA, CLUE_DISCOVERY_RADIUS } from '../clues/clueData'
+import { CLUE_DISCOVERY_RADIUS } from '../clues/clueData'
 import { ClueManager } from '../clues/ClueManager'
 import type { CluePanelData } from '../clues/types'
 import { FogOfWar } from '../fog/FogOfWar'
 import { KeyboardInput } from '../input/KeyboardInput'
 import { PointerInput } from '../input/PointerInput'
 import { MovementController } from '../player/MovementController'
-import type { AreaSessionState } from '../session/types'
+import type { AreaPlaySession } from '../session/types'
 import type { EffectivePlayerStats } from '../progression/types'
-
-const MAP_WIDTH = 1600
-const MAP_HEIGHT = 1200
-
-const OBSTACLES = [
-  new Phaser.Geom.Rectangle(520, 220, 240, 90),
-  new Phaser.Geom.Rectangle(900, 510, 110, 300),
-  new Phaser.Geom.Rectangle(260, 760, 320, 100),
-  new Phaser.Geom.Rectangle(1180, 860, 210, 130),
-]
+import type { AreaDefinition } from '../areas/types'
 
 export class TestScene extends Phaser.Scene {
   private keyboardInput?: KeyboardInput
@@ -30,12 +21,13 @@ export class TestScene extends Phaser.Scene {
   private cluePanelLocked = false
   private interfaceLocked = false
   private remainingHints: number
-  private fogDiscoveryPoints: AreaSessionState['fogDiscoveryPoints']
+  private fogDiscoveryPoints: AreaPlaySession['fogDiscoveryPoints']
 
   constructor(
     private readonly onCluePanelChange: (clue: CluePanelData | null) => void,
-    private readonly initialSession: AreaSessionState,
-    private readonly onSessionChange: (session: AreaSessionState) => void,
+    private readonly area: AreaDefinition,
+    private readonly initialSession: AreaPlaySession,
+    private readonly onSessionChange: (session: AreaPlaySession) => void,
     private effectiveStats: EffectivePlayerStats,
   ) {
     super('movement-prototype')
@@ -44,7 +36,7 @@ export class TestScene extends Phaser.Scene {
   }
 
   create() {
-    this.cameras.main.setBounds(0, 0, MAP_WIDTH, MAP_HEIGHT)
+    this.cameras.main.setBounds(0, 0, this.area.width, this.area.height)
     this.drawMap()
 
     const targetMarker = this.add
@@ -61,8 +53,8 @@ export class TestScene extends Phaser.Scene {
 
     this.fogOfWar = new FogOfWar(
       this,
-      MAP_WIDTH,
-      MAP_HEIGHT,
+      this.area.width,
+      this.area.height,
       this.initialSession.fogDiscoveryPoints,
       (points) => {
         this.fogDiscoveryPoints = points
@@ -72,8 +64,8 @@ export class TestScene extends Phaser.Scene {
 
     this.movementController = new MovementController(
       player,
-      new Phaser.Geom.Rectangle(0, 0, MAP_WIDTH, MAP_HEIGHT),
-      OBSTACLES,
+      new Phaser.Geom.Rectangle(0, 0, this.area.width, this.area.height),
+      this.area.obstacles.map((obstacle) => new Phaser.Geom.Rectangle(obstacle.x, obstacle.y, obstacle.width, obstacle.height)),
       {
         movementSpeed: this.effectiveStats.movementSpeed,
         visionRadius: this.effectiveStats.visionRadius,
@@ -101,7 +93,7 @@ export class TestScene extends Phaser.Scene {
 
     this.clueManager = new ClueManager(
       this,
-      CLUE_DATA,
+      this.area.clues,
       this.initialSession.questionRun.assignments,
       CLUE_DISCOVERY_RADIUS,
       this.onCluePanelChange,
@@ -158,6 +150,7 @@ export class TestScene extends Phaser.Scene {
       const clueCounts = this.clueManager?.getCounts()
       this.debugText.setText([
         `speed  ${this.effectiveStats.movementSpeed}`,
+        `area   ${this.area.id}`,
         `vision ${this.effectiveStats.visionRadius}`,
         `hints  ${this.remainingHints}/${this.effectiveStats.maxHints}`,
         `x ${this.player.x.toFixed(0)}  y ${this.player.y.toFixed(0)}`,
@@ -215,22 +208,23 @@ export class TestScene extends Phaser.Scene {
   }
 
   private drawMap() {
-    this.add.rectangle(0, 0, MAP_WIDTH, MAP_HEIGHT, 0x294c43).setOrigin(0)
+    this.add.rectangle(0, 0, this.area.width, this.area.height, this.area.backgroundColor).setOrigin(0)
 
-    const grid = this.add.graphics().lineStyle(1, 0xffffff, 0.07)
-    for (let x = 0; x <= MAP_WIDTH; x += 80) grid.lineBetween(x, 0, x, MAP_HEIGHT)
-    for (let y = 0; y <= MAP_HEIGHT; y += 80) grid.lineBetween(0, y, MAP_WIDTH, y)
+    const grid = this.add.graphics().lineStyle(1, this.area.gridColor, 0.09)
+    for (let x = 0; x <= this.area.width; x += 80) grid.lineBetween(x, 0, x, this.area.height)
+    for (let y = 0; y <= this.area.height; y += 80) grid.lineBetween(0, y, this.area.width, y)
 
-    const colors = [0x8d5a3b, 0x5f6f52, 0x456990, 0x9b7e46]
-    OBSTACLES.forEach((obstacle, index) => {
+    this.area.obstacles.forEach((obstacle) => {
       this.add
-        .rectangle(obstacle.x, obstacle.y, obstacle.width, obstacle.height, colors[index])
+        .rectangle(obstacle.x, obstacle.y, obstacle.width, obstacle.height, obstacle.color)
         .setOrigin(0)
         .setStrokeStyle(4, 0x172033, 0.65)
     })
 
-    this.add.circle(1320, 250, 90, 0x5ca4a9).setStrokeStyle(8, 0xc7e8e9, 0.5)
-    this.add.star(770, 930, 8, 32, 70, 0xe0b44c).setStrokeStyle(5, 0xf4d58d, 0.5)
+    this.area.landmarks.forEach((landmark) => {
+      if (landmark.type === 'circle') this.add.circle(landmark.x, landmark.y, landmark.size, landmark.color).setStrokeStyle(8, 0xc7e8e9, 0.5)
+      else this.add.star(landmark.x, landmark.y, 8, landmark.size * 0.45, landmark.size, landmark.color).setStrokeStyle(5, 0xf4d58d, 0.5)
+    })
   }
 
   private createPlayer(x: number, y: number) {

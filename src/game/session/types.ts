@@ -21,13 +21,23 @@ export interface ClueSessionState {
   eliminatedOptionIds: string[]
 }
 
-export interface AreaSessionState {
-  questionRun: QuestionRun
+export interface AreaRuntimeState {
   playerPosition: PlayerPosition
   clues: Record<string, ClueSessionState>
+  fogDiscoveryPoints: FogDiscoveryPoint[]
+}
+
+export interface AreaSessionState {
+  questionRun: QuestionRun
+  areaStates: Record<string, AreaRuntimeState>
   quests: QuestSessionState
   remainingHints: number
-  fogDiscoveryPoints: FogDiscoveryPoint[]
+}
+
+export interface AreaPlaySession extends AreaRuntimeState {
+  areaId: string
+  questionRun: QuestionRun
+  remainingHints: number
 }
 
 export interface WorldSessionState {
