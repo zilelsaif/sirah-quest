@@ -14,6 +14,7 @@ interface WorldMapProps {
   quests: QuestSessionState
   onOpenQuestLog: () => void
   onOpenUpgrades: () => void
+  onOpenMastery: () => void
   interfaceLocked: boolean
 }
 
@@ -32,6 +33,7 @@ export function WorldMap({
   quests,
   onOpenQuestLog,
   onOpenUpgrades,
+  onOpenMastery,
   interfaceLocked,
 }: WorldMapProps) {
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
@@ -127,6 +129,9 @@ export function WorldMap({
           </button>
           <button type="button" className="upgrade-button" disabled={interfaceLocked} onClick={onOpenUpgrades}>
             Naik Taraf
+          </button>
+          <button type="button" className="mastery-button" disabled={interfaceLocked} onClick={onOpenMastery}>
+            Penguasaan
           </button>
         </div>
       </div>

@@ -1,5 +1,5 @@
-export const SAVE_SCHEMA_VERSION = 1
-export const SAVE_APP_VERSION = '0.9.0'
+export const SAVE_SCHEMA_VERSION = 2
+export const SAVE_APP_VERSION = '0.10.0'
 export const SAVE_STORAGE_KEY = 'sirahQuest.save'
 export const SAVE_CORRUPT_KEY_PREFIX = 'sirahQuest.save.corrupt.'
 export const PREVIOUS_QUESTION_IDS_KEY = 'sirah-quest.previous-question-ids.v1'

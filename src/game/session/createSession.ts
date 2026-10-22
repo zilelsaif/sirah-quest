@@ -10,7 +10,7 @@ export function createAreaSession(maxHints = 1): AreaSessionState {
     clues: Object.fromEntries(
       CLUE_DATA.map((clue) => [
         clue.id,
-        { state: clue.state, lastAnswerWasIncorrect: false, eliminatedOptionIds: [] },
+        { state: clue.state, lastAnswerWasIncorrect: false, incorrectAttemptOccurred: false, hintUsed: false, eliminatedOptionIds: [] },
       ]),
     ),
     quests: createQuestSession(),

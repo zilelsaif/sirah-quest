@@ -20,8 +20,17 @@ export function validateSavePayload(value: unknown): SavePayload | null {
   if (!isRecord(value) || value.schemaVersion !== SAVE_SCHEMA_VERSION || typeof value.appVersion !== 'string' || typeof value.savedAt !== 'string') return null
   if (Number.isNaN(Date.parse(value.savedAt))) return null
   const progression = value.playerProgression
+  const mastery = value.masteryState
   const runState = value.runState
-  if (!isRecord(progression) || !isRecord(runState)) return null
+  if (!isRecord(progression) || !isRecord(mastery) || !isRecord(mastery.questionRecords) || !isRecord(runState)) return null
+
+  const questionIds = new Set(QUESTION_BANK.map(({ id }) => id))
+  const questionRecords: SavePayload['masteryState']['questionRecords'] = {}
+  for (const [questionId, record] of Object.entries(mastery.questionRecords)) {
+    if (!questionIds.has(questionId)) continue
+    if (!isRecord(record) || !isInt(record.bestScore, 0, 10)) return null
+    questionRecords[questionId] = { bestScore: record.bestScore }
+  }
 
   const totalXP = progression.totalXP
   const knownRewardIds = new Set([
@@ -40,7 +49,7 @@ export function validateSavePayload(value: unknown): SavePayload | null {
   if (!isRecord(area.clues) || Object.keys(area.clues).length !== clueIds.size) return null
   for (const clue of CLUE_DATA) {
     const saved = area.clues[clue.id]
-    if (!isRecord(saved) || !['hidden', 'discovered', 'completed'].includes(String(saved.state)) || typeof saved.lastAnswerWasIncorrect !== 'boolean' || !uniqueStrings(saved.eliminatedOptionIds)) return null
+    if (!isRecord(saved) || !['hidden', 'discovered', 'completed'].includes(String(saved.state)) || typeof saved.lastAnswerWasIncorrect !== 'boolean' || typeof saved.incorrectAttemptOccurred !== 'boolean' || typeof saved.hintUsed !== 'boolean' || !uniqueStrings(saved.eliminatedOptionIds)) return null
   }
 
   if (!isRecord(area.questionRun) || !Array.isArray(area.questionRun.assignments) || area.questionRun.assignments.length !== CLUE_DATA.length || typeof area.questionRun.usedFallback !== 'boolean') return null
@@ -95,6 +104,7 @@ export function validateSavePayload(value: unknown): SavePayload | null {
     appVersion: value.appVersion,
     savedAt: value.savedAt,
     playerProgression: progression as unknown as SavePayload['playerProgression'],
+    masteryState: { questionRecords },
     runState: {
       mode: runState.mode,
       area: {

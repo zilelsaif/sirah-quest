@@ -1361,3 +1361,42 @@ h1 {
     margin-inline: auto;
   }
 }
+
+.mastery-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(2, 5, 10, 0.78);
+}
+.mastery-panel {
+  width: min(960px, 100%);
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+  padding: clamp(1rem, 3vw, 1.6rem);
+  border: 1px solid rgba(244, 213, 141, 0.45);
+  border-radius: 16px;
+  color: #f7f3e8;
+  background: #111c31;
+}
+.mastery-panel > header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+.mastery-panel h2, .mastery-panel h3, .mastery-panel p { margin-block: 0; }
+.mastery-panel__eyebrow { color: #f4d58d; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.mastery-panel button, .mastery-button { min-height: 44px; border: 1px solid rgba(244, 213, 141, 0.48); border-radius: 8px; padding: 0.6rem 0.85rem; color: #172033; background: #f4d58d; font-weight: 700; cursor: pointer; }
+.mastery-overall { display: flex; align-items: center; gap: 1rem; margin-block: 1.25rem; padding: 1rem; border-radius: 12px; background: #1a2944; }
+.mastery-overall > strong { font-size: clamp(2rem, 8vw, 3.6rem); color: #f4d58d; }
+.mastery-overall div { display: grid; gap: 0.3rem; }
+.mastery-topics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.85rem; }
+.mastery-card { display: grid; gap: 0.4rem; min-width: 0; padding: 1rem; border: 1px solid rgba(219, 228, 240, 0.16); border-radius: 12px; background: #17233a; }
+.mastery-card > strong { font-size: 1.8rem; color: #f4d58d; }
+.mastery-card > span { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; }
+.mastery-progress { height: 10px; overflow: hidden; border-radius: 999px; background: #07101d; }
+.mastery-progress i { display: block; height: 100%; border-radius: inherit; background: #66c78b; }
+.mastery-panel__note { margin-top: 1rem !important; color: #aebdd0; font-size: 0.85rem; }
+@media (max-width: 700px) {
+  .mastery-topics { grid-template-columns: 1fr; }
+  .mastery-panel > header { align-items: stretch; flex-direction: column; }
+  .mastery-panel > header button { width: 100%; }
+}

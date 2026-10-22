@@ -10,6 +10,8 @@ interface ClueRuntime {
   visual: Phaser.GameObjects.Container
   marker: Phaser.GameObjects.Arc
   lastAnswerWasIncorrect: boolean
+  incorrectAttemptOccurred: boolean
+  hintUsed: boolean
   eliminatedOptionIds: string[]
 }
 
@@ -133,8 +135,10 @@ export class ClueManager {
       this.updateVisual(this.openClue)
     } else {
       this.openClue.lastAnswerWasIncorrect = true
+      this.openClue.incorrectAttemptOccurred = true
     }
 
+    this.onStateChange(this.getSessionState())
     this.onPanelChange(this.toPanelData(this.openClue))
   }
 
@@ -149,6 +153,7 @@ export class ClueManager {
     if (incorrectOptions.length <= 1) return false
 
     this.openClue.eliminatedOptionIds.push(incorrectOptions[0].id)
+    this.openClue.hintUsed = true
     this.openClue.lastAnswerWasIncorrect = false
     this.onStateChange(this.getSessionState())
     this.onPanelChange(this.toPanelData(this.openClue))
@@ -178,6 +183,8 @@ export class ClueManager {
         {
           state: clue.state,
           lastAnswerWasIncorrect: clue.lastAnswerWasIncorrect,
+          incorrectAttemptOccurred: clue.incorrectAttemptOccurred,
+          hintUsed: clue.hintUsed,
           eliminatedOptionIds: [...clue.eliminatedOptionIds],
         },
       ]),
@@ -218,6 +225,8 @@ export class ClueManager {
       visual,
       marker,
       lastAnswerWasIncorrect: initialState?.lastAnswerWasIncorrect ?? false,
+      incorrectAttemptOccurred: initialState?.incorrectAttemptOccurred ?? false,
+      hintUsed: initialState?.hintUsed ?? false,
       eliminatedOptionIds: [...(initialState?.eliminatedOptionIds ?? [])],
     }
     this.updateVisual(clue)

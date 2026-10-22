@@ -16,6 +16,8 @@ export interface FogDiscoveryPoint extends PlayerPosition {
 export interface ClueSessionState {
   state: ClueState
   lastAnswerWasIncorrect: boolean
+  incorrectAttemptOccurred: boolean
+  hintUsed: boolean
   eliminatedOptionIds: string[]
 }
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { GameCanvas } from './game/GameCanvas'
+import { CLUE_DATA } from './game/clues/clueData'
 import { LevelUpNotification } from './game/progression/LevelUpNotification'
 import {
   applyXPRewards,
@@ -29,6 +30,9 @@ import { WorldMap } from './world/WorldMap'
 import { SAVE_DEBOUNCE_MS } from './game/save/config'
 import { clearSirahQuestStorage, loadGameSave, saveGame } from './game/save/SaveManager'
 import type { PersistedGameState, PlayerSessionState, SaveLoadResult } from './game/save/types'
+import { SirahMasteryPanel } from './game/mastery/SirahMasteryPanel'
+import { calculateEncounterScore, createSirahMastery, recordQuestionMastery } from './game/mastery/SirahMastery'
+import type { SirahMasteryState } from './game/mastery/types'
 
 type PlayerSession = PlayerSessionState
 
@@ -45,6 +49,7 @@ function createFreshState(): PersistedGameState {
       visitedLocationIds: [STARTING_LOCATION_ID],
       hasEnteredArea: false,
     },
+    masteryState: createSirahMastery(),
   }
 }
 
@@ -78,12 +83,14 @@ function App() {
   const [mode, setMode] = useState<GameMode>(initialState.mode)
   const [playerSession, setPlayerSession] = useState<PlayerSession>(initialState.playerSession)
   const [worldSession, setWorldSession] = useState<WorldSessionState>(initialState.worldSession)
+  const [masteryState, setMasteryState] = useState<SirahMasteryState>(initialState.masteryState)
   const [saveMessage, setSaveMessage] = useState(initialLoad.message ?? '')
   const [saveBlocked, setSaveBlocked] = useState(initialLoad.status === 'incompatible')
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false)
   const latestSaveStateRef = useRef<PersistedGameState>(initialState)
   const [isQuestLogOpen, setIsQuestLogOpen] = useState(false)
   const [isUpgradePanelOpen, setIsUpgradePanelOpen] = useState(false)
+  const [isMasteryPanelOpen, setIsMasteryPanelOpen] = useState(false)
   const [levelUpNotification, setLevelUpNotification] = useState<{
     level: number
     levelsGained: number
@@ -95,10 +102,10 @@ function App() {
     [playerSession.progression],
   )
   const isInterfaceLocked =
-    isQuestLogOpen || isUpgradePanelOpen || levelUpNotification !== null || isResetConfirmOpen
+    isQuestLogOpen || isUpgradePanelOpen || isMasteryPanelOpen || levelUpNotification !== null || isResetConfirmOpen
 
   useEffect(() => {
-    const state = { mode, playerSession, worldSession }
+    const state = { mode, playerSession, worldSession, masteryState }
     latestSaveStateRef.current = state
     if (saveBlocked) return
     const timer = window.setTimeout(() => {
@@ -110,7 +117,7 @@ function App() {
       }
     }, SAVE_DEBOUNCE_MS)
     return () => window.clearTimeout(timer)
-  }, [mode, playerSession, worldSession, saveBlocked])
+  }, [mode, playerSession, worldSession, masteryState, saveBlocked])
 
   useEffect(() => {
     const flush = () => {
@@ -151,6 +158,14 @@ function App() {
         ...session,
         quests: syncQuestProgress(current.run.quests, session.clues),
       }
+      Object.entries(run.clues).forEach(([clueId, clue]) => {
+        if (clue.state !== 'completed' || current.run.clues[clueId]?.state === 'completed') return
+        const index = CLUE_DATA.findIndex((definition) => definition.id === clueId)
+        const questionId = run.questionRun.assignments[index]?.question.id
+        if (!questionId) return
+        const score = calculateEncounterScore(clue.incorrectAttemptOccurred, clue.hintUsed)
+        setMasteryState((mastery) => recordQuestionMastery(mastery, questionId, score))
+      })
       return {
         run,
         progression: applyXPRewards(
@@ -173,6 +188,7 @@ function App() {
     })
     setIsQuestLogOpen(false)
     setIsUpgradePanelOpen(false)
+    setIsMasteryPanelOpen(false)
   }, [])
 
   const handlePurchaseUpgrade = (upgradeId: UpgradeId) => {
@@ -257,6 +273,7 @@ function App() {
     setMode(fresh.mode)
     setPlayerSession(fresh.playerSession)
     setWorldSession(fresh.worldSession)
+    setMasteryState(fresh.masteryState)
     previousLevelRef.current = fresh.playerSession.progression.level
     setLevelUpNotification(null)
     setIsQuestLogOpen(false)
@@ -274,7 +291,7 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.9.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.10.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -303,6 +320,7 @@ function App() {
           quests={areaSession.quests}
           onOpenQuestLog={() => setIsQuestLogOpen(true)}
           onOpenUpgrades={() => setIsUpgradePanelOpen(true)}
+          onOpenMastery={() => setIsMasteryPanelOpen(true)}
           interfaceLocked={isInterfaceLocked}
           onTravel={travelTo}
           onEnterArea={enterArea}
@@ -320,6 +338,9 @@ function App() {
               </button>
               <button type="button" className="upgrade-button" disabled={isInterfaceLocked} onClick={() => setIsUpgradePanelOpen(true)}>
                 Naik Taraf
+              </button>
+              <button type="button" className="mastery-button" disabled={isInterfaceLocked} onClick={() => setIsMasteryPanelOpen(true)}>
+                Penguasaan
               </button>
               <button type="button" className="return-world-button" disabled={isInterfaceLocked} onClick={() => setMode('WORLD_MAP')}>
                 Kembali ke Peta Dunia
@@ -360,6 +381,9 @@ function App() {
           onResetTestProgression={resetTestProgression}
         />
       )}
+      {isMasteryPanelOpen && (
+        <SirahMasteryPanel state={masteryState} onClose={() => setIsMasteryPanelOpen(false)} />
+      )}
       <section className="save-controls" aria-label="Data simpanan">
         <div>
           <strong>Data simpanan</strong>
@@ -373,7 +397,7 @@ function App() {
         <div className="clue-overlay" role="presentation">
           <section className="reset-confirm" role="dialog" aria-modal="true" aria-labelledby="reset-title">
             <h2 id="reset-title">Padam semua kemajuan?</h2>
-            <p>Tindakan ini memadam XP, tahap, naik taraf, quest, petunjuk, jawapan, kedudukan pemain dan kawasan kabus yang telah diterokai pada peranti ini. Tindakan ini tidak boleh dibatalkan.</p>
+            <p>Tindakan ini memadam XP, tahap, naik taraf, Penguasaan Sirah, quest, petunjuk, jawapan, kedudukan pemain dan kawasan kabus yang telah diterokai pada peranti ini. Tindakan ini tidak boleh dibatalkan.</p>
             <div className="reset-confirm__actions">
               <button type="button" onClick={() => setIsResetConfirmOpen(false)}>Batal</button>
               <button type="button" className="is-danger" onClick={resetAllProgress}>Ya, Padam Kemajuan</button>

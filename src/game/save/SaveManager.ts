@@ -11,6 +11,7 @@ export function createSavePayload(state: PersistedGameState): SavePayload {
     appVersion: SAVE_APP_VERSION,
     savedAt: new Date().toISOString(),
     playerProgression: state.playerSession.progression,
+    masteryState: state.masteryState,
     runState: { mode: state.mode, area: state.playerSession.run, world: state.worldSession },
   }
 }
@@ -25,7 +26,7 @@ export function loadGameSave(): SaveLoadResult {
     if (typeof version === 'number' && version > SAVE_SCHEMA_VERSION) return { status: 'incompatible', state: null, message: 'Data simpanan berasal daripada versi aplikasi yang lebih baharu.' }
     const payload = validateSavePayload(migrateSave(parsed))
     if (!payload) throw new Error('invalid save')
-    return { status: 'loaded', savedAt: payload.savedAt, state: { mode: payload.runState.mode, playerSession: { progression: payload.playerProgression, run: payload.runState.area }, worldSession: payload.runState.world } }
+    return { status: 'loaded', savedAt: payload.savedAt, state: { mode: payload.runState.mode, playerSession: { progression: payload.playerProgression, run: payload.runState.area }, worldSession: payload.runState.world, masteryState: payload.masteryState } }
   } catch {
     try { storage().setItem(`${SAVE_CORRUPT_KEY_PREFIX}${Date.now()}`, raw) } catch { /* best effort */ }
     return { status: 'corrupt', state: null, message: 'Data simpanan rosak telah diketepikan. Permainan baharu dimulakan dengan selamat.' }

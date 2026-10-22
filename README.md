@@ -5,8 +5,8 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.9.0 adds local, versioned save persistence for
-gameplay and progression. Backend services, authentication,
+question interactions. Version 0.10.0 adds persistent Sirah learning mastery,
+kept separate from RPG progression. Backend services, authentication,
 database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -151,7 +151,42 @@ approval boxes with:
 npm run questions:verify
 ```
 
+## Sirah Mastery
+
+**Penguasaan Sirah** records evidence of learning by stable question ID. It is
+separate from player XP, Levels, Upgrade Points, and upgrade ranks, and it does
+not grant RPG rewards. A correct answer earns 6 points, plus 2 for a correct
+first attempt and 2 when no Hint was used, for a maximum of 10 per question.
+Wrong answers and Hints never reduce an existing score.
+
+Only the best score for each question is retained. Repeating a question with a
+lower score cannot farm or reduce Mastery; a better later attempt replaces the
+old score. Topic and overall percentages are derived from the current question
+bank, while coverage separately shows how many questions have evidence. The
+gameplay bands are Permulaan, Membina Asas, Berkembang, Kukuh, and Cemerlang;
+they are learning-progress labels and are not formal religious certification.
+
+Encounter flags for an incorrect attempt and Hint use are saved, so refreshing
+mid-question cannot restore either bonus. Save schema v2 adds Mastery and these
+flags. A valid v1 save is migrated without changing its XP, upgrades, quests,
+questions, Hint count, world state, position, or fog. Migrated saves begin with
+no Mastery evidence because v1 did not contain reliable learning-quality data.
+
+New Test Run resets the current run and encounter flags but preserves best
+Mastery scores. **Padam Semua Kemajuan** resets both RPG progression and Sirah
+Mastery. All 24 current questions remain pending editorial review. Materially
+changing a question's learning objective may require a future content-version
+or Mastery migration policy even if wording corrections retain its stable ID.
+
 ## Development releases
+
+### v0.10.0 — Sirah Mastery System development
+
+- Adds best-score learning evidence for Early Life, First Revelation, and Hijrah.
+- Adds responsive overall/topic Mastery and coverage presentation.
+- Persists encounter quality and Mastery through save schema v2.
+- Migrates valid v1 saves without inventing historical Mastery evidence.
+- This development version has not been archived yet.
 
 ### v0.9.0 — Save & Persistence System development
 
