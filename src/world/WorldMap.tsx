@@ -44,6 +44,7 @@ export function WorldMap({
     ? getWorldLocation(selectedLocationId)
     : undefined
   const currentLocation = getWorldLocation(currentLocationId) ?? WORLD_LOCATIONS[0]
+  const trackedQuest = QUEST_DATA.find((quest) => quest.id === quests.trackedQuestId)
   const connectedIds = useMemo(
     () => new Set(currentLocation.connections),
     [currentLocation.connections],
@@ -161,19 +162,24 @@ export function WorldMap({
             const completedCount = locationQuests.filter(
               (quest) => quests.quests[quest.id]?.status === 'COMPLETED',
             ).length
+            const hasTrackedQuest = Boolean(
+              trackedQuest && location.areaId && trackedQuest.areaIds.includes(location.areaId),
+            )
             return (
               <button
                 key={location.id}
                 type="button"
                 className={`world-node is-${location.status}${isCurrent ? ' is-current' : ''}${
                   isVisited ? ' is-visited' : ''
-                }${isSelected ? ' is-selected' : ''}`}
+                }${isSelected ? ' is-selected' : ''}${hasTrackedQuest ? ' has-tracked-quest' : ''}`}
                 style={{
                   left: `${location.normalizedPosition.x}%`,
                   top: `${location.normalizedPosition.y}%`,
                 }}
                 aria-pressed={isSelected}
-                aria-label={`${location.nameBM}, ${STATUS_LABELS[location.status]}`}
+                aria-label={`${location.nameBM}, ${STATUS_LABELS[location.status]}${
+                  hasTrackedQuest ? ', misi dijejak' : ''
+                }`}
                 disabled={interfaceLocked || isTravelling}
                 onClick={() => setSelectedLocationId(location.id)}
               >
@@ -194,6 +200,9 @@ export function WorldMap({
                   <span className="world-node__quests">
                     {activeCount > 0 ? `${activeCount} aktif` : availableCount > 0 ? `${availableCount} tersedia` : `${completedCount} selesai`}
                   </span>
+                )}
+                {hasTrackedQuest && (
+                  <span className="world-node__tracked">★ Misi dijejak</span>
                 )}
               </button>
             )

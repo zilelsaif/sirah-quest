@@ -9,6 +9,7 @@ import { MovementController } from '../player/MovementController'
 import type { AreaPlaySession } from '../session/types'
 import type { EffectivePlayerStats } from '../progression/types'
 import type { AreaDefinition } from '../areas/types'
+import { Pathfinder } from '../navigation/Pathfinder'
 
 export class TestScene extends Phaser.Scene {
   private keyboardInput?: KeyboardInput
@@ -64,8 +65,7 @@ export class TestScene extends Phaser.Scene {
 
     this.movementController = new MovementController(
       player,
-      new Phaser.Geom.Rectangle(0, 0, this.area.width, this.area.height),
-      this.area.obstacles.map((obstacle) => new Phaser.Geom.Rectangle(obstacle.x, obstacle.y, obstacle.width, obstacle.height)),
+      new Pathfinder(this.area),
       {
         movementSpeed: this.effectiveStats.movementSpeed,
         visionRadius: this.effectiveStats.visionRadius,

@@ -208,6 +208,15 @@ or Mastery migration policy even if wording corrections retain its stable ID.
 - Introduces save schema v3 with a v2→v3 migration.
 - Perpustakaan Hikmah and Bukit Pengintai remain locked.
 - This development version has not been archived yet.
+- Active quests can be tracked or untracked without changing travel, discovery,
+  or quest progress. A tracked quest is highlighted in the Quest Log, on its
+  World Map location, and in a compact Area Map summary. Tracking is cleared
+  when that quest is completed; another quest is never selected automatically.
+- Shared grid-based A* navigation now routes mouse clicks and touch taps around
+  Area Map obstacles. Keyboard movement immediately cancels an automatic route.
+- Backlog: when a visible FFT-style travelling character sprite is introduced,
+  World Map travel should become distance-aware and show its walk/run animation
+  along the route. The current placeholder marker timing remains unchanged.
 
 ### v0.10.0 — Sirah Mastery System development
 

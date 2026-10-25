@@ -48,7 +48,7 @@ function QuestCard({
           <span className="quest-card__type">{TYPE_LABELS[quest.type]}</span>
           <h4>{quest.titleBM}</h4>
         </div>
-        {isTracked && <span className="quest-card__tracked">★ Dijejaki</span>}
+        {isTracked && <span className="quest-card__tracked">★ DIJEJAK</span>}
       </div>
       <p>{quest.descriptionBM}</p>
       <dl>

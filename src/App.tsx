@@ -24,7 +24,7 @@ import {
 } from './game/quests/QuestManager'
 import { createAreaSession, getAllClueStates } from './game/session/createSession'
 import type { AreaPlaySession, AreaSessionState, GameMode, WorldSessionState } from './game/session/types'
-import { getWorldLocation, STARTING_LOCATION_ID } from './world/locationData'
+import { getWorldLocation, STARTING_LOCATION_ID, WORLD_LOCATIONS } from './world/locationData'
 import { WorldMap } from './world/WorldMap'
 import { SAVE_DEBOUNCE_MS } from './game/save/config'
 import { clearSirahQuestStorage, loadGameSave, saveGame } from './game/save/SaveManager'
@@ -166,6 +166,12 @@ function App() {
   const trackedProgress = trackedQuest
     ? getQuestProgress(trackedQuest, areaSession.quests)
     : undefined
+  const trackedLocation = trackedQuest
+    ? WORLD_LOCATIONS.find((location) =>
+        Boolean(location.areaId && trackedQuest.areaIds.includes(location.areaId)),
+      )
+    : undefined
+  const trackedQuestIsHere = Boolean(trackedQuest?.areaIds.includes(currentArea.id))
 
   const updateAreaSession = useCallback((session: AreaPlaySession) => {
     setPlayerSession((current) => {
@@ -321,16 +327,19 @@ function App() {
         remainingHints={areaSession.remainingHints}
         maxHints={effectiveStats.maxHints}
       />
-      {trackedQuest && trackedProgress && (
+      {mode === 'AREA_MAP' && trackedQuest && trackedProgress && (
         <button
           type="button"
           className="tracked-quest-summary"
           disabled={isInterfaceLocked}
           onClick={() => setIsQuestLogOpen(true)}
         >
-          <span>Quest dijejaki</span>
+          <span>Misi Dijejak</span>
           <strong>{trackedQuest.titleBM}</strong>
-          <small>{trackedProgress.completed}/{trackedProgress.total} objektif</small>
+          <small>{trackedProgress.completed} / {trackedProgress.total} objektif</small>
+          {!trackedQuestIsHere && trackedLocation && (
+            <small className="tracked-quest-summary__location">Lokasi: {trackedLocation.nameBM}</small>
+          )}
         </button>
       )}
       {mode === 'WORLD_MAP' ? (
