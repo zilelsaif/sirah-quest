@@ -5,9 +5,9 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.11.0 adds Bazar Lama as a second playable
-area on a reusable multi-area foundation. Backend services, authentication,
-database, and mobile packaging have not been added yet.
+question interactions. Version 0.11.1 refines tracked-quest guidance and adds
+shared obstacle-aware pathfinding across both playable areas. Backend services,
+authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
 
@@ -199,6 +199,20 @@ or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
 
+### v0.11.1 — Tracked Quest UX and pathfinding patch
+
+- Makes the tracked quest clearer with `★ DIJEJAK`, a World Map location
+  indicator, and a compact Area Map progress summary.
+- Adds shared 32-pixel grid A* pathfinding for mouse and touch movement in both
+  Kampung Ilmu and Bazar Lama.
+- Routes around collision obstacles, resolves blocked targets to a nearby safe
+  point, and reduces unnecessary waypoints with collision-safe smoothing.
+- Cancels automatic movement immediately when WASD, arrow keys, or modal panels
+  take control.
+- Keeps save schema v3, World Map travel timing, questions, quest content,
+  rewards, Mastery rules, and both Area Map layouts unchanged.
+- This development patch has not been archived yet.
+
 ### v0.11.0 — Bazar Lama / Multi-Area development
 
 - Makes Bazar Lama the second playable World Map destination.
@@ -207,13 +221,7 @@ or Mastery migration policy even if wording corrections retain its stable ID.
 - Adds independent position, fog, and clue state for both playable areas.
 - Introduces save schema v3 with a v2→v3 migration.
 - Perpustakaan Hikmah and Bukit Pengintai remain locked.
-- This development version has not been archived yet.
-- Active quests can be tracked or untracked without changing travel, discovery,
-  or quest progress. A tracked quest is highlighted in the Quest Log, on its
-  World Map location, and in a compact Area Map summary. Tracking is cleared
-  when that quest is completed; another quest is never selected automatically.
-- Shared grid-based A* navigation now routes mouse clicks and touch taps around
-  Area Map obstacles. Keyboard movement immediately cancels an automatic route.
+- Preserved as an immutable archived release.
 - Backlog: when a visible FFT-style travelling character sprite is introduced,
   World Map travel should become distance-aware and show its walk/run animation
   along the route. The current placeholder marker timing remains unchanged.
