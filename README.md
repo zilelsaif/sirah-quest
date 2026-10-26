@@ -5,10 +5,10 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.12.0 adds Perpustakaan Hikmah as the third
-playable area while reusing the same area, quest, fog, save, and obstacle-aware
-navigation systems. Backend services, authentication, database, and mobile
-packaging have not been added yet.
+question interactions. Version 0.13.0 establishes the first shared visual and
+art language across the World Map, all three playable areas, HUD, clues, and
+interface panels without changing gameplay or save structure. Backend services,
+authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
 
@@ -199,6 +199,24 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.13.0 — Visual / Art Pass Phase 1
+
+- Establishes a centralized warm parchment, sandstone, teal, lapis, navy, and
+  restrained-gold visual palette with accessible text-supported states.
+- Gives Kampung Ilmu, Bazar Lama, and Perpustakaan Hikmah distinct ground and
+  environmental treatments while preserving their dimensions, obstacles,
+  clue positions, and pathfinding topology.
+- Standardizes panel surfaces, headings, button hierarchy, focus treatment,
+  touch target sizes, HUD grouping, tracked quest presentation, and World Map
+  overlays.
+- Introduces shared discovered/completed clue styling, a clearer temporary
+  explorer marker, and slightly softer fog presentation without changing
+  visibility or persistence rules.
+- Uses only CSS and Phaser-generated shapes. Final artwork, character sprite
+  animation, FFT-style travel animation, and a complete asset pipeline remain
+  future work.
+- Keeps save schema v3 and has not created a v0.13.0 release archive.
 
 ### v0.12.0 — Perpustakaan Hikmah / Area Expansion 3
 

@@ -5,6 +5,6 @@ export enum VisibilityState {
 }
 
 export const FOG_APPEARANCE = {
-  exploredOpacity: 0.52,
-  unexploredOpacity: 0.96,
+  exploredOpacity: 0.48,
+  unexploredOpacity: 0.94,
 } as const
