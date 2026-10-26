@@ -4,6 +4,7 @@ import { TestScene } from './scenes/TestScene'
 import type { AreaPlaySession } from './session/types'
 import type { EffectivePlayerStats } from './progression/types'
 import type { AreaDefinition } from './areas/types'
+import type { CameraViewMode } from './camera/cameraConfig'
 
 export function createGame(
   parent: HTMLElement,
@@ -12,6 +13,7 @@ export function createGame(
   session: AreaPlaySession,
   onSessionChange: (session: AreaPlaySession) => void,
   effectiveStats: EffectivePlayerStats,
+  cameraViewMode: CameraViewMode,
 ) {
   return new Phaser.Game({
     type: Phaser.AUTO,
@@ -29,6 +31,6 @@ export function createGame(
       antialias: true,
       roundPixels: true,
     },
-    scene: new TestScene(onCluePanelChange, area, session, onSessionChange, effectiveStats),
+    scene: new TestScene(onCluePanelChange, area, session, onSessionChange, effectiveStats, cameraViewMode),
   })
 }

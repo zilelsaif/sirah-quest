@@ -101,7 +101,7 @@ export class ClueManager {
   }
 
   handlePointerDown(
-    pointer: Phaser.Input.Pointer,
+    worldPoint: Phaser.Math.Vector2,
     gameObjects: Phaser.GameObjects.GameObject[],
   ) {
     if (!this.activeClue || this.openClue) return false
@@ -111,14 +111,14 @@ export class ClueManager {
       (gameObject) => gameObject.getData('clueId') === activeClueId,
     )
     const clickedCluePosition = Phaser.Math.Distance.Between(
-      pointer.worldX,
-      pointer.worldY,
+      worldPoint.x,
+      worldPoint.y,
       this.activeClue.definition.x,
       this.activeClue.definition.y,
     ) <= 34
     const clickedPrompt = this.interactionPrompt
       .getBounds()
-      .contains(pointer.worldX, pointer.worldY)
+      .contains(worldPoint.x, worldPoint.y)
 
     return clickedActiveClue || clickedCluePosition || clickedPrompt
       ? this.interactWithActiveClue()

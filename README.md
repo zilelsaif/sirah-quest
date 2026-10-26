@@ -232,6 +232,16 @@ routes retain their previous coordinates.
   blocked-target fallback, and spawn-to-zone A* reachability.
 - Visuals remain lightweight Phaser-generated prototype art. Physical Android
   performance and complete device playthroughs remain release QA requirements.
+- Area Map camera presentation is now responsive: desktop retains zoom `1.0`,
+  tablet-sized canvases use `0.9`, phone landscape uses `0.82`, and phone
+  portrait uses `0.76`. An optional **Paparan Luas** setting reduces the current
+  responsive zoom by `0.08`, bounded to `0.68–1.0`; **Paparan Biasa** restores
+  the responsive default. This preference is deliberately session-only.
+- Camera zoom never changes the world-space Vision Radius (`320` base, `+40`
+  per rank), fog discovery, player collision, clue range, or navigation grid.
+  Pointer targets are explicitly transformed through the active Phaser camera.
+- `npm run camera:verify` reports representative canvas/zoom/worldView sizes and
+  checks the safe zoom bounds plus Vision Rank 0/1/5 values.
 
 ### v0.13.0 — Visual / Art Pass Phase 1
 

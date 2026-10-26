@@ -12,6 +12,7 @@ import type { AreaDefinition } from '../areas/types'
 import { Pathfinder } from '../navigation/Pathfinder'
 import { VISUAL_PALETTE } from '../visuals/visualTheme'
 import { renderEnvironment } from '../visuals/EnvironmentRenderer'
+import { getCameraMetrics, type CameraViewMode } from '../camera/cameraConfig'
 
 export class TestScene extends Phaser.Scene {
   private keyboardInput?: KeyboardInput
@@ -25,6 +26,7 @@ export class TestScene extends Phaser.Scene {
   private interfaceLocked = false
   private remainingHints: number
   private fogDiscoveryPoints: AreaPlaySession['fogDiscoveryPoints']
+  private cameraViewMode: CameraViewMode
 
   constructor(
     private readonly onCluePanelChange: (clue: CluePanelData | null) => void,
@@ -32,10 +34,12 @@ export class TestScene extends Phaser.Scene {
     private readonly initialSession: AreaPlaySession,
     private readonly onSessionChange: (session: AreaPlaySession) => void,
     private effectiveStats: EffectivePlayerStats,
+    initialCameraViewMode: CameraViewMode,
   ) {
     super('movement-prototype')
     this.remainingHints = initialSession.remainingHints
     this.fogDiscoveryPoints = initialSession.fogDiscoveryPoints
+    this.cameraViewMode = initialCameraViewMode
   }
 
   create() {
@@ -115,13 +119,15 @@ export class TestScene extends Phaser.Scene {
     new PointerInput(
       this,
       this.movementController,
-      (pointer, gameObjects) => (
-        this.clueManager?.handlePointerDown(pointer, gameObjects) ?? false
+      (_pointer, gameObjects, worldPoint) => (
+        this.clueManager?.handlePointerDown(worldPoint, gameObjects) ?? false
       ),
     )
 
     this.cameras.main.startFollow(player, true, 0.12, 0.12)
     this.cameras.main.setRoundPixels(true)
+    this.applyCameraZoom()
+    this.scale.on(Phaser.Scale.Events.RESIZE, this.applyCameraZoom, this)
 
     if (import.meta.env.DEV) {
       this.debugText = this.add
@@ -139,6 +145,7 @@ export class TestScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.emitSessionState(player.x, player.y)
       this.onCluePanelChange(null)
+      this.scale.off(Phaser.Scale.Events.RESIZE, this.applyCameraZoom, this)
     })
   }
 
@@ -154,6 +161,7 @@ export class TestScene extends Phaser.Scene {
         `speed  ${this.effectiveStats.movementSpeed}`,
         `area   ${this.area.id}`,
         `vision ${this.effectiveStats.visionRadius}`,
+        `zoom   ${this.cameras.main.zoom.toFixed(2)}  view ${Math.round(this.cameras.main.worldView.width)}x${Math.round(this.cameras.main.worldView.height)}`,
         `hints  ${this.remainingHints}/${this.effectiveStats.maxHints}`,
         `x ${this.player.x.toFixed(0)}  y ${this.player.y.toFixed(0)}`,
         `clues ${clueCounts?.discovered ?? 0}/${clueCounts?.total ?? 0} discovered`,
@@ -189,6 +197,27 @@ export class TestScene extends Phaser.Scene {
   setInterfaceLocked(locked: boolean) {
     this.interfaceLocked = locked
     this.applyMovementLock()
+  }
+
+  setCameraViewMode(mode: CameraViewMode) {
+    this.cameraViewMode = mode
+    this.applyCameraZoom()
+  }
+
+  private applyCameraZoom() {
+    const camera = this.cameras.main
+    const metrics = getCameraMetrics(camera.width, camera.height, this.cameraViewMode)
+    camera.setZoom(metrics.zoom)
+
+    const gameContainer = this.game.canvas.parentElement
+    if (gameContainer) {
+      gameContainer.dataset.cameraMode = this.cameraViewMode
+      gameContainer.dataset.cameraZoom = metrics.zoom.toFixed(2)
+      gameContainer.dataset.canvasWidth = String(Math.round(metrics.viewportWidth))
+      gameContainer.dataset.canvasHeight = String(Math.round(metrics.viewportHeight))
+      gameContainer.dataset.worldViewWidth = metrics.worldViewWidth.toFixed(1)
+      gameContainer.dataset.worldViewHeight = metrics.worldViewHeight.toFixed(1)
+    }
   }
 
   private applyMovementLock() {

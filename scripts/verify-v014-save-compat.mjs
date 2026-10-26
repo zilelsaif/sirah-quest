@@ -40,7 +40,10 @@ try {
   quests.quests[firstQuestId] = { ...quests.quests[firstQuestId], status: 'ACTIVE' }
   quests.acceptedQuestIds = [firstQuestId]
   quests.trackedQuestId = firstQuestId
-  const progression = applyXPRewards(createPlayerProgression(), [{ id: 'clue:clue-1', amount: 10 }])
+  const progression = {
+    ...applyXPRewards(createPlayerProgression(), [{ id: 'clue:clue-1', amount: 10 }]),
+    visionRadiusRank: 5,
+  }
   const mastery = recordQuestionMastery(createSirahMastery(), questionRun.assignments[0].question.id, 8)
 
   const v013Payload = {
@@ -64,7 +67,7 @@ try {
     if (JSON.stringify(state.fogDiscoveryPoints) !== JSON.stringify(oldFog[area.id])) throw new Error(`${area.id} fog changed`)
     if (state.clues[area.clues[0].id].state !== 'completed') throw new Error(`${area.id} clue completion changed`)
   }
-  if (loaded.playerProgression.totalXP !== 10 || loaded.runState.area.remainingHints !== 0) throw new Error('Progression or Hint state changed')
+  if (loaded.playerProgression.totalXP !== 10 || loaded.playerProgression.visionRadiusRank !== 5 || loaded.runState.area.remainingHints !== 0) throw new Error('Progression, Vision Rank, or Hint state changed')
   if (loaded.runState.area.quests.trackedQuestId !== firstQuestId) throw new Error('Tracked quest changed')
   if (loaded.masteryState.questionRecords[questionRun.assignments[0].question.id]?.bestScore !== 8) throw new Error('Mastery changed')
 

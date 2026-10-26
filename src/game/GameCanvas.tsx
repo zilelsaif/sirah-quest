@@ -6,6 +6,7 @@ import type { AreaPlaySession } from './session/types'
 import { TestScene } from './scenes/TestScene'
 import type { EffectivePlayerStats } from './progression/types'
 import type { AreaDefinition } from './areas/types'
+import type { CameraViewMode } from './camera/cameraConfig'
 
 interface GameCanvasProps {
   area: AreaDefinition
@@ -28,6 +29,7 @@ export function GameCanvas({
   const gameRef = useRef<Phaser.Game | null>(null)
   const resetRequestedRef = useRef(false)
   const [openClue, setOpenClue] = useState<CluePanelData | null>(null)
+  const [cameraViewMode, setCameraViewMode] = useState<CameraViewMode>('normal')
 
   useEffect(() => {
     const container = containerRef.current
@@ -42,6 +44,7 @@ export function GameCanvas({
         if (!resetRequestedRef.current) onSessionChange(nextSession)
       },
       effectiveStats,
+      cameraViewMode,
     )
     gameRef.current = game
     resetRequestedRef.current = false
@@ -62,6 +65,10 @@ export function GameCanvas({
   useEffect(() => {
     getScene()?.setEffectiveStats(effectiveStats)
   }, [effectiveStats])
+
+  useEffect(() => {
+    getScene()?.setCameraViewMode(cameraViewMode)
+  }, [cameraViewMode])
 
   const startNewTestRun = () => {
     resetRequestedRef.current = true
@@ -86,6 +93,26 @@ export function GameCanvas({
           </button>
         </div>
       )}
+      <div className="camera-toolbar" aria-label="Tetapan paparan kamera">
+        <span>Zum kamera</span>
+        <div>
+          <button
+            type="button"
+            aria-pressed={cameraViewMode === 'normal'}
+            onClick={() => setCameraViewMode('normal')}
+          >
+            Paparan Biasa
+          </button>
+          <button
+            type="button"
+            aria-pressed={cameraViewMode === 'wide'}
+            onClick={() => setCameraViewMode('wide')}
+          >
+            Paparan Luas
+          </button>
+        </div>
+        <small>Radius penglihatan: {effectiveStats.visionRadius} unit</small>
+      </div>
       <div
         ref={containerRef}
         className="game-canvas"

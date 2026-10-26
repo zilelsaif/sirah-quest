@@ -11,7 +11,8 @@
     "questions:export": "node scripts/export-question-review.mjs",
     "questions:verify": "node scripts/verify-question-review.mjs",
     "areas:verify": "node scripts/verify-area-expansion.mjs",
-    "save:verify-v014": "node scripts/verify-v014-save-compat.mjs"
+    "save:verify-v014": "node scripts/verify-v014-save-compat.mjs",
+    "camera:verify": "node scripts/verify-camera-ux.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

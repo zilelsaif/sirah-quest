@@ -8,18 +8,21 @@ export class PointerInput {
     onInteractivePointerDown: (
       pointer: Phaser.Input.Pointer,
       gameObjects: Phaser.GameObjects.GameObject[],
+      worldPoint: Phaser.Math.Vector2,
     ) => boolean,
   ) {
     scene.input.on(Phaser.Input.Events.POINTER_DOWN, (
       pointer: Phaser.Input.Pointer,
       gameObjects: Phaser.GameObjects.GameObject[],
     ) => {
-      if (onInteractivePointerDown(pointer, gameObjects)) {
+      const worldPoint = scene.cameras.main.getWorldPoint(pointer.x, pointer.y)
+
+      if (onInteractivePointerDown(pointer, gameObjects, worldPoint)) {
         movementController.cancelPointerTarget()
         return
       }
 
-      movementController.setPointerTarget(pointer.worldX, pointer.worldY)
+      movementController.setPointerTarget(worldPoint.x, worldPoint.y)
     })
   }
 }
