@@ -10,7 +10,8 @@ import type { AreaPlaySession } from '../session/types'
 import type { EffectivePlayerStats } from '../progression/types'
 import type { AreaDefinition } from '../areas/types'
 import { Pathfinder } from '../navigation/Pathfinder'
-import { getAreaVisuals, VISUAL_PALETTE } from '../visuals/visualTheme'
+import { VISUAL_PALETTE } from '../visuals/visualTheme'
+import { renderEnvironment } from '../visuals/EnvironmentRenderer'
 
 export class TestScene extends Phaser.Scene {
   private keyboardInput?: KeyboardInput
@@ -209,55 +210,19 @@ export class TestScene extends Phaser.Scene {
   }
 
   private drawMap() {
-    const visuals = getAreaVisuals(this.area.id)
-    this.add.rectangle(0, 0, this.area.width, this.area.height, visuals.ground).setOrigin(0)
-
-    const ground = this.add.graphics()
-    ground.fillStyle(visuals.groundAccent, 0.18)
-    for (let y = 40; y < this.area.height; y += 160) {
-      for (let x = (y / 160) % 2 ? 40 : 120; x < this.area.width; x += 240) {
-        ground.fillCircle(x, y, 18)
-      }
-    }
-    ground.lineStyle(42, visuals.path, 0.34)
-    ground.beginPath()
-    ground.moveTo(this.area.spawn.x, this.area.spawn.y)
-    ground.lineTo(this.area.width / 2, this.area.height / 2)
-    ground.lineTo(this.area.width * 0.78, this.area.height * 0.3)
-    ground.strokePath()
-
-    const grid = this.add.graphics().lineStyle(1, this.area.gridColor, 0.045)
-    for (let x = 0; x <= this.area.width; x += 80) grid.lineBetween(x, 0, x, this.area.height)
-    for (let y = 0; y <= this.area.height; y += 80) grid.lineBetween(0, y, this.area.width, y)
-
-    this.area.obstacles.forEach((obstacle) => {
-      this.add
-        .rectangle(obstacle.x + 9, obstacle.y + 12, obstacle.width, obstacle.height, visuals.shadow, 0.32)
-        .setOrigin(0)
-      this.add
-        .rectangle(obstacle.x, obstacle.y, obstacle.width, obstacle.height, obstacle.color)
-        .setOrigin(0)
-        .setStrokeStyle(4, VISUAL_PALETTE.ink, 0.8)
-      this.add
-        .rectangle(obstacle.x + 8, obstacle.y + 8, Math.max(8, obstacle.width - 16), 8, visuals.structureTrim, 0.58)
-        .setOrigin(0)
-    })
-
-    this.area.landmarks.forEach((landmark) => {
-      if (landmark.type === 'circle') this.add.circle(landmark.x, landmark.y, landmark.size, landmark.color).setStrokeStyle(8, 0xc7e8e9, 0.5)
-      else this.add.star(landmark.x, landmark.y, 8, landmark.size * 0.45, landmark.size, landmark.color).setStrokeStyle(5, 0xf4d58d, 0.5)
-    })
+    renderEnvironment(this, this.area)
   }
 
   private createPlayer(x: number, y: number) {
-    const shadow = this.add.ellipse(0, 16, 38, 16, 0x000000, 0.28)
-    const cloak = this.add.triangle(0, 7, -15, 18, 15, 18, 0, -12, VISUAL_PALETTE.deepTeal)
+    const shadow = this.add.ellipse(0, 18, 42, 17, 0x000000, 0.3)
+    const cloak = this.add.triangle(0, 8, -18, 20, 18, 20, 0, -14, VISUAL_PALETTE.deepTeal)
       .setStrokeStyle(3, VISUAL_PALETTE.ink)
-    const head = this.add.circle(0, -8, 10, VISUAL_PALETTE.softGold)
+    const scarf = this.add.triangle(0, -2, -12, 12, 12, 12, 0, -7, VISUAL_PALETTE.lapis)
+    const head = this.add.circle(0, -10, 11, VISUAL_PALETTE.softGold)
       .setStrokeStyle(3, VISUAL_PALETTE.earth)
-    const satchel = this.add.circle(11, 7, 5, VISUAL_PALETTE.gold)
+    const satchel = this.add.circle(13, 8, 6, VISUAL_PALETTE.gold)
       .setStrokeStyle(2, VISUAL_PALETTE.earth)
-    const direction = this.add.triangle(0, -22, -4, 6, 4, 6, 0, -3, VISUAL_PALETTE.parchment)
-    return this.add.container(x, y, [shadow, cloak, head, satchel, direction]).setDepth(10)
+    const direction = this.add.triangle(0, -26, -5, 7, 5, 7, 0, -4, VISUAL_PALETTE.parchment)
+    return this.add.container(x, y, [shadow, cloak, scarf, head, satchel, direction]).setDepth(10)
   }
 }

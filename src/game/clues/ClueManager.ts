@@ -11,6 +11,7 @@ interface ClueRuntime {
   visual: Phaser.GameObjects.Container
   marker: Phaser.GameObjects.Arc
   glow: Phaser.GameObjects.Arc
+  base: Phaser.GameObjects.Ellipse
   symbol: Phaser.GameObjects.Text
   lastAnswerWasIncorrect: boolean
   incorrectAttemptOccurred: boolean
@@ -199,13 +200,15 @@ export class ClueManager {
     assignment: QuestionAssignment,
     initialState?: ClueSessionState,
   ) {
-    const glow = this.scene.add.circle(0, 0, 27, VISUAL_PALETTE.softGold, 0.14)
+    const base = this.scene.add.ellipse(0, 13, 34, 13, VISUAL_PALETTE.ink, 0.38)
+      .setStrokeStyle(2, VISUAL_PALETTE.softGold, 0.28)
+    const glow = this.scene.add.circle(0, -2, 27, VISUAL_PALETTE.softGold, 0.13)
     const marker = this.scene.add
-      .circle(0, 0, 15, VISUAL_PALETTE.gold)
+      .circle(0, -3, 15, VISUAL_PALETTE.gold)
       .setStrokeStyle(3, VISUAL_PALETTE.parchment)
       .setInteractive({ useHandCursor: true })
     const symbol = this.scene.add
-      .text(0, -1, '?', {
+      .text(0, -4, '?', {
         color: '#172033',
         fontFamily: 'Georgia, serif',
         fontSize: '19px',
@@ -214,7 +217,7 @@ export class ClueManager {
       .setOrigin(0.5)
 
     const visual = this.scene.add
-      .container(definition.x, definition.y, [glow, marker, symbol])
+      .container(definition.x, definition.y, [base, glow, marker, symbol])
       .setDepth(8)
       .setVisible((initialState?.state ?? definition.state) !== 'hidden')
 
@@ -228,6 +231,7 @@ export class ClueManager {
       visual,
       marker,
       glow,
+      base,
       symbol,
       lastAnswerWasIncorrect: initialState?.lastAnswerWasIncorrect ?? false,
       incorrectAttemptOccurred: initialState?.incorrectAttemptOccurred ?? false,
@@ -287,10 +291,12 @@ export class ClueManager {
     if (clue.state === 'completed') {
       clue.marker.setFillStyle(VISUAL_PALETTE.success).setStrokeStyle(3, VISUAL_PALETTE.parchment)
       clue.glow.setFillStyle(VISUAL_PALETTE.success, 0.1)
+      clue.base.setStrokeStyle(2, VISUAL_PALETTE.success, 0.48)
       clue.symbol.setText('✓').setColor('#fff7df')
     } else {
       clue.marker.setFillStyle(VISUAL_PALETTE.gold).setStrokeStyle(3, VISUAL_PALETTE.parchment)
       clue.glow.setFillStyle(VISUAL_PALETTE.softGold, 0.14)
+      clue.base.setStrokeStyle(2, VISUAL_PALETTE.softGold, 0.28)
       clue.symbol.setText('?').setColor('#172033')
     }
   }
