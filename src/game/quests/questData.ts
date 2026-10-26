@@ -1,6 +1,6 @@
 import type { QuestDefinition } from './types'
 import { XP_REWARDS } from '../progression/progressionConfig'
-import { BAZAR_LAMA_AREA_ID, KAMPUNG_ILMU_AREA_ID } from '../areas/areaRegistry'
+import { BAZAR_LAMA_AREA_ID, KAMPUNG_ILMU_AREA_ID, PERPUSTAKAAN_HIKMAH_AREA_ID } from '../areas/areaRegistry'
 
 export const MAX_ACTIVE_QUESTS = 3
 export { KAMPUNG_ILMU_AREA_ID }
@@ -89,6 +89,27 @@ export const QUEST_DATA: QuestDefinition[] = [
     descriptionEN: 'Trace a travel fragment to complete a learning objective about the Hijrah.',
     areaIds: [BAZAR_LAMA_AREA_ID], topicId: 'hijrah', prerequisiteQuestIds: [], initialStatus: 'AVAILABLE', completionXP: XP_REWARDS.sideQuestCompletion,
     objectives: [{ id: 'objective-bazar-hijrah', type: 'complete-clue', relatedAreaId: BAZAR_LAMA_AREA_ID, relatedClueId: 'bazar-clue-3' }],
+  },
+  {
+    id: 'quest-khazanah-hikmah', type: 'main', titleBM: 'Khazanah Hikmah', titleEN: 'Treasury of Wisdom',
+    descriptionBM: 'Terokai arkib perpustakaan fantasi dan temui daftar pembelajaran kehidupan awal.',
+    descriptionEN: 'Explore the fantasy library archive and find an early-life learning ledger.',
+    areaIds: [PERPUSTAKAAN_HIKMAH_AREA_ID], topicId: 'early-life', prerequisiteQuestIds: [], initialStatus: 'AVAILABLE', completionXP: XP_REWARDS.mainQuestCompletion,
+    objectives: [{ id: 'objective-library-early-life', type: 'complete-clue', relatedAreaId: PERPUSTAKAAN_HIKMAH_AREA_ID, relatedClueId: 'library-clue-1' }],
+  },
+  {
+    id: 'quest-catatan-permulaan-wahyu', type: 'side', titleBM: 'Catatan Permulaan Wahyu', titleEN: 'Record of the First Revelation',
+    descriptionBM: 'Cari nota pembelajaran tentang wahyu pertama di ruang pengajian perpustakaan.',
+    descriptionEN: 'Find a learning note about the first revelation in the library study wing.',
+    areaIds: [PERPUSTAKAAN_HIKMAH_AREA_ID], topicId: 'first-revelation', prerequisiteQuestIds: [], initialStatus: 'AVAILABLE', completionXP: XP_REWARDS.sideQuestCompletion,
+    objectives: [{ id: 'objective-library-first-revelation', type: 'complete-clue', relatedAreaId: PERPUSTAKAAN_HIKMAH_AREA_ID, relatedClueId: 'library-clue-2' }],
+  },
+  {
+    id: 'quest-jejak-perjalanan-library', type: 'side', titleBM: 'Jejak Perjalanan', titleEN: 'Trail of the Journey',
+    descriptionBM: 'Jejaki folio perjalanan untuk melengkapkan objektif pembelajaran tentang Hijrah.',
+    descriptionEN: 'Trace a travel folio to complete a learning objective about the Hijrah.',
+    areaIds: [PERPUSTAKAAN_HIKMAH_AREA_ID], topicId: 'hijrah', prerequisiteQuestIds: [], initialStatus: 'AVAILABLE', completionXP: XP_REWARDS.sideQuestCompletion,
+    objectives: [{ id: 'objective-library-hijrah', type: 'complete-clue', relatedAreaId: PERPUSTAKAAN_HIKMAH_AREA_ID, relatedClueId: 'library-clue-3' }],
   },
 ]
 

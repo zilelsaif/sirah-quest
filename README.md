@@ -5,9 +5,10 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.11.1 refines tracked-quest guidance and adds
-shared obstacle-aware pathfinding across both playable areas. Backend services,
-authentication, database, and mobile packaging have not been added yet.
+question interactions. Version 0.12.0 adds Perpustakaan Hikmah as the third
+playable area while reusing the same area, quest, fog, save, and obstacle-aware
+navigation systems. Backend services, authentication, database, and mobile
+packaging have not been added yet.
 
 ## Requirements
 
@@ -198,6 +199,26 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.12.0 — Perpustakaan Hikmah / Area Expansion 3
+
+- Makes Perpustakaan Hikmah the third playable World Map destination while
+  keeping Bukit Pengintai locked.
+- Adds a distinct library layout, three clues, and three data-driven quests
+  through the existing `AreaDefinition` and `AreaRegistry` architecture.
+- Expands each run to nine topic-correct question assignments: three unique
+  Early Life, three First Revelation, and three Hijrah questions where the bank
+  has sufficient alternatives.
+- Keeps player position, fog, and clue state independent for Kampung Ilmu,
+  Bazar Lama, and Perpustakaan Hikmah while quests, XP, upgrades, Hints, and
+  Sirah Mastery remain global.
+- Keeps save schema v3. Existing valid v3 saves are normalized on load by
+  preserving Kampung/Bazar data and adding clean Library defaults without a
+  structural migration.
+- New Test Run resets run-specific state across all three areas but preserves
+  RPG progression, upgrades, the XP ledger, and Sirah Mastery.
+- Uses placeholder geometry rather than final artwork, and this development
+  version has not been archived yet.
 
 ### v0.11.1 — Tracked Quest UX and pathfinding patch
 

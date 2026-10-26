@@ -2,6 +2,7 @@ import type { AreaDefinition } from './types'
 
 export const KAMPUNG_ILMU_AREA_ID = 'kampung-ilmu-area'
 export const BAZAR_LAMA_AREA_ID = 'bazar-lama-area'
+export const PERPUSTAKAAN_HIKMAH_AREA_ID = 'perpustakaan-hikmah-area'
 
 const commonClue = { interactionRadius: 78, state: 'hidden' as const }
 
@@ -60,6 +61,44 @@ export const AREA_DEFINITIONS: AreaDefinition[] = [
       { ...commonClue, id: 'bazar-clue-1', title: 'Bekas Skrol', questionTopicId: 'early-life', x: 560, y: 500 },
       { ...commonClue, id: 'bazar-clue-2', title: 'Catatan Perjalanan', questionTopicId: 'first-revelation', x: 1120, y: 510 },
       { ...commonClue, id: 'bazar-clue-3', title: 'Fragmen Peta', questionTopicId: 'hijrah', x: 1460, y: 930 },
+    ],
+  },
+  {
+    id: PERPUSTAKAAN_HIKMAH_AREA_ID,
+    nameBM: 'Perpustakaan Hikmah',
+    nameEN: 'Library of Wisdom',
+    width: 1728,
+    height: 1280,
+    spawn: { x: 864, y: 1120 },
+    backgroundColor: 0x8f7a5a,
+    gridColor: 0xc7e8e9,
+    obstacles: [
+      { x: 0, y: 0, width: 1728, height: 80, color: 0x3f5664 },
+      { x: 0, y: 1200, width: 1728, height: 80, color: 0x3f5664 },
+      { x: 640, y: 120, width: 448, height: 96, color: 0x496f78 },
+      { x: 176, y: 240, width: 72, height: 320, color: 0x5d4635 },
+      { x: 336, y: 240, width: 72, height: 320, color: 0x5d4635 },
+      { x: 496, y: 240, width: 72, height: 320, color: 0x5d4635 },
+      { x: 1160, y: 240, width: 72, height: 320, color: 0x5d4635 },
+      { x: 1320, y: 240, width: 72, height: 320, color: 0x5d4635 },
+      { x: 1480, y: 240, width: 72, height: 320, color: 0x5d4635 },
+      { x: 640, y: 360, width: 176, height: 80, color: 0x6c543d },
+      { x: 912, y: 360, width: 176, height: 80, color: 0x6c543d },
+      { x: 640, y: 760, width: 176, height: 80, color: 0x6c543d },
+      { x: 912, y: 760, width: 176, height: 80, color: 0x6c543d },
+      { x: 192, y: 840, width: 496, height: 64, color: 0x496f78 },
+      { x: 1040, y: 840, width: 496, height: 64, color: 0x496f78 },
+      { x: 352, y: 1000, width: 256, height: 72, color: 0x5d4635 },
+      { x: 1120, y: 1000, width: 256, height: 72, color: 0x5d4635 },
+    ],
+    landmarks: [
+      { type: 'circle', x: 864, y: 624, size: 104, color: 0x4d9ca3 },
+      { type: 'star', x: 864, y: 272, size: 58, color: 0xe5c477 },
+    ],
+    clues: [
+      { ...commonClue, id: 'library-clue-1', title: 'Daftar Arkib', questionTopicId: 'early-life', x: 288, y: 664 },
+      { ...commonClue, id: 'library-clue-2', title: 'Nota Pengajian', questionTopicId: 'first-revelation', x: 1440, y: 664 },
+      { ...commonClue, id: 'library-clue-3', title: 'Folio Perjalanan', questionTopicId: 'hijrah', x: 864, y: 272 },
     ],
   },
 ]

@@ -1,5 +1,5 @@
 import type { WorldLocation } from './types'
-import { BAZAR_LAMA_AREA_ID } from '../game/areas/areaRegistry'
+import { BAZAR_LAMA_AREA_ID, PERPUSTAKAAN_HIKMAH_AREA_ID } from '../game/areas/areaRegistry'
 
 export const STARTING_LOCATION_ID = 'kampung-ilmu'
 
@@ -34,12 +34,13 @@ export const WORLD_LOCATIONS: WorldLocation[] = [
     id: 'perpustakaan-hikmah',
     nameBM: 'Perpustakaan Hikmah',
     nameEN: 'Library of Wisdom',
-    descriptionBM: 'Khazanah ilmu di dataran tinggi yang masih belum dibuka.',
-    descriptionEN: 'A highland treasury of knowledge that is not yet open.',
+    descriptionBM: 'Perpustakaan fantasi di dataran tinggi dengan arkib, ruang bacaan dan bilik peta.',
+    descriptionEN: 'A highland fantasy library with archives, reading spaces, and a map room.',
     normalizedPosition: { x: 64, y: 25 },
     connections: ['bazar-lama'],
-    status: 'locked',
-    unlockRequirements: ['future-story-progression'],
+    status: 'playable',
+    areaId: PERPUSTAKAAN_HIKMAH_AREA_ID,
+    unlockRequirements: [],
     visited: false,
   },
   {
