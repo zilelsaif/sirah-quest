@@ -1,7 +1,7 @@
 {
   "name": "sirah-quest",
   "private": true,
-  "version": "0.14.0",
+  "version": "0.15.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,8 @@
     "questions:verify": "node scripts/verify-question-review.mjs",
     "areas:verify": "node scripts/verify-area-expansion.mjs",
     "save:verify-v014": "node scripts/verify-v014-save-compat.mjs",
-    "camera:verify": "node scripts/verify-camera-ux.mjs"
+    "camera:verify": "node scripts/verify-camera-ux.mjs",
+    "world-map:verify": "node scripts/verify-world-map-v015.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

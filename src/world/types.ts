@@ -19,4 +19,5 @@ export interface WorldLocation {
   areaId?: string
   unlockRequirements: string[]
   visited: boolean
+  labelPlacement?: 'above' | 'below' | 'left' | 'right'
 }

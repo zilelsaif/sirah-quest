@@ -200,6 +200,25 @@ or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
 
+### v0.15.0 — World Map Expansion and Redesign
+
+- Replaces the previous 1600×900 landmark-heavy background with an original
+  2048×1152 illustrated WebP regional map. A high-resolution PNG source is
+  retained in `src/assets/source/` for review and future art iteration.
+- Places the four canonical locations in a compact western cluster using true
+  normalized `0..1` coordinates while preserving their stable IDs, gameplay
+  statuses and travel connections. Bukit Pengintai remains locked.
+- Adds 12 documented design reservations across the coast, mountains, river,
+  forest, ruins and eastern plain. They are not playable nodes and do not
+  advertise quests or unlock rules.
+- Route graphics are now derived from the authoritative location connections.
+- Adds **Rantau** and **Lokasi** World Map scales plus bounded mouse/touch drag,
+  tap-versus-drag suppression and one-time current-location centering.
+- Keeps the Area Map camera, all Area Map geometry, save schema v3, travel
+  timing, quest rules, Sirah content, progression and Mastery unchanged.
+- See `docs/WORLD_MAP_EXPANSION_PLAN.md` and run `npm run world-map:verify` for
+  the geography, asset workflow, route and reserved-capacity checks.
+
 ### v0.14.0 — Area Map Expansion and Exploration Foundation
 
 All three existing maps now extend primarily to the right and bottom. Existing

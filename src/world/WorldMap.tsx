@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import worldMapImage from '../assets/world-map.webp'
+import worldMapImage from '../assets/world-map-v015.webp'
 import { QUEST_DATA } from '../game/quests/questData'
 import type { QuestSessionState } from '../game/quests/types'
-import { getWorldLocation, WORLD_LOCATIONS } from './locationData'
+import { getWorldLocation, WORLD_LOCATIONS, WORLD_ROUTE_LINKS } from './locationData'
 import type { WorldLocation } from './types'
 
 interface WorldMapProps {
@@ -39,7 +39,18 @@ export function WorldMap({
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
   const [markerLocationId, setMarkerLocationId] = useState(currentLocationId)
   const [isTravelling, setIsTravelling] = useState(false)
+  const [mapViewMode, setMapViewMode] = useState<'region' | 'location'>('region')
   const travelTimerRef = useRef<number | undefined>(undefined)
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<{
+    pointerId: number
+    startX: number
+    startY: number
+    scrollLeft: number
+    scrollTop: number
+    moved: boolean
+  } | null>(null)
+  const suppressClickUntilRef = useRef(0)
   const selectedLocation = selectedLocationId
     ? getWorldLocation(selectedLocationId)
     : undefined
@@ -52,8 +63,8 @@ export function WorldMap({
 
   useEffect(() => {
     setSelectedLocationId(currentLocationId)
-    if (!isTravelling) setMarkerLocationId(currentLocationId)
-  }, [currentLocationId, isTravelling])
+    setMarkerLocationId(currentLocationId)
+  }, [currentLocationId])
 
   useEffect(
     () => () => {
@@ -61,6 +72,61 @@ export function WorldMap({
     },
     [],
   )
+
+  useEffect(() => {
+    const viewport = viewportRef.current
+    const location = getWorldLocation(currentLocationId)
+    if (!viewport || !location) return
+
+    const frame = window.requestAnimationFrame(() => {
+      const canvas = viewport.firstElementChild as HTMLElement | null
+      if (!canvas) return
+      const targetX = canvas.scrollWidth * location.normalizedPosition.x
+      const targetY = canvas.scrollHeight * location.normalizedPosition.y
+      viewport.scrollTo({
+        left: Math.max(0, targetX - viewport.clientWidth / 2),
+        top: Math.max(0, targetY - viewport.clientHeight / 2),
+        behavior: 'auto',
+      })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [currentLocationId, mapViewMode])
+
+  const beginPan = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0 || !viewportRef.current) return
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      scrollLeft: viewportRef.current.scrollLeft,
+      scrollTop: viewportRef.current.scrollTop,
+      moved: false,
+    }
+  }
+
+  const continuePan = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current
+    const viewport = viewportRef.current
+    if (!drag || drag.pointerId !== event.pointerId || !viewport) return
+    const deltaX = event.clientX - drag.startX
+    const deltaY = event.clientY - drag.startY
+    if (!drag.moved && Math.hypot(deltaX, deltaY) < 7) return
+    if (!drag.moved) {
+      drag.moved = true
+      viewport.setPointerCapture(event.pointerId)
+    }
+    viewport.scrollLeft = drag.scrollLeft - deltaX
+    viewport.scrollTop = drag.scrollTop - deltaY
+  }
+
+  const endPan = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current
+    const viewport = viewportRef.current
+    if (!drag || drag.pointerId !== event.pointerId || !viewport) return
+    if (drag.moved) suppressClickUntilRef.current = performance.now() + 250
+    if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId)
+    dragRef.current = null
+  }
 
   const travelTo = (location: WorldLocation) => {
     if (
@@ -137,13 +203,39 @@ export function WorldMap({
         </div>
       </div>
 
-      <div className="world-map__viewport" aria-busy={isTravelling}>
-        <div className="world-map__canvas">
+      <div className="world-map__view-controls" aria-label="Skala Peta Dunia">
+        <span>Skala peta</span>
+        <button type="button" aria-pressed={mapViewMode === 'region'} onClick={() => setMapViewMode('region')}>Rantau</button>
+        <button type="button" aria-pressed={mapViewMode === 'location'} onClick={() => setMapViewMode('location')}>Lokasi</button>
+        <small>Seret peta untuk meneroka rantau.</small>
+      </div>
+
+      <div
+        ref={viewportRef}
+        className="world-map__viewport"
+        aria-busy={isTravelling}
+        onPointerDown={beginPan}
+        onPointerMove={continuePan}
+        onPointerUp={endPan}
+        onPointerCancel={endPan}
+        onClickCapture={(event) => {
+          if (performance.now() < suppressClickUntilRef.current) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+        }}
+      >
+        <div className={`world-map__canvas is-${mapViewMode}`}>
           <img src={worldMapImage} alt="Peta dunia fantasi Sirah Quest" draggable={false} />
           <svg className="world-map__routes" viewBox="0 0 100 100" aria-hidden="true">
-            <path d="M 24 39 Q 35 55 49 68" />
-            <path d="M 49 68 Q 55 42 64 25" />
-            <path d="M 49 68 Q 70 60 87 43" />
+            {WORLD_ROUTE_LINKS.filter((route) => (
+              getWorldLocation(route.from)?.status !== 'locked' &&
+              getWorldLocation(route.to)?.status !== 'locked'
+            )).map((route) => {
+              const from = getWorldLocation(route.from)!
+              const to = getWorldLocation(route.to)!
+              return <line key={`${route.from}-${route.to}`} x1={from.normalizedPosition.x * 100} y1={from.normalizedPosition.y * 100} x2={to.normalizedPosition.x * 100} y2={to.normalizedPosition.y * 100} />
+            })}
           </svg>
 
           {WORLD_LOCATIONS.map((location) => {
@@ -173,10 +265,11 @@ export function WorldMap({
                   isVisited ? ' is-visited' : ''
                 }${isSelected ? ' is-selected' : ''}${hasTrackedQuest ? ' has-tracked-quest' : ''}`}
                 style={{
-                  left: `${location.normalizedPosition.x}%`,
-                  top: `${location.normalizedPosition.y}%`,
+                  left: `${location.normalizedPosition.x * 100}%`,
+                  top: `${location.normalizedPosition.y * 100}%`,
                 }}
                 aria-pressed={isSelected}
+                data-label-placement={location.labelPlacement ?? 'below'}
                 aria-label={`${location.nameBM}, ${STATUS_LABELS[location.status]}${
                   hasTrackedQuest ? ', misi dijejak' : ''
                 }`}
@@ -186,24 +279,26 @@ export function WorldMap({
                 <span className="world-node__marker" aria-hidden="true">
                   {location.status === 'locked' ? '◆' : isCurrent ? '★' : '●'}
                 </span>
-                <span className="world-node__label">{location.nameBM}</span>
-                <span className="world-node__state">
-                  {isCurrent
-                    ? 'Lokasi semasa'
-                    : location.status === 'locked'
-                      ? 'Terkunci'
-                      : isVisited
-                        ? 'Pernah dilawati'
-                        : STATUS_LABELS[location.status]}
-                </span>
-                {(availableCount > 0 || activeCount > 0 || completedCount > 0) && (
-                  <span className="world-node__quests">
-                    {activeCount > 0 ? `${activeCount} aktif` : availableCount > 0 ? `${availableCount} tersedia` : `${completedCount} selesai`}
+                <span className="world-node__details">
+                  <span className="world-node__label">{location.nameBM}</span>
+                  <span className="world-node__state">
+                    {isCurrent
+                      ? 'Lokasi semasa'
+                      : location.status === 'locked'
+                        ? 'Terkunci'
+                        : isVisited
+                          ? 'Pernah dilawati'
+                          : STATUS_LABELS[location.status]}
                   </span>
-                )}
-                {hasTrackedQuest && (
-                  <span className="world-node__tracked">★ Misi dijejak</span>
-                )}
+                  {(availableCount > 0 || activeCount > 0 || completedCount > 0) && (
+                    <span className="world-node__quests">
+                      {activeCount > 0 ? `${activeCount} aktif` : availableCount > 0 ? `${availableCount} tersedia` : `${completedCount} selesai`}
+                    </span>
+                  )}
+                  {hasTrackedQuest && (
+                    <span className="world-node__tracked">★ Misi dijejak</span>
+                  )}
+                </span>
               </button>
             )
           })}
@@ -211,8 +306,8 @@ export function WorldMap({
           <div
             className={`world-player-marker${isTravelling ? ' is-travelling' : ''}`}
             style={{
-              left: `${markerLocation.normalizedPosition.x}%`,
-              top: `${markerLocation.normalizedPosition.y}%`,
+              left: `${markerLocation.normalizedPosition.x * 100}%`,
+              top: `${markerLocation.normalizedPosition.y * 100}%`,
             }}
             aria-hidden="true"
           >
