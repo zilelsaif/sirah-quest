@@ -261,9 +261,14 @@ button:disabled {
 }
 
 @media (hover: hover) {
-  button:not(:disabled):hover {
+  button:not(:disabled):not(.world-node):hover {
     border-color: var(--sq-parchment);
     transform: translateY(-1px);
+  }
+
+  .world-node:not(:disabled):hover .world-node__marker {
+    border-color: var(--sq-parchment);
+    transform: scale(1.06);
   }
 }
 
@@ -739,6 +744,13 @@ h1 {
   border-radius: 50%;
   background: #e0b44c;
   box-shadow: 0 0.35rem 1rem rgb(0 0 0 / 45%);
+  transform-origin: center;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.world-node:focus-visible .world-node__marker {
+  border-color: var(--sq-parchment);
+  transform: scale(1.06);
 }
 
 .world-node__label {
