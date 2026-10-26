@@ -1,7 +1,7 @@
 {
   "name": "sirah-quest",
   "private": true,
-  "version": "0.13.0",
+  "version": "0.14.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "release": "node scripts/create-release.mjs",
     "questions:export": "node scripts/export-question-review.mjs",
-    "questions:verify": "node scripts/verify-question-review.mjs"
+    "questions:verify": "node scripts/verify-question-review.mjs",
+    "areas:verify": "node scripts/verify-area-expansion.mjs",
+    "save:verify-v014": "node scripts/verify-v014-save-compat.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

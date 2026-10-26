@@ -5,9 +5,9 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.13.0 establishes the first shared visual and
-art language across the World Map, all three playable areas, HUD, clues, and
-interface panels without changing gameplay or save structure. Backend services,
+question interactions. Version 0.14.0 expands all three Area Maps with
+data-driven environmental zones while preserving the existing clues, gameplay,
+progression, fog coordinates, and save structure. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -199,6 +199,39 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.14.0 — Area Map Expansion and Exploration Foundation
+
+All three existing maps now extend primarily to the right and bottom. Existing
+spawns, clues, obstacles, coordinate origins, Area IDs, and established core
+routes retain their previous coordinates.
+
+| Area | Previous size | Expanded size | Added environmental zones |
+| --- | ---: | ---: | --- |
+| Kampung Ilmu | 1600×1200 | 2200×1600 | Kawasan Kediaman, Kebun dan Ladang, Balai Ilmu, Pinggir Kampung |
+| Bazar Lama | 1680×1240 | 2304×1568 | Lorong Pedagang, Kawasan Gudang, Halaman Kafilah, Dataran Pasar |
+| Perpustakaan Hikmah | 1728×1280 | 2304×1568 | Dewan Bacaan, Sayap Arkib, Taman Ilmu, Bilik Kajian |
+
+- Adds stable bilingual zone data, representative access points, environmental
+  identities, and neutral future-content notes through the shared
+  `AreaDefinition`/`AreaRegistry` architecture.
+- Extends the shared Phaser `EnvironmentRenderer` with zone surfaces, labels,
+  and typed obstacle treatments. It does not introduce separate area scenes or
+  external artwork.
+- Keeps the 32-pixel A* grid, 18-pixel player radius, eight-direction movement,
+  corner-cut prevention, blocked-target fallback, camera behavior, and all
+  existing clue coordinates.
+- Fog discovery remains serialized as world-space `{x, y, radius}` points, so
+  previous exploration does not shift when map dimensions grow. Added regions
+  begin unexplored.
+- Keeps save schema v3. Existing valid positions and all progression data remain
+  structurally compatible; map expansion does not reset saves.
+- The new zones contain no new quest, clue, question, reward, NPC, or historical
+  claim. They reserve connected space for later reviewed content.
+- `npm run areas:verify` checks zone IDs, access points, existing clue routes,
+  blocked-target fallback, and spawn-to-zone A* reachability.
+- Visuals remain lightweight Phaser-generated prototype art. Physical Android
+  performance and complete device playthroughs remain release QA requirements.
 
 ### v0.13.0 — Visual / Art Pass Phase 1
 

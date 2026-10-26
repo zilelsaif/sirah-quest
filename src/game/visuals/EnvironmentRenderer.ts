@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import type { AreaDefinition, AreaObstacle } from '../areas/types'
+import type { AreaDefinition, AreaObstacle, AreaObstacleVisual, AreaZone } from '../areas/types'
 import { BAZAR_LAMA_AREA_ID, KAMPUNG_ILMU_AREA_ID, PERPUSTAKAAN_HIKMAH_AREA_ID } from '../areas/areaRegistry'
 import { getAreaVisuals, VISUAL_PALETTE } from './visualTheme'
 
@@ -136,10 +136,57 @@ function drawLightwell(graphics: EnvironmentGraphics, x: number, y: number, radi
   graphics.fillEllipse(x - radius * 0.22, y - radius * 0.25, radius * 0.75, radius * 0.34)
 }
 
+const ZONE_COLORS: Record<AreaZone['environment'], number> = {
+  village: 0x8d6b48,
+  garden: 0x6f8b59,
+  learning: 0x456990,
+  outskirts: 0x596a4b,
+  market: 0xb77745,
+  warehouse: 0x684a38,
+  caravan: 0x9a7049,
+  reading: 0x628b91,
+  archive: 0x4b6874,
+  courtyard: 0x5b9185,
+  study: 0x6e654f,
+}
+
+function drawZones(scene: Phaser.Scene, graphics: EnvironmentGraphics, zones: AreaZone[]) {
+  zones.forEach((zone) => {
+    const color = ZONE_COLORS[zone.environment]
+    graphics.fillStyle(color, 0.13)
+    graphics.fillRoundedRect(zone.x, zone.y, zone.width, zone.height, 24)
+    graphics.lineStyle(3, color, 0.34)
+    graphics.strokeRoundedRect(zone.x, zone.y, zone.width, zone.height, 24)
+    scene.add.text(zone.x + 22, zone.y + 20, zone.nameBM, {
+      color: '#fff7df',
+      fontFamily: 'Georgia, serif',
+      fontSize: '18px',
+      fontStyle: 'bold',
+      backgroundColor: '#0b1628aa',
+      padding: { x: 9, y: 5 },
+    }).setDepth(2)
+  })
+}
+
+function drawByVisualType(
+  graphics: EnvironmentGraphics,
+  obstacle: AreaObstacle,
+  visualType: AreaObstacleVisual,
+  trim: number,
+) {
+  if (visualType === 'wall') drawWall(graphics, obstacle, trim)
+  else if (visualType === 'shelf') drawShelf(graphics, obstacle, trim)
+  else if (visualType === 'table') drawTable(graphics, obstacle, trim)
+  else if (visualType === 'stall') drawMarketStall(graphics, obstacle)
+  else if (visualType === 'crate') drawCrateGroup(graphics, obstacle)
+  else drawVillageStructure(graphics, obstacle, trim)
+}
+
 export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition) {
   const visuals = getAreaVisuals(area.id)
   scene.add.rectangle(0, 0, area.width, area.height, visuals.ground).setOrigin(0)
   const ground = scene.add.graphics()
+  drawZones(scene, ground, area.zones)
   drawFloorPattern(ground, area, area.gridColor)
   ground.lineStyle(area.id === KAMPUNG_ILMU_AREA_ID ? 54 : 42, visuals.path, 0.34)
   ground.beginPath()
@@ -151,7 +198,8 @@ export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition) {
   const environment = scene.add.graphics()
   area.obstacles.forEach((obstacle, index) => {
     drawGroundShadow(environment, obstacle, visuals.shadow)
-    if (area.id === PERPUSTAKAAN_HIKMAH_AREA_ID) {
+    if (obstacle.visualType) drawByVisualType(environment, obstacle, obstacle.visualType, visuals.structureTrim)
+    else if (area.id === PERPUSTAKAAN_HIKMAH_AREA_ID) {
       if (index <= 2 || index === 13 || index === 14) drawWall(environment, obstacle, visuals.structureTrim)
       else if (index >= 3 && index <= 8) drawShelf(environment, obstacle, visuals.structureTrim)
       else if (index >= 9 && index <= 12) drawTable(environment, obstacle, visuals.structureTrim)
