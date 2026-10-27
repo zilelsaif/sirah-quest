@@ -23,7 +23,7 @@ import {
   syncQuestProgress,
 } from './game/quests/QuestManager'
 import { createAreaSession, getAllClueStates } from './game/session/createSession'
-import type { AreaPlaySession, AreaSessionState, GameMode, WorldSessionState } from './game/session/types'
+import type { AreaPlaySession, AreaSessionState, GameMode, PlayerPosition, WorldSessionState } from './game/session/types'
 import { getWorldLocation, STARTING_LOCATION_ID, WORLD_LOCATIONS } from './world/locationData'
 import { WorldMap } from './world/WorldMap'
 import { SAVE_DEBOUNCE_MS } from './game/save/config'
@@ -92,6 +92,7 @@ function App() {
   const [isQuestLogOpen, setIsQuestLogOpen] = useState(false)
   const [isUpgradePanelOpen, setIsUpgradePanelOpen] = useState(false)
   const [isMasteryPanelOpen, setIsMasteryPanelOpen] = useState(false)
+  const [areaWaypoints, setAreaWaypoints] = useState<Record<string, PlayerPosition>>({})
   const [levelUpNotification, setLevelUpNotification] = useState<{
     level: number
     levelsGained: number
@@ -216,6 +217,7 @@ function App() {
     setIsQuestLogOpen(false)
     setIsUpgradePanelOpen(false)
     setIsMasteryPanelOpen(false)
+    setAreaWaypoints({})
   }, [])
 
   const handlePurchaseUpgrade = (upgradeId: UpgradeId) => {
@@ -249,6 +251,7 @@ function App() {
       hasEnteredArea: false,
     })
     setMode('WORLD_MAP')
+    setAreaWaypoints({})
     setLevelUpNotification(null)
     previousLevelRef.current = progression.level
   }
@@ -306,6 +309,7 @@ function App() {
     setIsQuestLogOpen(false)
     setIsUpgradePanelOpen(false)
     setIsResetConfirmOpen(false)
+    setAreaWaypoints({})
     setSaveBlocked(false)
     try {
       saveGame(fresh)
@@ -318,7 +322,7 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.15.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.16.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -384,6 +388,13 @@ function App() {
             onNewTestRun={startNewTestRun}
             interfaceLocked={isInterfaceLocked}
             effectiveStats={effectiveStats}
+            waypoint={areaWaypoints[currentArea.id]}
+            onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
+              if (waypoint) return { ...current, [currentArea.id]: waypoint }
+              const next = { ...current }
+              delete next[currentArea.id]
+              return next
+            })}
           />
         </section>
       )}

@@ -114,12 +114,12 @@ export class TestScene extends Phaser.Scene {
     this.keyboardInput = new KeyboardInput(
       this,
       this.movementController,
-      () => this.clueManager?.interactWithActiveClue(),
+      () => this.interfaceLocked ? false : this.clueManager?.interactWithActiveClue(),
     )
     new PointerInput(
       this,
       this.movementController,
-      (_pointer, gameObjects, worldPoint) => (
+      (_pointer, gameObjects, worldPoint) => this.interfaceLocked || (
         this.clueManager?.handlePointerDown(worldPoint, gameObjects) ?? false
       ),
     )

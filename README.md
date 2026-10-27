@@ -5,9 +5,9 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.14.0 expands all three Area Maps with
-data-driven environmental zones while preserving the existing clues, gameplay,
-progression, fog coordinates, and save structure. Backend services,
+question interactions. Version 0.16.0 adds a fog-aware Mini Map, expanded
+Exploration Map and temporary per-area waypoints while preserving the existing
+gameplay, progression, world coordinates, and save structure. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -199,6 +199,19 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.16.0 — Mini Map and Exploration Navigation
+
+- Adds an Area Map-only Mini Map derived from the authoritative area dimensions,
+  player position, discovered clues and existing fog discovery points.
+- Adds the touch-friendly **Peta Kawasan** overlay for reviewing explored space
+  and placing one temporary waypoint per Area Map.
+- Waypoints accept only explored, in-bounds and walkable positions. They do not
+  trigger movement, pathfinding, fast travel or reveal hidden objectives.
+- Temporary waypoints survive World Map transitions within the current session
+  and reset with **New Test Run**. Save schema v3 remains unchanged.
+- The navigation canvases update from the existing throttled session state and
+  do not restart the Phaser scene or introduce another fog implementation.
 
 ### v0.15.0 — World Map Expansion and Redesign
 

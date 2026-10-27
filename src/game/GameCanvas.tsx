@@ -7,6 +7,8 @@ import { TestScene } from './scenes/TestScene'
 import type { EffectivePlayerStats } from './progression/types'
 import type { AreaDefinition } from './areas/types'
 import type { CameraViewMode } from './camera/cameraConfig'
+import type { PlayerPosition } from './session/types'
+import { ExplorationNavigation } from './navigation/ExplorationNavigation'
 
 interface GameCanvasProps {
   area: AreaDefinition
@@ -15,6 +17,8 @@ interface GameCanvasProps {
   onNewTestRun: () => void
   interfaceLocked: boolean
   effectiveStats: EffectivePlayerStats
+  waypoint?: PlayerPosition
+  onWaypointChange: (waypoint: PlayerPosition | undefined) => void
 }
 
 export function GameCanvas({
@@ -24,12 +28,15 @@ export function GameCanvas({
   onNewTestRun,
   interfaceLocked,
   effectiveStats,
+  waypoint,
+  onWaypointChange,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
   const resetRequestedRef = useRef(false)
   const [openClue, setOpenClue] = useState<CluePanelData | null>(null)
   const [cameraViewMode, setCameraViewMode] = useState<CameraViewMode>('normal')
+  const [isExplorationMapOpen, setIsExplorationMapOpen] = useState(false)
 
   useEffect(() => {
     const container = containerRef.current
@@ -59,8 +66,8 @@ export function GameCanvas({
     gameRef.current?.scene.getScene('movement-prototype') as TestScene | undefined
 
   useEffect(() => {
-    getScene()?.setInterfaceLocked(interfaceLocked)
-  }, [interfaceLocked])
+    getScene()?.setInterfaceLocked(interfaceLocked || isExplorationMapOpen)
+  }, [interfaceLocked, isExplorationMapOpen])
 
   useEffect(() => {
     getScene()?.setEffectiveStats(effectiveStats)
@@ -73,6 +80,7 @@ export function GameCanvas({
   const startNewTestRun = () => {
     resetRequestedRef.current = true
     setOpenClue(null)
+    setIsExplorationMapOpen(false)
     onNewTestRun()
   }
 
@@ -113,12 +121,23 @@ export function GameCanvas({
         </div>
         <small>Radius penglihatan: {effectiveStats.visionRadius} unit</small>
       </div>
-      <div
-        ref={containerRef}
-        className="game-canvas"
-        aria-label="Sirah Quest exploration prototype"
-        role="application"
-      />
+      <div className="game-canvas-shell">
+        <div
+          ref={containerRef}
+          className="game-canvas"
+          aria-label="Sirah Quest exploration prototype"
+          role="application"
+        />
+        <ExplorationNavigation
+          area={area}
+          session={session}
+          visionRadius={effectiveStats.visionRadius}
+          waypoint={waypoint}
+          disabled={interfaceLocked || openClue !== null}
+          onWaypointChange={onWaypointChange}
+          onExpandedChange={setIsExplorationMapOpen}
+        />
+      </div>
       {openClue && (
         <div className="clue-overlay" role="presentation">
           <section
