@@ -75,10 +75,14 @@ export function WorldMap({
 
   useEffect(() => {
     const viewport = viewportRef.current
-    const location = getWorldLocation(currentLocationId)
+    const location = getWorldLocation(selectedLocationId ?? currentLocationId)
     if (!viewport || !location) return
 
     const frame = window.requestAnimationFrame(() => {
+      if (mapViewMode === 'region') {
+        viewport.scrollTo({ left: 0, top: 0, behavior: 'auto' })
+        return
+      }
       const canvas = viewport.firstElementChild as HTMLElement | null
       if (!canvas) return
       const targetX = canvas.scrollWidth * location.normalizedPosition.x
@@ -93,7 +97,7 @@ export function WorldMap({
   }, [currentLocationId, mapViewMode])
 
   const beginPan = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0 || !viewportRef.current) return
+    if (mapViewMode !== 'location' || event.button !== 0 || !viewportRef.current) return
     dragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -210,10 +214,26 @@ export function WorldMap({
         <small>Seret peta untuk meneroka rantau.</small>
       </div>
 
+      <label className={`world-map__mobile-location-picker is-${mapViewMode}`}>
+        <span>Pilih lokasi pada peta</span>
+        <select
+          value={selectedLocationId ?? currentLocationId}
+          onChange={(event) => setSelectedLocationId(event.target.value)}
+        >
+          {WORLD_LOCATIONS.map((location) => (
+            <option key={location.id} value={location.id}>
+              {location.nameBM}{location.status === 'locked' ? ' — Terkunci' : ''}
+            </option>
+          ))}
+        </select>
+      </label>
+
       <div
         ref={viewportRef}
-        className="world-map__viewport"
+        className={`world-map__viewport is-${mapViewMode}`}
         aria-busy={isTravelling}
+        aria-label={mapViewMode === 'region' ? 'Gambaran penuh Peta Dunia' : 'Peta Dunia terperinci yang boleh diseret'}
+        tabIndex={mapViewMode === 'location' ? 0 : undefined}
         onPointerDown={beginPan}
         onPointerMove={continuePan}
         onPointerUp={endPan}
