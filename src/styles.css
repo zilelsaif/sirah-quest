@@ -818,10 +818,13 @@ h1 {
 }
 
 .world-map__viewport.is-region .world-node__label {
-  max-width: 6rem;
-  overflow: hidden;
+  max-width: 8rem;
+  overflow: visible;
   font-size: clamp(0.56rem, 1.05vw, 0.7rem);
-  text-overflow: ellipsis;
+  line-height: 1.05;
+  text-align: center;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .world-map__viewport.is-region .world-node__state,
@@ -843,6 +846,45 @@ h1 {
   .world-map__view-controls button { width: 100%; min-width: 0; }
   .world-map__canvas.is-region { width: 100%; min-width: 0; }
   .world-map__canvas.is-location { width: 80rem; min-width: 80rem; }
+
+  .world-map__viewport.is-region .world-node__marker {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .world-map__viewport.is-region .world-node__label {
+    max-width: 7rem;
+    overflow: visible;
+    line-height: 1.05;
+    text-align: center;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .world-map__viewport.is-region .world-node[data-location-id="kampung-ilmu"] .world-node__details {
+    top: 50%;
+    right: calc(50% + 0.25rem);
+    bottom: auto;
+    left: auto;
+    transform: translateY(-50%);
+  }
+
+  .world-map__viewport.is-region .world-node[data-location-id="kampung-ilmu"] .world-node__label {
+    max-width: 5.25rem;
+    white-space: nowrap;
+  }
+
+  .world-map__viewport.is-region .world-node[data-location-id="perpustakaan-hikmah"] .world-node__details {
+    bottom: calc(50% + 0.75rem);
+  }
+
+  .world-map__viewport.is-region .world-node[data-location-id="bazar-lama"] .world-node__details {
+    top: calc(50% + 0.75rem);
+  }
+
+  .world-map__viewport.is-region .world-node[data-location-id="bukit-pengintai"] .world-node__details {
+    left: calc(50% + 0.5rem);
+  }
 
   .world-map__mobile-location-picker {
     display: grid;

@@ -289,6 +289,7 @@ export function WorldMap({
                   top: `${location.normalizedPosition.y * 100}%`,
                 }}
                 aria-pressed={isSelected}
+                data-location-id={location.id}
                 data-label-placement={location.labelPlacement ?? 'below'}
                 aria-label={`${location.nameBM}, ${STATUS_LABELS[location.status]}${
                   hasTrackedQuest ? ', misi dijejak' : ''
