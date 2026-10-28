@@ -2,12 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AreaDefinition } from '../areas/types'
 import { Pathfinder } from './Pathfinder'
 import type { AreaPlaySession, PlayerPosition } from '../session/types'
+import type { QuestNavigationState, QuestNavigationTarget } from './questNavigation'
 
 interface ExplorationNavigationProps {
   area: AreaDefinition
   session: AreaPlaySession
   visionRadius: number
   waypoint?: PlayerPosition
+  questNavigation: QuestNavigationState
   disabled: boolean
   onWaypointChange: (waypoint: PlayerPosition | undefined) => void
   onExpandedChange: (open: boolean) => void
@@ -18,6 +20,7 @@ interface MapCanvasProps {
   session: AreaPlaySession
   visionRadius: number
   waypoint?: PlayerPosition
+  questTarget?: QuestNavigationTarget
   interactive?: boolean
   onSelect?: (position: PlayerPosition) => void
   label: string
@@ -104,6 +107,7 @@ function renderMap(
   session: AreaPlaySession,
   visionRadius: number,
   waypoint?: PlayerPosition,
+  questTarget?: QuestNavigationTarget,
 ) {
   const height = Math.round(MAP_DRAW_WIDTH * area.height / area.width)
   if (canvas.width !== MAP_DRAW_WIDTH) canvas.width = MAP_DRAW_WIDTH
@@ -169,6 +173,20 @@ function renderMap(
     context.stroke()
   }
 
+  if (questTarget?.position) {
+    const x = questTarget.position.x * scaleX
+    const y = questTarget.position.y * scaleY
+    context.save()
+    context.translate(x, y)
+    context.rotate(Math.PI / 4)
+    context.fillStyle = '#f6c85f'
+    context.strokeStyle = '#fff7d6'
+    context.lineWidth = 2
+    context.fillRect(-7, -7, 14, 14)
+    context.strokeRect(-7, -7, 14, 14)
+    context.restore()
+  }
+
   const playerX = session.playerPosition.x * scaleX
   const playerY = session.playerPosition.y * scaleY
   context.beginPath()
@@ -189,6 +207,7 @@ function MapCanvas({
   session,
   visionRadius,
   waypoint,
+  questTarget,
   interactive = false,
   onSelect,
   label,
@@ -199,10 +218,10 @@ function MapCanvas({
     const canvas = canvasRef.current
     if (!canvas) return
     const frame = window.requestAnimationFrame(() => {
-      renderMap(canvas, area, session, visionRadius, waypoint)
+      renderMap(canvas, area, session, visionRadius, waypoint, questTarget)
     })
     return () => window.cancelAnimationFrame(frame)
-  }, [area, session.playerPosition, session.fogDiscoveryPoints, session.clues, visionRadius, waypoint])
+  }, [area, session.playerPosition, session.fogDiscoveryPoints, session.clues, visionRadius, waypoint, questTarget])
 
   const selectPosition = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current
@@ -235,6 +254,7 @@ export function ExplorationNavigation({
   session,
   visionRadius,
   waypoint,
+  questNavigation,
   disabled,
   onWaypointChange,
   onExpandedChange,
@@ -245,6 +265,16 @@ export function ExplorationNavigation({
   )
   const [message, setMessage] = useState('Pilih kawasan yang telah diterokai.')
   const pathfinder = useMemo(() => new Pathfinder(area), [area])
+  const bearing = useMemo(() => {
+    const target = questNavigation.target?.position
+    if (!target || questNavigation.status !== 'known') return undefined
+    const deltaX = target.x - session.playerPosition.x
+    const deltaY = target.y - session.playerPosition.y
+    return {
+      degrees: Math.atan2(deltaY, deltaX) * 180 / Math.PI + 90,
+      distance: Math.round(Math.hypot(deltaX, deltaY)),
+    }
+  }, [questNavigation, session.playerPosition])
 
   useEffect(() => {
     onExpandedChange(expanded)
@@ -303,6 +333,7 @@ export function ExplorationNavigation({
               session={session}
               visionRadius={visionRadius}
               waypoint={waypoint}
+              questTarget={questNavigation.status === 'known' ? questNavigation.target : undefined}
               label={`Mini Map ${area.nameBM}`}
             />
             <button type="button" className="mini-map__expand" disabled={disabled} onClick={() => setExpanded(true)}>
@@ -311,6 +342,21 @@ export function ExplorationNavigation({
           </>
         )}
       </aside>
+
+      {questNavigation.status !== 'untracked' && (
+        <aside className={`quest-compass is-${questNavigation.status}`} aria-label="Kompas misi">
+          <span
+            className="quest-compass__arrow"
+            style={bearing ? { transform: `rotate(${bearing.degrees}deg)` } : undefined}
+            aria-hidden="true"
+          >▲</span>
+          <span>
+            <strong>{questNavigation.target?.questTitle.bm ?? 'Misi selesai'}</strong>
+            <small>{questNavigation.guidance.bm}</small>
+            {bearing && <small>{bearing.distance} unit · arah terus</small>}
+          </span>
+        </aside>
+      )}
 
       {expanded && (
         <div className="exploration-map-overlay" role="presentation" onPointerDown={(event) => event.stopPropagation()}>
@@ -328,6 +374,7 @@ export function ExplorationNavigation({
                 session={session}
                 visionRadius={visionRadius}
                 waypoint={waypoint}
+                questTarget={questNavigation.status === 'known' ? questNavigation.target : undefined}
                 interactive
                 onSelect={placeWaypoint}
                 label={`Peta Kawasan ${area.nameBM}. Pilih kawasan diterokai untuk meletakkan tanda destinasi.`}
@@ -338,6 +385,7 @@ export function ExplorationNavigation({
               <span><i className="is-explored" /> Kawasan Diterokai</span>
               <span><i className="is-clue" /> Petunjuk Ditemui</span>
               <span><i className="is-waypoint" /> Tanda Destinasi</span>
+              <span><i className="is-quest" /> Sasaran Misi Ditemui</span>
             </div>
             <p className="exploration-map-panel__message" role="status">{message}</p>
             <div className="exploration-map-panel__actions">

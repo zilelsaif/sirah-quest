@@ -1156,6 +1156,62 @@ h1 {
   width: auto;
 }
 
+.quest-compass {
+  position: absolute;
+  z-index: 6;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  display: flex;
+  width: min(21rem, calc(100% - 1.5rem));
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.55rem 0.7rem;
+  color: #fff7df;
+  border: 1px solid rgb(244 213 141 / 65%);
+  border-radius: 0.7rem;
+  background: rgb(7 16 29 / 91%);
+  box-shadow: 0 0.5rem 1.2rem rgb(0 0 0 / 35%);
+  pointer-events: none;
+}
+
+.quest-compass__arrow {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #f6c85f;
+  border: 1px solid rgb(246 200 95 / 75%);
+  border-radius: 50%;
+  background: #17233a;
+  transform-origin: center;
+  transition: transform 120ms linear;
+}
+
+.quest-compass:not(.is-known) .quest-compass__arrow {
+  color: #aebdd0;
+  transform: none;
+}
+
+.quest-compass > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 0.12rem;
+}
+
+.quest-compass strong {
+  overflow: hidden;
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quest-compass small {
+  color: #c8d7e8;
+  font-size: 0.65rem;
+  line-height: 1.3;
+}
+
 .mini-map__header {
   display: flex;
   min-height: 2.25rem;
@@ -1309,6 +1365,7 @@ h1 {
 .exploration-map-legend .is-explored { border-radius: 0.15rem; background: #315f54; }
 .exploration-map-legend .is-clue { background: #f4d58d; }
 .exploration-map-legend .is-waypoint { background: #8c4bb4; }
+.exploration-map-legend .is-quest { border-radius: 0.1rem; background: #f6c85f; transform: rotate(45deg); }
 
 .exploration-map-panel__message {
   min-height: 1.35rem;
@@ -1336,6 +1393,18 @@ h1 {
     font-size: 0.66rem;
   }
 
+  .quest-compass {
+    bottom: 0.45rem;
+    left: 0.45rem;
+    width: min(18rem, calc(100% - 0.9rem));
+    padding: 0.45rem 0.55rem;
+  }
+
+  .quest-compass__arrow {
+    width: 2rem;
+    height: 2rem;
+  }
+
   .exploration-map-panel {
     max-height: calc(100dvh - 1rem);
     padding: 0.65rem;
@@ -1353,6 +1422,19 @@ h1 {
   .exploration-map-panel__actions button {
     flex: 1;
   }
+}
+
+.location-panel__quest-guidance {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border-left: 3px solid #b88419;
+  background: rgb(184 132 25 / 10%);
+}
+
+.location-panel__quest-guidance span {
+  font-size: 0.78rem;
 }
 
 @media (max-height: 31.25rem) and (orientation: landscape) {

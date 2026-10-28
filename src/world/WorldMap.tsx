@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import worldMapImage from '../assets/world-map-v015.webp'
 import { QUEST_DATA } from '../game/quests/questData'
 import type { QuestSessionState } from '../game/quests/types'
+import type { QuestNavigationState } from '../game/navigation/questNavigation'
 import { getWorldLocation, WORLD_LOCATIONS, WORLD_ROUTE_LINKS } from './locationData'
 import type { WorldLocation } from './types'
 
@@ -12,6 +13,7 @@ interface WorldMapProps {
   onTravel: (locationId: string) => void
   onEnterArea: (areaId: string) => void
   quests: QuestSessionState
+  questNavigation: QuestNavigationState
   onOpenQuestLog: () => void
   onOpenUpgrades: () => void
   onOpenMastery: () => void
@@ -31,6 +33,7 @@ export function WorldMap({
   onTravel,
   onEnterArea,
   quests,
+  questNavigation,
   onOpenQuestLog,
   onOpenUpgrades,
   onOpenMastery,
@@ -275,7 +278,7 @@ export function WorldMap({
               (quest) => quests.quests[quest.id]?.status === 'COMPLETED',
             ).length
             const hasTrackedQuest = Boolean(
-              trackedQuest && location.areaId && trackedQuest.areaIds.includes(location.areaId),
+              trackedQuest && location.areaId && questNavigation.target?.areaId === location.areaId,
             )
             return (
               <button
@@ -317,7 +320,7 @@ export function WorldMap({
                     </span>
                   )}
                   {hasTrackedQuest && (
-                    <span className="world-node__tracked">★ Misi dijejak</span>
+                    <span className="world-node__tracked">★ Sasaran misi</span>
                   )}
                 </span>
               </button>
@@ -349,6 +352,14 @@ export function WorldMap({
             <p className="location-panel__status">{STATUS_LABELS[selectedLocation.status]}</p>
             <h3>{selectedLocation.nameBM}</h3>
             <p>{selectedLocation.descriptionBM}</p>
+            {questNavigation.target?.areaId === selectedLocation.areaId && (
+              <p className="location-panel__quest-guidance">
+                <strong>★ Misi dijejak: {questNavigation.target?.questTitle.bm}</strong>
+                <span>{questNavigation.status === 'cross-area'
+                  ? `Sasaran berada di ${questNavigation.target?.areaName.bm}. Lokasi tepat kekal tersembunyi sehingga ditemui.`
+                  : questNavigation.guidance.bm}</span>
+              </p>
+            )}
           </div>
           <div className="location-panel__actions">
             {renderPrimaryAction()}

@@ -9,6 +9,7 @@ import type { AreaDefinition } from './areas/types'
 import type { CameraViewMode } from './camera/cameraConfig'
 import type { PlayerPosition } from './session/types'
 import { ExplorationNavigation } from './navigation/ExplorationNavigation'
+import type { QuestNavigationState } from './navigation/questNavigation'
 
 interface GameCanvasProps {
   area: AreaDefinition
@@ -19,6 +20,7 @@ interface GameCanvasProps {
   effectiveStats: EffectivePlayerStats
   waypoint?: PlayerPosition
   onWaypointChange: (waypoint: PlayerPosition | undefined) => void
+  questNavigation: QuestNavigationState
 }
 
 export function GameCanvas({
@@ -30,6 +32,7 @@ export function GameCanvas({
   effectiveStats,
   waypoint,
   onWaypointChange,
+  questNavigation,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
@@ -133,6 +136,7 @@ export function GameCanvas({
           session={session}
           visionRadius={effectiveStats.visionRadius}
           waypoint={waypoint}
+          questNavigation={questNavigation}
           disabled={interfaceLocked || openClue !== null}
           onWaypointChange={onWaypointChange}
           onExpandedChange={setIsExplorationMapOpen}

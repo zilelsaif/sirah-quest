@@ -33,6 +33,7 @@ import { SirahMasteryPanel } from './game/mastery/SirahMasteryPanel'
 import { calculateEncounterScore, createSirahMastery, recordQuestionMastery } from './game/mastery/SirahMastery'
 import type { SirahMasteryState } from './game/mastery/types'
 import { ALL_AREA_CLUES, getAreaDefinition, KAMPUNG_ILMU_AREA_ID } from './game/areas/areaRegistry'
+import { resolveTrackedQuestNavigation } from './game/navigation/questNavigation'
 
 type PlayerSession = PlayerSessionState
 
@@ -173,6 +174,10 @@ function App() {
       )
     : undefined
   const trackedQuestIsHere = Boolean(trackedQuest?.areaIds.includes(currentArea.id))
+  const questNavigation = useMemo(
+    () => resolveTrackedQuestNavigation(areaSession, currentArea.id),
+    [areaSession, currentArea.id],
+  )
 
   const updateAreaSession = useCallback((session: AreaPlaySession) => {
     setPlayerSession((current) => {
@@ -322,7 +327,7 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.16.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.17.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -352,6 +357,7 @@ function App() {
           visitedLocationIds={worldSession.visitedLocationIds}
           hasEnteredArea={worldSession.hasEnteredArea}
           quests={areaSession.quests}
+          questNavigation={questNavigation}
           onOpenQuestLog={() => setIsQuestLogOpen(true)}
           onOpenUpgrades={() => setIsUpgradePanelOpen(true)}
           onOpenMastery={() => setIsMasteryPanelOpen(true)}
@@ -389,6 +395,7 @@ function App() {
             interfaceLocked={isInterfaceLocked}
             effectiveStats={effectiveStats}
             waypoint={areaWaypoints[currentArea.id]}
+            questNavigation={questNavigation}
             onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
               if (waypoint) return { ...current, [currentArea.id]: waypoint }
               const next = { ...current }

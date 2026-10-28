@@ -5,9 +5,10 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.16.0 adds a fog-aware Mini Map, expanded
-Exploration Map and temporary per-area waypoints while preserving the existing
-gameplay, progression, world coordinates, and save structure. Backend services,
+question interactions. Version 0.17.0 connects tracked quests to the fog-aware
+Mini Map, Exploration Map, World Map and a straight-line quest compass while
+preserving manual waypoints, gameplay, progression, world coordinates, and the
+existing save structure. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -199,6 +200,18 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.17.0 — Quest Navigation and Compass
+
+- Connects the tracked quest to the Mini Map, Peta Kawasan and World Map through
+  one shared navigation resolver based on existing quest, clue and fog state.
+- Exact objective markers appear only after the related clue is legitimately
+  discovered in explored fog. Unknown targets show an exploration hint instead.
+- Adds a straight-line quest compass for known same-area targets and area-only
+  guidance for cross-area objectives. It does not calculate a route, move the
+  player, reveal fog or replace the independent manual waypoint.
+- Visible interface text is in Bahasa Melayu, with English navigation text kept
+  in the data model for future localization. Save schema v3 remains unchanged.
 
 ### v0.16.0 — Mini Map and Exploration Navigation
 
