@@ -13,6 +13,9 @@ import { Pathfinder } from '../navigation/Pathfinder'
 import { VISUAL_PALETTE } from '../visuals/visualTheme'
 import { renderEnvironment } from '../visuals/EnvironmentRenderer'
 import { getCameraMetrics, type CameraViewMode } from '../camera/cameraConfig'
+import { getNpcsForArea } from '../npcs/npcData'
+import { NpcManager } from '../npcs/NpcManager'
+import type { NpcDefinition } from '../npcs/types'
 
 export class TestScene extends Phaser.Scene {
   private keyboardInput?: KeyboardInput
@@ -21,8 +24,10 @@ export class TestScene extends Phaser.Scene {
   private player?: Phaser.GameObjects.Container
   private debugText?: Phaser.GameObjects.Text
   private clueManager?: ClueManager
+  private npcManager?: NpcManager
   private lastSessionUpdate = 0
   private cluePanelLocked = false
+  private npcPanelLocked = false
   private interfaceLocked = false
   private remainingHints: number
   private fogDiscoveryPoints: AreaPlaySession['fogDiscoveryPoints']
@@ -35,6 +40,8 @@ export class TestScene extends Phaser.Scene {
     private readonly onSessionChange: (session: AreaPlaySession) => void,
     private effectiveStats: EffectivePlayerStats,
     initialCameraViewMode: CameraViewMode,
+    private readonly onNearbyNpcChange: (npc: NpcDefinition | null) => void,
+    private readonly onNpcDialogueChange: (npc: NpcDefinition | null) => void,
   ) {
     super('movement-prototype')
     this.remainingHints = initialSession.remainingHints
@@ -111,17 +118,33 @@ export class TestScene extends Phaser.Scene {
       (clues) => this.emitSessionState(player.x, player.y, clues),
     )
 
+    this.npcManager = new NpcManager(
+      this,
+      getNpcsForArea(this.area.id),
+      this.onNearbyNpcChange,
+      this.onNpcDialogueChange,
+      (locked) => {
+        this.npcPanelLocked = locked
+        this.applyMovementLock()
+      },
+    )
+
     this.keyboardInput = new KeyboardInput(
       this,
       this.movementController,
-      () => this.interfaceLocked ? false : this.clueManager?.interactWithActiveClue(),
+      () => {
+        if (this.interfaceLocked || this.cluePanelLocked || this.npcPanelLocked) return false
+        return this.npcManager?.interactWithActiveNpc() || this.clueManager?.interactWithActiveClue()
+      },
     )
     new PointerInput(
       this,
       this.movementController,
-      (_pointer, gameObjects, worldPoint) => this.interfaceLocked || (
-        this.clueManager?.handlePointerDown(worldPoint, gameObjects) ?? false
-      ),
+      (_pointer, gameObjects, worldPoint) => {
+        if (this.interfaceLocked || this.cluePanelLocked || this.npcPanelLocked) return true
+        if (this.npcManager?.handlePointerDown(worldPoint, gameObjects)) return true
+        return this.clueManager?.handlePointerDown(worldPoint, gameObjects) ?? false
+      },
     )
 
     this.cameras.main.startFollow(player, true, 0.12, 0.12)
@@ -145,6 +168,8 @@ export class TestScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.emitSessionState(player.x, player.y)
       this.onCluePanelChange(null)
+      this.npcManager?.destroy()
+      this.onNearbyNpcChange(null)
       this.scale.off(Phaser.Scale.Events.RESIZE, this.applyCameraZoom, this)
     })
   }
@@ -153,7 +178,14 @@ export class TestScene extends Phaser.Scene {
     this.keyboardInput?.update()
     this.movementController?.update(delta)
 
-    if (this.player) this.clueManager?.update(this.player.x, this.player.y)
+    if (this.player) {
+      this.npcManager?.setInteractionSuppressed(this.cluePanelLocked || this.interfaceLocked)
+      this.npcManager?.update(this.player.x, this.player.y, this.effectiveStats.visionRadius)
+      this.clueManager?.setInteractionSuppressed(
+        this.npcPanelLocked || this.interfaceLocked || Boolean(this.npcManager?.hasActiveNpc()),
+      )
+      this.clueManager?.update(this.player.x, this.player.y)
+    }
 
     if (this.debugText && this.player) {
       const clueCounts = this.clueManager?.getCounts()
@@ -172,6 +204,14 @@ export class TestScene extends Phaser.Scene {
 
   closeClue() {
     this.clueManager?.closeOpenClue()
+  }
+
+  interactWithNpc() {
+    return this.npcManager?.interactWithActiveNpc() ?? false
+  }
+
+  closeNpcDialogue() {
+    this.npcManager?.closeOpenNpc()
   }
 
   answerClue(optionId: string) {
@@ -221,7 +261,9 @@ export class TestScene extends Phaser.Scene {
   }
 
   private applyMovementLock() {
-    this.movementController?.setEnabled(!this.cluePanelLocked && !this.interfaceLocked)
+    this.movementController?.setEnabled(
+      !this.cluePanelLocked && !this.npcPanelLocked && !this.interfaceLocked,
+    )
   }
 
   private emitSessionState(

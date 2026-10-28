@@ -5,6 +5,7 @@ import type { AreaPlaySession } from './session/types'
 import type { EffectivePlayerStats } from './progression/types'
 import type { AreaDefinition } from './areas/types'
 import type { CameraViewMode } from './camera/cameraConfig'
+import type { NpcDefinition } from './npcs/types'
 
 export function createGame(
   parent: HTMLElement,
@@ -14,6 +15,8 @@ export function createGame(
   onSessionChange: (session: AreaPlaySession) => void,
   effectiveStats: EffectivePlayerStats,
   cameraViewMode: CameraViewMode,
+  onNearbyNpcChange: (npc: NpcDefinition | null) => void,
+  onNpcDialogueChange: (npc: NpcDefinition | null) => void,
 ) {
   return new Phaser.Game({
     type: Phaser.AUTO,
@@ -31,6 +34,15 @@ export function createGame(
       antialias: true,
       roundPixels: true,
     },
-    scene: new TestScene(onCluePanelChange, area, session, onSessionChange, effectiveStats, cameraViewMode),
+    scene: new TestScene(
+      onCluePanelChange,
+      area,
+      session,
+      onSessionChange,
+      effectiveStats,
+      cameraViewMode,
+      onNearbyNpcChange,
+      onNpcDialogueChange,
+    ),
   })
 }

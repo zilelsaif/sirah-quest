@@ -24,6 +24,7 @@ export class ClueManager {
   private readonly interactionPrompt: Phaser.GameObjects.Text
   private activeClue?: ClueRuntime
   private openClue?: ClueRuntime
+  private interactionSuppressed = false
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -70,7 +71,7 @@ export class ClueManager {
       }
     })
 
-    if (this.openClue) {
+    if (this.openClue || this.interactionSuppressed) {
       this.setActiveClue(undefined)
       return
     }
@@ -90,7 +91,7 @@ export class ClueManager {
   }
 
   interactWithActiveClue() {
-    if (!this.activeClue || this.openClue) return false
+    if (!this.activeClue || this.openClue || this.interactionSuppressed) return false
 
     this.openClue = this.activeClue
     this.setActiveClue(undefined)
@@ -104,7 +105,7 @@ export class ClueManager {
     worldPoint: Phaser.Math.Vector2,
     gameObjects: Phaser.GameObjects.GameObject[],
   ) {
-    if (!this.activeClue || this.openClue) return false
+    if (!this.activeClue || this.openClue || this.interactionSuppressed) return false
 
     const activeClueId = this.activeClue.definition.id
     const clickedActiveClue = gameObjects.some(
@@ -170,6 +171,11 @@ export class ClueManager {
     this.openClue = undefined
     this.onMovementLockChange(false)
     this.onPanelChange(null)
+  }
+
+  setInteractionSuppressed(suppressed: boolean) {
+    this.interactionSuppressed = suppressed
+    if (suppressed) this.setActiveClue(undefined)
   }
 
   getCounts(): ClueCounts {

@@ -10,6 +10,15 @@ import type { CameraViewMode } from './camera/cameraConfig'
 import type { PlayerPosition } from './session/types'
 import { ExplorationNavigation } from './navigation/ExplorationNavigation'
 import type { QuestNavigationState } from './navigation/questNavigation'
+import type { NpcDefinition } from './npcs/types'
+import { DialoguePanel } from './dialogue/DialoguePanel'
+import {
+  advanceDialogue,
+  chooseDialogueResponse,
+  createDialogueSession,
+  getDialogueNode,
+} from './dialogue/DialogueEngine'
+import type { DialogueSession } from './dialogue/types'
 
 interface GameCanvasProps {
   area: AreaDefinition
@@ -40,6 +49,12 @@ export function GameCanvas({
   const [openClue, setOpenClue] = useState<CluePanelData | null>(null)
   const [cameraViewMode, setCameraViewMode] = useState<CameraViewMode>('normal')
   const [isExplorationMapOpen, setIsExplorationMapOpen] = useState(false)
+  const [nearbyNpc, setNearbyNpc] = useState<NpcDefinition | null>(null)
+  const [openDialogue, setOpenDialogue] = useState<{
+    npc: NpcDefinition
+    session: DialogueSession
+  } | null>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const container = containerRef.current
@@ -55,6 +70,17 @@ export function GameCanvas({
       },
       effectiveStats,
       cameraViewMode,
+      setNearbyNpc,
+      (npc) => {
+        if (!npc) {
+          setOpenDialogue(null)
+          return
+        }
+        previousFocusRef.current = document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null
+        setOpenDialogue({ npc, session: createDialogueSession(npc.dialogueId) })
+      },
     )
     gameRef.current = game
     resetRequestedRef.current = false
@@ -69,8 +95,8 @@ export function GameCanvas({
     gameRef.current?.scene.getScene('movement-prototype') as TestScene | undefined
 
   useEffect(() => {
-    getScene()?.setInterfaceLocked(interfaceLocked || isExplorationMapOpen)
-  }, [interfaceLocked, isExplorationMapOpen])
+    getScene()?.setInterfaceLocked(interfaceLocked || isExplorationMapOpen || openDialogue !== null)
+  }, [interfaceLocked, isExplorationMapOpen, openDialogue])
 
   useEffect(() => {
     getScene()?.setEffectiveStats(effectiveStats)
@@ -84,8 +110,57 @@ export function GameCanvas({
     resetRequestedRef.current = true
     setOpenClue(null)
     setIsExplorationMapOpen(false)
+    setNearbyNpc(null)
+    setOpenDialogue(null)
     onNewTestRun()
   }
+
+  const closeDialogue = () => {
+    getScene()?.closeNpcDialogue()
+    setOpenDialogue(null)
+    window.requestAnimationFrame(() => {
+      const previous = previousFocusRef.current
+      if (
+        previous?.isConnected &&
+        previous !== document.body &&
+        previous !== document.documentElement
+      ) previous.focus()
+      else containerRef.current?.focus()
+      previousFocusRef.current = null
+    })
+  }
+
+  const advanceOpenDialogue = () => {
+    if (!openDialogue) return
+    const next = advanceDialogue(openDialogue.session)
+    if (!next) closeDialogue()
+    else setOpenDialogue({ ...openDialogue, session: next })
+  }
+
+  const chooseOpenDialogueResponse = (choiceId: string) => {
+    if (!openDialogue) return
+    const next = chooseDialogueResponse(openDialogue.session, choiceId)
+    if (next) setOpenDialogue({ ...openDialogue, session: next })
+  }
+
+  useEffect(() => {
+    if (!openDialogue) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat) return
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closeDialogue()
+        return
+      }
+      const node = getDialogueNode(openDialogue.session)
+      if ((event.key === 'Enter' || event.key === ' ') && !(node.choices?.length)) {
+        event.preventDefault()
+        advanceOpenDialogue()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [openDialogue])
 
   return (
     <div
@@ -130,6 +205,7 @@ export function GameCanvas({
           className="game-canvas"
           aria-label="Sirah Quest exploration prototype"
           role="application"
+          tabIndex={0}
         />
         <ExplorationNavigation
           area={area}
@@ -137,10 +213,20 @@ export function GameCanvas({
           visionRadius={effectiveStats.visionRadius}
           waypoint={waypoint}
           questNavigation={questNavigation}
-          disabled={interfaceLocked || openClue !== null}
+          disabled={interfaceLocked || openClue !== null || openDialogue !== null}
           onWaypointChange={onWaypointChange}
           onExpandedChange={setIsExplorationMapOpen}
         />
+        {nearbyNpc && !openDialogue && !openClue && !interfaceLocked && !isExplorationMapOpen && (
+          <button
+            type="button"
+            className="npc-interact-button"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => getScene()?.interactWithNpc()}
+          >
+            Bercakap · {nearbyNpc.nameBM}
+          </button>
+        )}
       </div>
       {openClue && (
         <div className="clue-overlay" role="presentation">
@@ -226,6 +312,15 @@ export function GameCanvas({
             </div>
           </section>
         </div>
+      )}
+      {openDialogue && (
+        <DialoguePanel
+          npc={openDialogue.npc}
+          session={openDialogue.session}
+          onAdvance={advanceOpenDialogue}
+          onChoose={chooseOpenDialogueResponse}
+          onClose={closeDialogue}
+        />
       )}
     </div>
   )

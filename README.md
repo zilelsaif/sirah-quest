@@ -5,10 +5,9 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.17.0 connects tracked quests to the fog-aware
-Mini Map, Exploration Map, World Map and a straight-line quest compass while
-preserving manual waypoints, gameplay, progression, world coordinates, and the
-existing save structure. Backend services,
+question interactions. Version 0.18.0 adds a reusable, bilingual NPC and
+dialogue foundation with proximity, keyboard, pointer and touch interaction
+while preserving quests, navigation, progression and save schema 3. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -200,6 +199,21 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.18.0 — NPC Interaction Foundation
+
+- Adds two fictional demonstration NPCs using globally stable IDs, per-area
+  positions, bilingual names and roles, visual keys, interaction radii and
+  data-driven dialogue IDs.
+- Adds one linear and one branching bilingual dialogue. Bahasa Melayu is shown
+  now; English strings remain ready for future localization.
+- NPCs only become visible inside the current vision radius and are not added
+  to either exploration map. Interaction is available through `E`, direct
+  pointer/touch selection, or a large in-range mobile button.
+- Dialogue temporarily locks movement and gameplay input without changing
+  quests, clues, XP, questions or save data. Save schema remains version 3.
+- See `docs/NPC_SYSTEM.md` for the data format, interaction rules and extension
+  guide.
 
 ### v0.17.0 — Quest Navigation and Compass
 
