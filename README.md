@@ -5,9 +5,9 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.19.0 connects the bilingual NPC dialogue
-foundation to the existing Multi-Quest System through explicit, data-driven
-quest offers while preserving navigation, progression and save schema 3. Backend services,
+question interactions. Version 0.20.0 adds a read-only Jurnal Pengembara for
+reviewing quest progress, legitimately completed learning content, exploration
+counts and Sirah Mastery while preserving gameplay rules and save schema 3. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -199,6 +199,19 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.20.0 — Knowledge Journal and Quest Chronicle
+
+- Adds a responsive **Jurnal Pengembara** to both World Map and Area Map without
+  replacing the existing Quest Log.
+- Derives active/completed quests, completed-question learning notes, visited
+  area clue counts and topic Mastery from authoritative session state through
+  pure read-only selectors.
+- Hides uncompleted answers, hidden clue coordinates and unvisited-area details;
+  legacy saves without reliable question evidence receive a neutral fallback.
+- Adds no saved fields, rewards or scoring rules. Save schema remains v3 and
+  all 24 question records retain their existing editorial status.
+- See `docs/JOURNAL_SYSTEM.md` and run `npm run journal:verify`.
 
 ### v0.19.0 — NPC Quest Integration
 

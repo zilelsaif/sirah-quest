@@ -35,6 +35,8 @@ import { calculateEncounterScore, createSirahMastery, recordQuestionMastery } fr
 import type { SirahMasteryState } from './game/mastery/types'
 import { ALL_AREA_CLUES, getAreaDefinition, KAMPUNG_ILMU_AREA_ID } from './game/areas/areaRegistry'
 import { resolveTrackedQuestNavigation } from './game/navigation/questNavigation'
+import { JournalPanel } from './game/journal/JournalPanel'
+import { selectJournalModel } from './game/journal/journalSelectors'
 
 type PlayerSession = PlayerSessionState
 
@@ -94,6 +96,7 @@ function App() {
   const [isQuestLogOpen, setIsQuestLogOpen] = useState(false)
   const [isUpgradePanelOpen, setIsUpgradePanelOpen] = useState(false)
   const [isMasteryPanelOpen, setIsMasteryPanelOpen] = useState(false)
+  const [isJournalOpen, setIsJournalOpen] = useState(false)
   const [areaWaypoints, setAreaWaypoints] = useState<Record<string, PlayerPosition>>({})
   const [levelUpNotification, setLevelUpNotification] = useState<{
     level: number
@@ -120,7 +123,12 @@ function App() {
     [playerSession.progression],
   )
   const isInterfaceLocked =
-    isQuestLogOpen || isUpgradePanelOpen || isMasteryPanelOpen || levelUpNotification !== null || isResetConfirmOpen
+    isQuestLogOpen || isUpgradePanelOpen || isMasteryPanelOpen || isJournalOpen || levelUpNotification !== null || isResetConfirmOpen
+  const journalModel = useMemo(
+    () => selectJournalModel(areaSession, worldSession, masteryState),
+    [areaSession, worldSession, masteryState],
+  )
+  const closeJournal = useCallback(() => setIsJournalOpen(false), [])
 
   useEffect(() => {
     const state = { mode, playerSession, worldSession, masteryState }
@@ -223,6 +231,7 @@ function App() {
     setIsQuestLogOpen(false)
     setIsUpgradePanelOpen(false)
     setIsMasteryPanelOpen(false)
+    setIsJournalOpen(false)
     setAreaWaypoints({})
   }, [])
 
@@ -340,6 +349,8 @@ function App() {
     setLevelUpNotification(null)
     setIsQuestLogOpen(false)
     setIsUpgradePanelOpen(false)
+    setIsMasteryPanelOpen(false)
+    setIsJournalOpen(false)
     setIsResetConfirmOpen(false)
     setAreaWaypoints({})
     setSaveBlocked(false)
@@ -354,7 +365,7 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.19.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.20.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -388,6 +399,7 @@ function App() {
           onOpenQuestLog={() => setIsQuestLogOpen(true)}
           onOpenUpgrades={() => setIsUpgradePanelOpen(true)}
           onOpenMastery={() => setIsMasteryPanelOpen(true)}
+          onOpenJournal={() => setIsJournalOpen(true)}
           interfaceLocked={isInterfaceLocked}
           onTravel={travelTo}
           onEnterArea={enterArea}
@@ -408,6 +420,9 @@ function App() {
               </button>
               <button type="button" className="mastery-button" disabled={isInterfaceLocked} onClick={() => setIsMasteryPanelOpen(true)}>
                 Penguasaan
+              </button>
+              <button type="button" className="journal-button" disabled={isInterfaceLocked} onClick={() => setIsJournalOpen(true)}>
+                Jurnal
               </button>
               <button type="button" className="return-world-button" disabled={isInterfaceLocked} onClick={() => setMode('WORLD_MAP')}>
                 Kembali ke Peta Dunia
@@ -462,6 +477,7 @@ function App() {
       {isMasteryPanelOpen && (
         <SirahMasteryPanel state={masteryState} onClose={() => setIsMasteryPanelOpen(false)} />
       )}
+      {isJournalOpen && <JournalPanel model={journalModel} onClose={closeJournal} />}
       <section className="save-controls" aria-label="Data simpanan">
         <div>
           <strong>Data simpanan</strong>

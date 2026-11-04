@@ -17,6 +17,7 @@ interface WorldMapProps {
   onOpenQuestLog: () => void
   onOpenUpgrades: () => void
   onOpenMastery: () => void
+  onOpenJournal: () => void
   interfaceLocked: boolean
 }
 
@@ -37,6 +38,7 @@ export function WorldMap({
   onOpenQuestLog,
   onOpenUpgrades,
   onOpenMastery,
+  onOpenJournal,
   interfaceLocked,
 }: WorldMapProps) {
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
@@ -206,6 +208,9 @@ export function WorldMap({
           </button>
           <button type="button" className="mastery-button" disabled={interfaceLocked} onClick={onOpenMastery}>
             Penguasaan
+          </button>
+          <button type="button" className="journal-button" disabled={interfaceLocked} onClick={onOpenJournal}>
+            Jurnal
           </button>
         </div>
       </div>
