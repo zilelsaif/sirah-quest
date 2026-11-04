@@ -1,20 +1,25 @@
 import { useEffect, useRef } from 'react'
 import type { NpcDefinition } from '../npcs/types'
-import { getDialogueNode } from './DialogueEngine'
-import type { DialogueSession } from './types'
+import { getDialogueNode, getVisibleDialogueChoices } from './DialogueEngine'
+import { QUEST_DATA } from '../quests/questData'
+import type { QuestSessionState } from '../quests/types'
+import type { DialogueActionFeedback, DialogueSession } from './types'
 
 interface DialoguePanelProps {
   npc: NpcDefinition
   session: DialogueSession
+  questSession: QuestSessionState
+  feedback: DialogueActionFeedback | null
   onAdvance: () => void
   onChoose: (choiceId: string) => void
   onClose: () => void
 }
 
-export function DialoguePanel({ npc, session, onAdvance, onChoose, onClose }: DialoguePanelProps) {
+export function DialoguePanel({ npc, session, questSession, feedback, onAdvance, onChoose, onClose }: DialoguePanelProps) {
   const panelRef = useRef<HTMLElement>(null)
   const node = getDialogueNode(session)
-  const choices = node.choices ?? []
+  const choices = getVisibleDialogueChoices(session, { quests: questSession })
+  const quest = node.questId ? QUEST_DATA.find((candidate) => candidate.id === node.questId) : undefined
 
   useEffect(() => {
     panelRef.current?.querySelector<HTMLButtonElement>('[data-dialogue-primary]')?.focus()
@@ -39,6 +44,22 @@ export function DialoguePanel({ npc, session, onAdvance, onChoose, onClose }: Di
         </header>
 
         <p className="dialogue-panel__text">{node.text.bm}</p>
+
+        {quest && (
+          <section className="dialogue-panel__quest" aria-label="Maklumat misi">
+            <span>{quest.type === 'main' ? 'Misi Utama' : 'Misi Sampingan'}</span>
+            <h4>{quest.titleBM}</h4>
+            <p>{quest.descriptionBM}</p>
+            <small lang="en">{quest.titleEN} · {quest.descriptionEN}</small>
+          </section>
+        )}
+
+        {feedback && (
+          <div className={`dialogue-panel__feedback is-${feedback.tone}`} role="status" aria-live="polite">
+            <strong>{feedback.message.bm}</strong>
+            <small lang="en">{feedback.message.en}</small>
+          </div>
+        )}
 
         {choices.length > 0 ? (
           <div className="dialogue-panel__choices" aria-label="Pilihan jawapan">

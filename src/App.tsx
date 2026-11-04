@@ -18,6 +18,7 @@ import { QuestLog } from './game/quests/QuestLog'
 import { QUEST_DATA } from './game/quests/questData'
 import {
   acceptQuest,
+  acceptQuestWithResult,
   getQuestProgress,
   setTrackedQuest,
   syncQuestProgress,
@@ -277,6 +278,32 @@ function App() {
     })
   }
 
+  const handleAcceptQuestFromNpc = (questId: string) => {
+    const result = acceptQuestWithResult(
+      areaSession.quests,
+      questId,
+      getAllClueStates(areaSession),
+    )
+    if (result.code !== 'ACCEPTED') return result
+    setPlayerSession((current) => {
+      const currentResult = acceptQuestWithResult(
+        current.run.quests,
+        questId,
+        getAllClueStates(current.run),
+      )
+      if (currentResult.code !== 'ACCEPTED') return current
+      const run = { ...current.run, quests: currentResult.session }
+      return {
+        run,
+        progression: applyXPRewards(
+          current.progression,
+          collectCompletionRewards(current.run, run),
+        ),
+      }
+    })
+    return result
+  }
+
   const handleTrackQuest = (questId: string | null) => {
     setPlayerSession((current) => ({
       ...current,
@@ -327,7 +354,7 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.18.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.19.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -396,6 +423,8 @@ function App() {
             effectiveStats={effectiveStats}
             waypoint={areaWaypoints[currentArea.id]}
             questNavigation={questNavigation}
+            quests={areaSession.quests}
+            onAcceptQuest={handleAcceptQuestFromNpc}
             onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
               if (waypoint) return { ...current, [currentArea.id]: waypoint }
               const next = { ...current }

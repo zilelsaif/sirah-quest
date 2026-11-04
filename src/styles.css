@@ -1623,6 +1623,52 @@ h1 {
   margin: 0;
 }
 
+.dialogue-panel__quest {
+  margin-top: 0.85rem;
+  padding: 0.8rem;
+  border: 1px solid #c6a65e;
+  border-radius: 0.65rem;
+  background: #fff2c9;
+}
+
+.dialogue-panel__quest span {
+  color: #775719;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dialogue-panel__quest h4,
+.dialogue-panel__quest p,
+.dialogue-panel__quest small {
+  display: block;
+  margin: 0.3rem 0 0;
+}
+
+.dialogue-panel__quest small {
+  color: #52606d;
+  line-height: 1.4;
+}
+
+.dialogue-panel__feedback {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.55rem;
+}
+
+.dialogue-panel__feedback.is-success {
+  color: #164c3a;
+  background: #d9f1df;
+}
+
+.dialogue-panel__feedback.is-warning {
+  color: #6d3f16;
+  background: #fae3bd;
+}
+
 .dialogue-panel > header p {
   color: #7c5b18;
   font-size: 0.68rem;

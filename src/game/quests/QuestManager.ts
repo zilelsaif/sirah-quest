@@ -2,6 +2,18 @@ import type { ClueSessionState } from '../session/types'
 import { MAX_ACTIVE_QUESTS, QUEST_DATA } from './questData'
 import type { QuestDefinition, QuestSessionState } from './types'
 
+export type QuestAcceptanceCode =
+  | 'ACCEPTED'
+  | 'QUEST_NOT_FOUND'
+  | 'QUEST_LOCKED'
+  | 'QUEST_NOT_AVAILABLE'
+  | 'ACTIVE_LIMIT_REACHED'
+
+export interface QuestAcceptanceResult {
+  code: QuestAcceptanceCode
+  session: QuestSessionState
+}
+
 export function createQuestSession(
   quests: readonly QuestDefinition[] = QUEST_DATA,
 ): QuestSessionState {
@@ -27,22 +39,42 @@ export function acceptQuest(
   quests: readonly QuestDefinition[] = QUEST_DATA,
   maxActiveQuests = MAX_ACTIVE_QUESTS,
 ): QuestSessionState {
+  return acceptQuestWithResult(session, questId, clues, quests, maxActiveQuests).session
+}
+
+export function acceptQuestWithResult(
+  session: QuestSessionState,
+  questId: string,
+  clues: Record<string, ClueSessionState>,
+  quests: readonly QuestDefinition[] = QUEST_DATA,
+  maxActiveQuests = MAX_ACTIVE_QUESTS,
+): QuestAcceptanceResult {
+  const definition = quests.find((quest) => quest.id === questId)
   const progress = session.quests[questId]
-  if (!progress || progress.status !== 'AVAILABLE') return session
+  if (!definition || !progress) return { code: 'QUEST_NOT_FOUND', session }
+  const prerequisitesMet = definition.prerequisiteQuestIds.every(
+    (requiredId) => session.quests[requiredId]?.status === 'COMPLETED',
+  )
+  if (progress.status === 'LOCKED' || !prerequisitesMet) {
+    return { code: 'QUEST_LOCKED', session }
+  }
+  if (progress.status !== 'AVAILABLE') return { code: 'QUEST_NOT_AVAILABLE', session }
   const activeCount = Object.values(session.quests).filter(
     (quest) => quest.status === 'ACTIVE',
   ).length
-  if (activeCount >= maxActiveQuests) return session
+  if (activeCount >= maxActiveQuests) return { code: 'ACTIVE_LIMIT_REACHED', session }
 
   const accepted = {
     ...session,
-    acceptedQuestIds: [...session.acceptedQuestIds, questId],
+    acceptedQuestIds: session.acceptedQuestIds.includes(questId)
+      ? session.acceptedQuestIds
+      : [...session.acceptedQuestIds, questId],
     quests: {
       ...session.quests,
       [questId]: { ...progress, status: 'ACTIVE' as const },
     },
   }
-  return syncQuestProgress(accepted, clues, quests)
+  return { code: 'ACCEPTED', session: syncQuestProgress(accepted, clues, quests) }
 }
 
 export function setTrackedQuest(

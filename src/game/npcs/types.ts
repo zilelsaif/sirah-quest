@@ -13,4 +13,5 @@ export interface NpcDefinition {
   visualKey: NpcVisualKey
   interactionRadius: number
   dialogueId: string
+  questIds: string[]
 }

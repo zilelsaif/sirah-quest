@@ -16,9 +16,12 @@ import {
   advanceDialogue,
   chooseDialogueResponse,
   createDialogueSession,
+  getDialogueChoice,
   getDialogueNode,
 } from './dialogue/DialogueEngine'
-import type { DialogueSession } from './dialogue/types'
+import type { DialogueActionFeedback, DialogueSession } from './dialogue/types'
+import type { QuestAcceptanceResult } from './quests/QuestManager'
+import type { QuestSessionState } from './quests/types'
 
 interface GameCanvasProps {
   area: AreaDefinition
@@ -30,6 +33,8 @@ interface GameCanvasProps {
   waypoint?: PlayerPosition
   onWaypointChange: (waypoint: PlayerPosition | undefined) => void
   questNavigation: QuestNavigationState
+  quests: QuestSessionState
+  onAcceptQuest: (questId: string) => QuestAcceptanceResult
 }
 
 export function GameCanvas({
@@ -42,6 +47,8 @@ export function GameCanvas({
   waypoint,
   onWaypointChange,
   questNavigation,
+  quests,
+  onAcceptQuest,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
@@ -54,6 +61,7 @@ export function GameCanvas({
     npc: NpcDefinition
     session: DialogueSession
   } | null>(null)
+  const [dialogueFeedback, setDialogueFeedback] = useState<DialogueActionFeedback | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
@@ -74,12 +82,14 @@ export function GameCanvas({
       (npc) => {
         if (!npc) {
           setOpenDialogue(null)
+          setDialogueFeedback(null)
           return
         }
         previousFocusRef.current = document.activeElement instanceof HTMLElement
           ? document.activeElement
           : null
         setOpenDialogue({ npc, session: createDialogueSession(npc.dialogueId) })
+        setDialogueFeedback(null)
       },
     )
     gameRef.current = game
@@ -112,12 +122,14 @@ export function GameCanvas({
     setIsExplorationMapOpen(false)
     setNearbyNpc(null)
     setOpenDialogue(null)
+    setDialogueFeedback(null)
     onNewTestRun()
   }
 
   const closeDialogue = () => {
     getScene()?.closeNpcDialogue()
     setOpenDialogue(null)
+    setDialogueFeedback(null)
     window.requestAnimationFrame(() => {
       const previous = previousFocusRef.current
       if (
@@ -133,13 +145,37 @@ export function GameCanvas({
   const advanceOpenDialogue = () => {
     if (!openDialogue) return
     const next = advanceDialogue(openDialogue.session)
+    setDialogueFeedback(null)
     if (!next) closeDialogue()
     else setOpenDialogue({ ...openDialogue, session: next })
   }
 
   const chooseOpenDialogueResponse = (choiceId: string) => {
     if (!openDialogue) return
-    const next = chooseDialogueResponse(openDialogue.session, choiceId)
+    const context = { quests }
+    const choice = getDialogueChoice(openDialogue.session, choiceId, context)
+    if (!choice) return
+    if (choice.action?.type === 'ACCEPT_QUEST') {
+      const result = onAcceptQuest(choice.action.questId)
+      if (result.code === 'ACCEPTED') {
+        setDialogueFeedback({
+          code: result.code,
+          tone: 'success',
+          message: { bm: 'Misi berjaya diterima.', en: 'Quest accepted successfully.' },
+        })
+        setOpenDialogue({ ...openDialogue, session: { ...openDialogue.session, nodeId: choice.nextNodeId } })
+        return
+      }
+      const message = result.code === 'ACTIVE_LIMIT_REACHED'
+        ? { bm: 'Had tiga misi aktif telah dicapai. Selesaikan satu misi sebelum menerima yang lain.', en: 'The three-active-quest limit has been reached. Complete one before accepting another.' }
+        : result.code === 'QUEST_LOCKED'
+          ? { bm: 'Misi ini masih terkunci kerana keperluannya belum dipenuhi.', en: 'This quest is still locked because its requirements are unmet.' }
+          : { bm: 'Keadaan misi telah berubah. Semak Log Quest atau mulakan semula perbualan.', en: 'The quest state has changed. Check the Quest Log or restart the conversation.' }
+      setDialogueFeedback({ code: result.code, tone: 'warning', message })
+      return
+    }
+    setDialogueFeedback(null)
+    const next = chooseDialogueResponse(openDialogue.session, choiceId, context)
     if (next) setOpenDialogue({ ...openDialogue, session: next })
   }
 
@@ -317,6 +353,8 @@ export function GameCanvas({
         <DialoguePanel
           npc={openDialogue.npc}
           session={openDialogue.session}
+          questSession={quests}
+          feedback={dialogueFeedback}
           onAdvance={advanceOpenDialogue}
           onChoose={chooseOpenDialogueResponse}
           onClose={closeDialogue}

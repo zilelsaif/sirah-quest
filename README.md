@@ -5,9 +5,9 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.18.0 adds a reusable, bilingual NPC and
-dialogue foundation with proximity, keyboard, pointer and touch interaction
-while preserving quests, navigation, progression and save schema 3. Backend services,
+question interactions. Version 0.19.0 connects the bilingual NPC dialogue
+foundation to the existing Multi-Quest System through explicit, data-driven
+quest offers while preserving navigation, progression and save schema 3. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -199,6 +199,19 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.19.0 — NPC Quest Integration
+
+- Associates Penjaga Balai Ilmu with the existing Jejak Permulaan and Rahsia
+  Wahyu Pertama quests, and Pengembara Bazar with Perjalanan Hijrah.
+- Adds declarative quest-status conditions and a typed `ACCEPT_QUEST` dialogue
+  action. Quest Manager remains the only authority for availability,
+  prerequisites, the three-active-quest limit and progress reconciliation.
+- Acceptance is always explicit, never changes tracking, and produces the same
+  state as Quest Log acceptance. Active and completed quests receive contextual
+  acknowledgement without duplicate objectives or rewards.
+- Keeps cross-area guidance general, question content unchanged, save schema 3,
+  and all historical archives intact. See `docs/NPC_SYSTEM.md`.
 
 ### v0.18.0 — NPC Interaction Foundation
 

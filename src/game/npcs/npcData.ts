@@ -13,6 +13,7 @@ export const NPC_DEFINITIONS: NpcDefinition[] = [
     visualKey: 'hall-keeper',
     interactionRadius: 92,
     dialogueId: 'dialogue-penjaga-balai-ilmu',
+    questIds: ['quest-jejak-permulaan', 'quest-rahsia-wahyu-pertama'],
   },
   {
     id: 'npc-pengembara-bazar',
@@ -25,6 +26,7 @@ export const NPC_DEFINITIONS: NpcDefinition[] = [
     visualKey: 'bazaar-traveller',
     interactionRadius: 92,
     dialogueId: 'dialogue-pengembara-bazar',
+    questIds: ['quest-perjalanan-hijrah'],
   },
 ]
 
