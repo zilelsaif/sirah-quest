@@ -48,6 +48,7 @@ import {
 } from './game/onboarding/tutorialController'
 import { createWorldObjectSession } from './game/worldObjects/worldObjectRules'
 import type { WorldObjectSessionState } from './game/worldObjects/types'
+import { BackgroundMusicPlayer } from './game/audio/BackgroundMusicPlayer'
 
 type PlayerSession = PlayerSessionState
 
@@ -438,7 +439,6 @@ function App() {
         <WorldMap
           currentLocationId={worldSession.currentLocationId}
           visitedLocationIds={worldSession.visitedLocationIds}
-          hasEnteredArea={worldSession.hasEnteredArea}
           quests={areaSession.quests}
           questNavigation={questNavigation}
           onOpenQuestLog={() => setIsQuestLogOpen(true)}
@@ -541,6 +541,7 @@ function App() {
           setIsTutorialOpen(true)
         }}
       />
+      <BackgroundMusicPlayer />
       <section className="save-controls" aria-label="Data simpanan">
         <div>
           <strong>Data simpanan</strong>

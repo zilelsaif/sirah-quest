@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import worldMapImage from '../assets/world-map-v015.webp'
 import { QUEST_DATA } from '../game/quests/questData'
 import type { QuestSessionState } from '../game/quests/types'
 import type { QuestNavigationState } from '../game/navigation/questNavigation'
 import { getWorldLocation, WORLD_LOCATIONS, WORLD_ROUTE_LINKS } from './locationData'
 import type { WorldLocation } from './types'
+import { clampContextMenuPosition, getWorldMapLocationAction, type ContextMenuPosition } from './worldMapMenu'
 
 interface WorldMapProps {
   currentLocationId: string
   visitedLocationIds: string[]
-  hasEnteredArea: boolean
   onTravel: (locationId: string) => void
   onEnterArea: (areaId: string) => void
   quests: QuestSessionState
@@ -30,7 +30,6 @@ const STATUS_LABELS = {
 export function WorldMap({
   currentLocationId,
   visitedLocationIds,
-  hasEnteredArea,
   onTravel,
   onEnterArea,
   quests,
@@ -42,11 +41,15 @@ export function WorldMap({
   interfaceLocked,
 }: WorldMapProps) {
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
+  const [menuPosition, setMenuPosition] = useState<ContextMenuPosition>({ left: 8, top: 8, placement: 'right' })
   const [markerLocationId, setMarkerLocationId] = useState(currentLocationId)
   const [isTravelling, setIsTravelling] = useState(false)
   const [mapViewMode, setMapViewMode] = useState<'region' | 'location'>('region')
   const travelTimerRef = useRef<number | undefined>(undefined)
   const viewportRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLElement>(null)
+  const nodeRefs = useRef(new Map<string, HTMLButtonElement>())
+  const selectedTriggerRef = useRef<HTMLButtonElement | null>(null)
   const dragRef = useRef<{
     pointerId: number
     startX: number
@@ -67,9 +70,86 @@ export function WorldMap({
   )
 
   useEffect(() => {
-    setSelectedLocationId(currentLocationId)
     setMarkerLocationId(currentLocationId)
   }, [currentLocationId])
+
+  const closeLocationMenu = useCallback((restoreFocus = true) => {
+    setSelectedLocationId(null)
+    if (!restoreFocus) return
+    window.requestAnimationFrame(() => selectedTriggerRef.current?.focus())
+  }, [])
+
+  const selectLocation = useCallback((locationId: string, trigger?: HTMLButtonElement | null) => {
+    if (selectedLocationId === locationId) {
+      closeLocationMenu()
+      return
+    }
+    selectedTriggerRef.current = trigger ?? nodeRefs.current.get(locationId) ?? null
+    setSelectedLocationId(locationId)
+  }, [closeLocationMenu, selectedLocationId])
+
+  const updateMenuPosition = useCallback(() => {
+    const viewport = viewportRef.current
+    const menu = menuRef.current
+    const node = selectedLocationId ? nodeRefs.current.get(selectedLocationId) : undefined
+    if (!viewport || !menu || !node) return
+    const viewportRect = viewport.getBoundingClientRect()
+    const nodeRect = node.getBoundingClientRect()
+    const position = clampContextMenuPosition({
+      anchorX: nodeRect.left - viewportRect.left,
+      anchorY: nodeRect.top - viewportRect.top,
+      anchorWidth: nodeRect.width,
+      anchorHeight: nodeRect.height,
+      menuWidth: menu.offsetWidth,
+      menuHeight: menu.offsetHeight,
+      viewportWidth: viewport.clientWidth,
+      viewportHeight: viewport.clientHeight,
+    })
+    setMenuPosition({
+      ...position,
+      left: position.left + viewport.scrollLeft,
+      top: position.top + viewport.scrollTop,
+    })
+  }, [selectedLocationId])
+
+  useEffect(() => {
+    if (!selectedLocationId) return
+    const frame = window.requestAnimationFrame(updateMenuPosition)
+    const viewport = viewportRef.current
+    const observer = new ResizeObserver(updateMenuPosition)
+    if (viewport) observer.observe(viewport)
+    if (menuRef.current) observer.observe(menuRef.current)
+    viewport?.addEventListener('scroll', updateMenuPosition, { passive: true })
+    window.addEventListener('resize', updateMenuPosition)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      observer.disconnect()
+      viewport?.removeEventListener('scroll', updateMenuPosition)
+      window.removeEventListener('resize', updateMenuPosition)
+    }
+  }, [mapViewMode, selectedLocationId, updateMenuPosition])
+
+  useEffect(() => {
+    if (!selectedLocationId) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.repeat) return
+      event.preventDefault()
+      closeLocationMenu()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [closeLocationMenu, selectedLocationId])
+
+  useEffect(() => {
+    if (!selectedLocationId) return
+    const handleOutsidePointer = (event: PointerEvent) => {
+      const target = event.target
+      if (!(target instanceof Element) || target.closest('.world-location-menu, .world-node')) return
+      closeLocationMenu(false)
+    }
+    document.addEventListener('pointerdown', handleOutsidePointer)
+    return () => document.removeEventListener('pointerdown', handleOutsidePointer)
+  }, [closeLocationMenu, selectedLocationId])
 
   useEffect(
     () => () => {
@@ -159,26 +239,29 @@ export function WorldMap({
 
   const renderPrimaryAction = () => {
     if (!selectedLocation) return null
-    const isCurrent = selectedLocation.id === currentLocationId
+    const action = getWorldMapLocationAction(selectedLocation, currentLocationId, connectedIds)
 
-    if (isCurrent && selectedLocation.status === 'playable' && selectedLocation.areaId) {
+    if (action === 'ENTER') {
       return (
         <button
           type="button"
           disabled={interfaceLocked}
-          onClick={() => onEnterArea(selectedLocation.areaId!)}
+          onClick={() => {
+            closeLocationMenu(false)
+            onEnterArea(selectedLocation.areaId!)
+          }}
         >
-          {hasEnteredArea ? 'Masuk Kawasan' : 'Mula Pengembaraan'}
+          Masuk Kawasan
         </button>
       )
     }
 
-    if (isCurrent && selectedLocation.status === 'coming-soon') {
+    if (action === 'LOCKED') return <button type="button" disabled>Terkunci</button>
+    if (action === 'COMING_SOON') {
       return <button type="button" disabled>Akan Datang</button>
     }
 
-    const canTravel =
-      selectedLocation.status !== 'locked' && connectedIds.has(selectedLocation.id)
+    const canTravel = action === 'TRAVEL'
 
     return (
       <button
@@ -226,7 +309,7 @@ export function WorldMap({
         <span>Pilih lokasi pada peta</span>
         <select
           value={selectedLocationId ?? currentLocationId}
-          onChange={(event) => setSelectedLocationId(event.target.value)}
+          onChange={(event) => selectLocation(event.target.value)}
         >
           {WORLD_LOCATIONS.map((location) => (
             <option key={location.id} value={location.id}>
@@ -251,6 +334,10 @@ export function WorldMap({
             event.preventDefault()
             event.stopPropagation()
           }
+        }}
+        onClick={(event) => {
+          const target = event.target as Element
+          if (!target.closest('.world-node, .world-location-menu')) closeLocationMenu(false)
         }}
       >
         <div className={`world-map__canvas is-${mapViewMode}`}>
@@ -288,6 +375,10 @@ export function WorldMap({
             return (
               <button
                 key={location.id}
+                ref={(node) => {
+                  if (node) nodeRefs.current.set(location.id, node)
+                  else nodeRefs.current.delete(location.id)
+                }}
                 type="button"
                 className={`world-node is-${location.status}${isCurrent ? ' is-current' : ''}${
                   isVisited ? ' is-visited' : ''
@@ -303,7 +394,10 @@ export function WorldMap({
                   hasTrackedQuest ? ', misi dijejak' : ''
                 }`}
                 disabled={interfaceLocked || isTravelling}
-                onClick={() => setSelectedLocationId(location.id)}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  selectLocation(location.id, event.currentTarget)
+                }}
               >
                 <span className="world-node__marker" aria-hidden="true">
                   {location.status === 'locked' ? '◆' : isCurrent ? '★' : '●'}
@@ -343,6 +437,32 @@ export function WorldMap({
             ✦
           </div>
         </div>
+
+        {selectedLocation && (
+          <aside
+            ref={menuRef}
+            className={`world-location-menu is-${menuPosition.placement}`}
+            style={{ left: menuPosition.left, top: menuPosition.top }}
+            role="dialog"
+            aria-modal="false"
+            aria-labelledby="world-location-menu-title"
+            data-location-id={selectedLocation.id}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="world-location-menu__close"
+              aria-label={`Tutup menu ${selectedLocation.nameBM}`}
+              onClick={() => closeLocationMenu()}
+            >
+              ×
+            </button>
+            <p>{STATUS_LABELS[selectedLocation.status]}</p>
+            <h3 id="world-location-menu-title">{selectedLocation.nameBM}</h3>
+            <div className="world-location-menu__action">{renderPrimaryAction()}</div>
+          </aside>
+        )}
       </div>
 
       <p className="travel-feedback" role="status" aria-live="polite">
@@ -367,14 +487,8 @@ export function WorldMap({
             )}
           </div>
           <div className="location-panel__actions">
-            {renderPrimaryAction()}
-            <button
-              type="button"
-              className="button-secondary"
-              disabled={interfaceLocked}
-              onClick={() => setSelectedLocationId(null)}
-            >
-              Tutup
+            <button type="button" className="button-secondary" disabled={interfaceLocked} onClick={() => closeLocationMenu()}>
+              Tutup Maklumat
             </button>
           </div>
         </aside>

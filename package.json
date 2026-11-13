@@ -19,7 +19,8 @@
     "journal:verify": "node scripts/verify-journal-system.mjs",
     "onboarding:verify": "node scripts/verify-onboarding-system.mjs",
     "content-pack:verify": "node scripts/verify-content-pack-1.mjs",
-    "world-objects:verify": "node scripts/verify-world-object-system.mjs"
+    "world-objects:verify": "node scripts/verify-world-object-system.mjs",
+    "map-music:verify": "node scripts/verify-world-map-menu-music.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

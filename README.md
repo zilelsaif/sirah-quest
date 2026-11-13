@@ -7,7 +7,8 @@ This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
 question interactions. Version 0.23.0 adds six reusable environment objects
 across the three playable areas, with vision-gated inspect and toggle interactions
-that remain session-only. The 24-question bank and save schema 3 are unchanged. Backend services,
+that remain session-only. It also adds an anchored World Map location menu and
+gesture-driven bundled background music controls. The 24-question bank and save schema 3 are unchanged. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -44,6 +45,8 @@ The test map supports both desktop and touch-friendly controls:
 - Tap a map destination on a phone or tablet.
 - Press E near a discovered clue, or click/tap its marker or prompt.
 - Press E near a visible world object, click/tap it, or use the touch interaction control.
+- Select a World Map node or label to open its nearby travel or entry menu.
+- Use the compact **Muzik** controls to start, pause, mute or adjust background music.
 - Answer the bilingual multiple-choice question to complete a clue.
 - Use **PETUNJUK** to eliminate one incorrect answer when enough choices remain.
 - An incorrect answer provides feedback and can be attempted again.
@@ -212,6 +215,13 @@ or Mastery migration policy even if wording corrections retain its stable ID.
 - Object toggles survive map and area transitions in the current run, reset with
   **New Test Run**, and are intentionally not written to browser storage.
 - See `docs/WORLD_INTERACTION_SYSTEM.md` and run `npm run world-objects:verify`.
+- Adds one responsive location-action menu anchored to the selected World Map
+  node while retaining the existing details panel and authoritative travel flow.
+- Bundles the supplied `sirahquestbg2.mp3` as one looping, user-gesture-driven
+  root audio controller with BM playback, mute and volume controls.
+- Keeps audio preferences separate from gameplay saves and pauses safely while
+  the document is hidden. See `docs/WORLD_MAP_MENU_AND_MUSIC.md` and run
+  `npm run map-music:verify`.
 
 ### v0.22.0 — Quest and Learning Content Expansion, Pack 1
 

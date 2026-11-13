@@ -394,6 +394,72 @@ button:disabled {
   background: rgb(11 22 40 / 82%);
 }
 
+.music-player {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) auto auto minmax(10rem, 14rem);
+  gap: 0.65rem;
+  align-items: center;
+  width: min(100%, 980px);
+  margin: 0 auto 0.75rem;
+  padding: 0.7rem 0.85rem;
+  color: #fff7df;
+  border: 1px solid rgb(244 213 141 / 28%);
+  border-radius: 0.75rem;
+  background: rgb(11 22 40 / 90%);
+}
+
+.music-player > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+}
+
+.music-player small {
+  overflow: hidden;
+  color: #aebdd0;
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.music-player button {
+  min-width: 5.25rem;
+  min-height: 44px;
+  padding: 0.55rem 0.7rem;
+  color: #fff7df;
+  font-weight: 900;
+  border: 1px solid rgb(244 213 141 / 48%);
+  border-radius: 0.5rem;
+  background: var(--sq-teal);
+  cursor: pointer;
+}
+
+.music-player button[aria-pressed="true"] {
+  color: var(--sq-ink);
+  background: var(--sq-gold-soft);
+}
+
+.music-player label {
+  display: grid;
+  min-height: 44px;
+  gap: 0.2rem;
+  align-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.music-player input {
+  width: 100%;
+  min-height: 24px;
+  accent-color: var(--sq-gold-soft);
+}
+
+.music-player button:focus-visible,
+.music-player input:focus-visible {
+  outline: 3px solid var(--sq-gold-soft);
+  outline-offset: 2px;
+}
+
 @media (hover: hover) {
   button:not(:disabled):not(.world-node):hover {
     border-color: var(--sq-parchment);
@@ -500,6 +566,28 @@ button:disabled {
   .save-controls { align-items: stretch; flex-direction: column; }
   .save-controls button { width: 100%; }
   .reset-confirm__actions button { flex: 1 1 100%; }
+}
+
+@media (max-width: 40rem) {
+  .music-player {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .music-player > div,
+  .music-player label {
+    grid-column: 1 / -1;
+  }
+
+  .music-player button {
+    width: 100%;
+  }
+}
+
+@media (max-height: 31.25rem) and (orientation: landscape) {
+  .music-player {
+    grid-template-columns: minmax(7rem, 1fr) auto auto minmax(8rem, 12rem);
+    padding-block: 0.45rem;
+  }
 }
 
 * {
@@ -807,11 +895,111 @@ h1 {
 }
 
 .world-map__viewport {
+  position: relative;
   width: 100%;
   overflow: auto;
   overscroll-behavior: contain;
   background: #07101d;
   touch-action: pan-x pan-y;
+}
+
+.world-location-menu {
+  position: absolute;
+  z-index: 12;
+  display: grid;
+  width: min(15rem, calc(100% - 1rem));
+  min-width: 11.5rem;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  color: var(--sq-ink);
+  border: 2px solid var(--sq-gold);
+  border-radius: 0.7rem;
+  background: var(--sq-parchment);
+  box-shadow: 0 0.85rem 2rem rgb(0 0 0 / 48%);
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.world-location-menu::before {
+  position: absolute;
+  top: 50%;
+  width: 0.7rem;
+  height: 0.7rem;
+  content: "";
+  border: solid var(--sq-gold);
+  background: var(--sq-parchment);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.world-location-menu.is-right::before {
+  left: -0.43rem;
+  border-width: 0 0 2px 2px;
+}
+
+.world-location-menu.is-left::before {
+  right: -0.43rem;
+  border-width: 2px 2px 0 0;
+}
+
+.world-location-menu > p,
+.world-location-menu > h3 {
+  margin: 0;
+}
+
+.world-location-menu > p {
+  padding-right: 2.4rem;
+  color: #765713;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.world-location-menu > h3 {
+  padding-right: 2.4rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+}
+
+.world-location-menu button {
+  min-height: 44px;
+  padding: 0.55rem 0.7rem;
+  color: var(--sq-ink);
+  font-weight: 900;
+  border: 1px solid var(--sq-gold);
+  border-radius: 0.5rem;
+  background: var(--sq-gold-soft);
+  cursor: pointer;
+}
+
+.world-location-menu button:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.world-location-menu .world-location-menu__close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  color: #fff7df;
+  border-color: #52647b;
+  background: #52647b;
+}
+
+.world-location-menu button:focus-visible {
+  outline: 3px solid var(--sq-lapis);
+  outline-offset: 2px;
+}
+
+.world-location-menu__action {
+  margin-top: 0.25rem;
+}
+
+.world-location-menu__action > button {
+  width: 100%;
 }
 
 .world-map__canvas {
