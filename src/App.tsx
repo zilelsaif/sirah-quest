@@ -46,6 +46,8 @@ import {
   skipTutorial,
   startTutorial,
 } from './game/onboarding/tutorialController'
+import { createWorldObjectSession } from './game/worldObjects/worldObjectRules'
+import type { WorldObjectSessionState } from './game/worldObjects/types'
 
 type PlayerSession = PlayerSessionState
 
@@ -109,6 +111,7 @@ function App() {
   const [tutorialState, setTutorialState] = useState(createTutorialState)
   const [isTutorialOpen, setIsTutorialOpen] = useState(true)
   const [areaWaypoints, setAreaWaypoints] = useState<Record<string, PlayerPosition>>({})
+  const [worldObjectState, setWorldObjectState] = useState<WorldObjectSessionState>(createWorldObjectSession)
   const [levelUpNotification, setLevelUpNotification] = useState<{
     level: number
     levelsGained: number
@@ -151,6 +154,9 @@ function App() {
     if (npcId === 'npc-penjaga-balai-ilmu') {
       setTutorialState((current) => completeTutorialStep(current, 'npc-interaction'))
     }
+  }, [])
+  const updateWorldObjectState = useCallback((next: WorldObjectSessionState) => {
+    setWorldObjectState((current) => ({ ...current, ...next }))
   }, [])
 
   useEffect(() => {
@@ -263,6 +269,7 @@ function App() {
     setIsMasteryPanelOpen(false)
     setIsJournalOpen(false)
     setAreaWaypoints({})
+    setWorldObjectState(createWorldObjectSession())
     setTutorialState(createTutorialState())
     setIsTutorialOpen(true)
   }, [])
@@ -299,6 +306,7 @@ function App() {
     })
     setMode('WORLD_MAP')
     setAreaWaypoints({})
+    setWorldObjectState(createWorldObjectSession())
     setLevelUpNotification(null)
     previousLevelRef.current = progression.level
     setTutorialState(createTutorialState())
@@ -387,6 +395,7 @@ function App() {
     setIsJournalOpen(false)
     setIsResetConfirmOpen(false)
     setAreaWaypoints({})
+    setWorldObjectState(createWorldObjectSession())
     setTutorialState(createTutorialState())
     setIsTutorialOpen(true)
     setSaveBlocked(false)
@@ -401,7 +410,7 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.22.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.23.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -478,6 +487,8 @@ function App() {
             onAcceptQuest={handleAcceptQuestFromNpc}
             onPlayerMoved={recordPlayerMovement}
             onNpcDialogueOpen={recordNpcDialogue}
+            worldObjectState={worldObjectState}
+            onWorldObjectStateChange={updateWorldObjectState}
             onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
               if (waypoint) return { ...current, [currentArea.id]: waypoint }
               const next = { ...current }

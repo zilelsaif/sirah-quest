@@ -1663,7 +1663,8 @@ h1 {
   background: rgb(3 7 18 / 68%);
 }
 
-.npc-interact-button {
+.npc-interact-button,
+.world-object-interact-button {
   position: absolute;
   z-index: 8;
   right: 0.75rem;
@@ -1681,9 +1682,77 @@ h1 {
   touch-action: manipulation;
 }
 
-.npc-interact-button:focus-visible {
+.world-object-interact-button {
+  right: auto;
+  left: 50%;
+  color: #fff7df;
+  border-color: #f4d58d;
+  background: #66431f;
+  transform: translateX(-50%);
+}
+
+.npc-interact-button:focus-visible,
+.world-object-interact-button:focus-visible,
+.world-object-panel button:focus-visible {
   outline: 3px solid #fff7df;
   outline-offset: 2px;
+}
+
+.world-object-overlay {
+  position: fixed;
+  z-index: 1250;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  overflow: hidden;
+  background: rgb(3 7 18 / 72%);
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+
+.world-object-panel {
+  width: min(100%, 32rem);
+  max-height: calc(100dvh - 1.5rem);
+  overflow-y: auto;
+  padding: 1.1rem;
+  color: #172033;
+  border: 2px solid #d5a83f;
+  border-radius: 0.85rem;
+  background: #fff9e7;
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 45%);
+}
+
+.world-object-panel__label {
+  color: #6b4b1e;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.world-object-panel h3 {
+  margin-top: 0.25rem;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.world-object-panel > p:not(.world-object-panel__label) {
+  margin-top: 0.7rem;
+  line-height: 1.55;
+}
+
+.world-object-panel button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 1rem;
+  padding: 0.6rem 0.85rem;
+  color: #fff7df;
+  font-weight: 900;
+  border: 1px solid #503416;
+  border-radius: 0.55rem;
+  background: #66431f;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .dialogue-overlay {
@@ -2741,6 +2810,20 @@ h1 {
     right: 0.45rem;
     bottom: 0.45rem;
     max-width: calc(100% - 0.9rem);
+  }
+
+  .world-object-interact-button {
+    bottom: 0.45rem;
+    max-width: calc(100% - 0.9rem);
+  }
+
+  .world-object-overlay {
+    padding: 0.5rem;
+  }
+
+  .world-object-panel {
+    max-height: calc(100dvh - 1rem);
+    padding: 0.9rem;
   }
 
   .clue-panel {

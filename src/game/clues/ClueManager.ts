@@ -178,6 +178,10 @@ export class ClueManager {
     if (suppressed) this.setActiveClue(undefined)
   }
 
+  hasActiveClue() {
+    return Boolean(this.activeClue)
+  }
+
   getCounts(): ClueCounts {
     return {
       total: this.clues.length,

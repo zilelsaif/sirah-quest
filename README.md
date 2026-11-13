@@ -5,9 +5,9 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.22.0 adds three optional two-objective side
-quests and six clue interactions across the existing playable areas, using the
-unchanged 24-question bank while preserving gameplay freedom and save schema 3. Backend services,
+question interactions. Version 0.23.0 adds six reusable environment objects
+across the three playable areas, with vision-gated inspect and toggle interactions
+that remain session-only. The 24-question bank and save schema 3 are unchanged. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -43,6 +43,7 @@ The test map supports both desktop and touch-friendly controls:
 - Click a map destination with a mouse.
 - Tap a map destination on a phone or tablet.
 - Press E near a discovered clue, or click/tap its marker or prompt.
+- Press E near a visible world object, click/tap it, or use the touch interaction control.
 - Answer the bilingual multiple-choice question to complete a clue.
 - Use **PETUNJUK** to eliminate one incorrect answer when enough choices remain.
 - An incorrect answer provides feedback and can be attempted again.
@@ -51,8 +52,8 @@ The test map supports both desktop and touch-friendly controls:
 Keyboard movement cancels an active click or tap destination. The prototype uses
 placeholder shapes only; it does not contain final game art or content.
 
-During development, **New Test Run** selects a fresh set of three questions and
-resets clue, quest, answer-order, player-position, and remaining-Hint run state.
+During development, **New Test Run** selects a fresh question run and
+resets clue, quest, answer-order, player-position, world-object, and remaining-Hint run state.
 It deliberately preserves player XP, level, purchased upgrade ranks, Upgrade
 Points, and the reward ledger. The control is excluded from production builds.
 
@@ -199,6 +200,18 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.23.0 — RPG World Interaction Foundation
+
+- Adds six declarative world objects: one INSPECT and one TOGGLE interaction in
+  each existing playable area.
+- Keeps Phaser rendering/proximity validation, React dialog UI, pure interaction
+  rules, and App-owned run state separated behind typed definitions.
+- Preserves NPC → clue → world-object priority, existing fog and navigation,
+  tap-to-move, quest/learning authority, the 24-question bank, and save schema 3.
+- Object toggles survive map and area transitions in the current run, reset with
+  **New Test Run**, and are intentionally not written to browser storage.
+- See `docs/WORLD_INTERACTION_SYSTEM.md` and run `npm run world-objects:verify`.
 
 ### v0.22.0 — Quest and Learning Content Expansion, Pack 1
 

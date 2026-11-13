@@ -16,6 +16,9 @@ import { getCameraMetrics, type CameraViewMode } from '../camera/cameraConfig'
 import { getNpcsForArea } from '../npcs/npcData'
 import { NpcManager } from '../npcs/NpcManager'
 import type { NpcDefinition } from '../npcs/types'
+import { getWorldObjectsForArea } from '../worldObjects/worldObjectData'
+import { WorldObjectManager } from '../worldObjects/WorldObjectManager'
+import type { WorldObjectDefinition, WorldObjectPanelData, WorldObjectSessionState } from '../worldObjects/types'
 
 export class TestScene extends Phaser.Scene {
   private keyboardInput?: KeyboardInput
@@ -25,9 +28,11 @@ export class TestScene extends Phaser.Scene {
   private debugText?: Phaser.GameObjects.Text
   private clueManager?: ClueManager
   private npcManager?: NpcManager
+  private worldObjectManager?: WorldObjectManager
   private lastSessionUpdate = 0
   private cluePanelLocked = false
   private npcPanelLocked = false
+  private worldObjectPanelLocked = false
   private interfaceLocked = false
   private remainingHints: number
   private fogDiscoveryPoints: AreaPlaySession['fogDiscoveryPoints']
@@ -42,6 +47,10 @@ export class TestScene extends Phaser.Scene {
     initialCameraViewMode: CameraViewMode,
     private readonly onNearbyNpcChange: (npc: NpcDefinition | null) => void,
     private readonly onNpcDialogueChange: (npc: NpcDefinition | null) => void,
+    private readonly initialWorldObjectState: WorldObjectSessionState,
+    private readonly onWorldObjectStateChange: (state: WorldObjectSessionState) => void,
+    private readonly onNearbyWorldObjectChange: (object: WorldObjectDefinition | null) => void,
+    private readonly onWorldObjectPanelChange: (object: WorldObjectPanelData | null) => void,
   ) {
     super('movement-prototype')
     this.remainingHints = initialSession.remainingHints
@@ -129,21 +138,37 @@ export class TestScene extends Phaser.Scene {
       },
     )
 
+    this.worldObjectManager = new WorldObjectManager(
+      this,
+      getWorldObjectsForArea(this.area.id),
+      this.initialWorldObjectState,
+      this.onNearbyWorldObjectChange,
+      this.onWorldObjectPanelChange,
+      (locked) => {
+        this.worldObjectPanelLocked = locked
+        this.applyMovementLock()
+      },
+      this.onWorldObjectStateChange,
+    )
+
     this.keyboardInput = new KeyboardInput(
       this,
       this.movementController,
       () => {
-        if (this.interfaceLocked || this.cluePanelLocked || this.npcPanelLocked) return false
-        return this.npcManager?.interactWithActiveNpc() || this.clueManager?.interactWithActiveClue()
+        if (this.interfaceLocked || this.cluePanelLocked || this.npcPanelLocked || this.worldObjectPanelLocked) return false
+        return this.npcManager?.interactWithActiveNpc() ||
+          this.clueManager?.interactWithActiveClue() ||
+          this.worldObjectManager?.interactWithActiveObject()
       },
     )
     new PointerInput(
       this,
       this.movementController,
       (_pointer, gameObjects, worldPoint) => {
-        if (this.interfaceLocked || this.cluePanelLocked || this.npcPanelLocked) return true
+        if (this.interfaceLocked || this.cluePanelLocked || this.npcPanelLocked || this.worldObjectPanelLocked) return true
         if (this.npcManager?.handlePointerDown(worldPoint, gameObjects)) return true
-        return this.clueManager?.handlePointerDown(worldPoint, gameObjects) ?? false
+        if (this.clueManager?.handlePointerDown(worldPoint, gameObjects)) return true
+        return this.worldObjectManager?.handlePointerDown(worldPoint, gameObjects) ?? false
       },
     )
 
@@ -169,7 +194,9 @@ export class TestScene extends Phaser.Scene {
       this.emitSessionState(player.x, player.y)
       this.onCluePanelChange(null)
       this.npcManager?.destroy()
+      this.worldObjectManager?.destroy()
       this.onNearbyNpcChange(null)
+      this.onNearbyWorldObjectChange(null)
       this.scale.off(Phaser.Scale.Events.RESIZE, this.applyCameraZoom, this)
     })
   }
@@ -179,12 +206,17 @@ export class TestScene extends Phaser.Scene {
     this.movementController?.update(delta)
 
     if (this.player) {
-      this.npcManager?.setInteractionSuppressed(this.cluePanelLocked || this.interfaceLocked)
+      this.npcManager?.setInteractionSuppressed(this.cluePanelLocked || this.worldObjectPanelLocked || this.interfaceLocked)
       this.npcManager?.update(this.player.x, this.player.y, this.effectiveStats.visionRadius)
       this.clueManager?.setInteractionSuppressed(
-        this.npcPanelLocked || this.interfaceLocked || Boolean(this.npcManager?.hasActiveNpc()),
+        this.npcPanelLocked || this.worldObjectPanelLocked || this.interfaceLocked || Boolean(this.npcManager?.hasActiveNpc()),
       )
       this.clueManager?.update(this.player.x, this.player.y)
+      this.worldObjectManager?.setInteractionSuppressed(
+        this.npcPanelLocked || this.cluePanelLocked || this.interfaceLocked ||
+        Boolean(this.npcManager?.hasActiveNpc()) || Boolean(this.clueManager?.hasActiveClue()),
+      )
+      this.worldObjectManager?.update(this.player.x, this.player.y, this.effectiveStats.visionRadius)
     }
 
     if (this.debugText && this.player) {
@@ -212,6 +244,14 @@ export class TestScene extends Phaser.Scene {
 
   closeNpcDialogue() {
     this.npcManager?.closeOpenNpc()
+  }
+
+  interactWithWorldObject() {
+    return this.worldObjectManager?.interactWithActiveObject() ?? false
+  }
+
+  closeWorldObjectPanel() {
+    this.worldObjectManager?.closeOpenObject()
   }
 
   answerClue(optionId: string) {
@@ -262,7 +302,7 @@ export class TestScene extends Phaser.Scene {
 
   private applyMovementLock() {
     this.movementController?.setEnabled(
-      !this.cluePanelLocked && !this.npcPanelLocked && !this.interfaceLocked,
+      !this.cluePanelLocked && !this.npcPanelLocked && !this.worldObjectPanelLocked && !this.interfaceLocked,
     )
   }
 

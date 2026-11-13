@@ -22,6 +22,8 @@ import {
 import type { DialogueActionFeedback, DialogueSession } from './dialogue/types'
 import type { QuestAcceptanceResult } from './quests/QuestManager'
 import type { QuestSessionState } from './quests/types'
+import type { WorldObjectDefinition, WorldObjectPanelData, WorldObjectSessionState } from './worldObjects/types'
+import { WorldObjectPanel } from './worldObjects/WorldObjectPanel'
 
 interface GameCanvasProps {
   area: AreaDefinition
@@ -37,6 +39,8 @@ interface GameCanvasProps {
   onAcceptQuest: (questId: string) => QuestAcceptanceResult
   onPlayerMoved: () => void
   onNpcDialogueOpen: (npcId: string) => void
+  worldObjectState: WorldObjectSessionState
+  onWorldObjectStateChange: (state: WorldObjectSessionState) => void
 }
 
 export function GameCanvas({
@@ -53,6 +57,8 @@ export function GameCanvas({
   onAcceptQuest,
   onPlayerMoved,
   onNpcDialogueOpen,
+  worldObjectState,
+  onWorldObjectStateChange,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
@@ -61,6 +67,8 @@ export function GameCanvas({
   const [cameraViewMode, setCameraViewMode] = useState<CameraViewMode>('normal')
   const [isExplorationMapOpen, setIsExplorationMapOpen] = useState(false)
   const [nearbyNpc, setNearbyNpc] = useState<NpcDefinition | null>(null)
+  const [nearbyWorldObject, setNearbyWorldObject] = useState<WorldObjectDefinition | null>(null)
+  const [openWorldObject, setOpenWorldObject] = useState<WorldObjectPanelData | null>(null)
   const [openDialogue, setOpenDialogue] = useState<{
     npc: NpcDefinition
     session: DialogueSession
@@ -105,6 +113,19 @@ export function GameCanvas({
         setDialogueFeedback(null)
         onNpcDialogueOpen(npc.id)
       },
+      worldObjectState,
+      onWorldObjectStateChange,
+      setNearbyWorldObject,
+      (object) => {
+        if (!object) {
+          setOpenWorldObject(null)
+          return
+        }
+        previousFocusRef.current = document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null
+        setOpenWorldObject(object)
+      },
     )
     gameRef.current = game
     resetRequestedRef.current = false
@@ -113,14 +134,14 @@ export function GameCanvas({
       game.destroy(true)
       gameRef.current = null
     }
-  }, [area.id, session.questionRun.assignments, onSessionChange, onPlayerMoved, onNpcDialogueOpen])
+  }, [area.id, session.questionRun.assignments, onSessionChange, onPlayerMoved, onNpcDialogueOpen, onWorldObjectStateChange])
 
   const getScene = () =>
     gameRef.current?.scene.getScene('movement-prototype') as TestScene | undefined
 
   useEffect(() => {
-    getScene()?.setInterfaceLocked(interfaceLocked || isExplorationMapOpen || openDialogue !== null)
-  }, [interfaceLocked, isExplorationMapOpen, openDialogue])
+    getScene()?.setInterfaceLocked(interfaceLocked || isExplorationMapOpen || openDialogue !== null || openWorldObject !== null)
+  }, [interfaceLocked, isExplorationMapOpen, openDialogue, openWorldObject])
 
   useEffect(() => {
     getScene()?.setEffectiveStats(effectiveStats)
@@ -135,6 +156,8 @@ export function GameCanvas({
     setOpenClue(null)
     setIsExplorationMapOpen(false)
     setNearbyNpc(null)
+    setNearbyWorldObject(null)
+    setOpenWorldObject(null)
     setOpenDialogue(null)
     setDialogueFeedback(null)
     onNewTestRun()
@@ -151,6 +174,17 @@ export function GameCanvas({
         previous !== document.body &&
         previous !== document.documentElement
       ) previous.focus()
+      else containerRef.current?.focus()
+      previousFocusRef.current = null
+    })
+  }
+
+  const closeWorldObject = () => {
+    getScene()?.closeWorldObjectPanel()
+    setOpenWorldObject(null)
+    window.requestAnimationFrame(() => {
+      const previous = previousFocusRef.current
+      if (previous?.isConnected && previous !== document.body && previous !== document.documentElement) previous.focus()
       else containerRef.current?.focus()
       previousFocusRef.current = null
     })
@@ -263,7 +297,7 @@ export function GameCanvas({
           visionRadius={effectiveStats.visionRadius}
           waypoint={waypoint}
           questNavigation={questNavigation}
-          disabled={interfaceLocked || openClue !== null || openDialogue !== null}
+          disabled={interfaceLocked || openClue !== null || openDialogue !== null || openWorldObject !== null}
           onWaypointChange={onWaypointChange}
           onExpandedChange={setIsExplorationMapOpen}
         />
@@ -275,6 +309,16 @@ export function GameCanvas({
             onClick={() => getScene()?.interactWithNpc()}
           >
             Bercakap · {nearbyNpc.nameBM}
+          </button>
+        )}
+        {nearbyWorldObject && !nearbyNpc && !openDialogue && !openClue && !openWorldObject && !interfaceLocked && !isExplorationMapOpen && (
+          <button
+            type="button"
+            className="world-object-interact-button"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => getScene()?.interactWithWorldObject()}
+          >
+            Interaksi · {nearbyWorldObject.nameBM}
           </button>
         )}
       </div>
@@ -374,6 +418,7 @@ export function GameCanvas({
           onClose={closeDialogue}
         />
       )}
+      {openWorldObject && <WorldObjectPanel object={openWorldObject} onClose={closeWorldObject} />}
     </div>
   )
 }

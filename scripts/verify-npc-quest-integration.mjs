@@ -90,7 +90,7 @@ assert.equal(acceptFixture(makeSession(), 'first', false).code, 'QUEST_LOCKED')
 assert.equal(fixture.acceptedQuestIds.length, 3)
 
 assert.doesNotMatch(dialogueData, /clue-[123].*(?:x|y)|coordinates?|koordinat/i)
-assert.match(gameCanvas, /setInterfaceLocked\(interfaceLocked \|\| isExplorationMapOpen \|\| openDialogue !== null\)/)
+assert.match(gameCanvas, /setInterfaceLocked\(interfaceLocked \|\| isExplorationMapOpen \|\| openDialogue !== null \|\| openWorldObject !== null\)/)
 assert.match(gameCanvas, /closeNpcDialogue/)
 
 console.log('Verified NPC quest associations, typed conditions/actions, explicit acceptance, idempotency, capacity, prerequisites, tracking independence, save schema 3 and 24 unchanged questions.')
