@@ -70,6 +70,8 @@ button {
 .upgrade-button,
 .mastery-button,
 .journal-button,
+.tutorial-panel button,
+.tutorial-help-button,
 .return-world-button,
 .location-panel button,
 .quest-log button,
@@ -114,6 +116,102 @@ button:focus-visible {
 
 button:disabled {
   filter: saturate(0.45);
+}
+
+.tutorial-panel {
+  position: fixed;
+  z-index: 900;
+  right: max(0.75rem, env(safe-area-inset-right));
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  width: min(25rem, calc(100vw - 1.5rem));
+  max-height: min(24rem, calc(100dvh - 1.5rem));
+  overflow: auto;
+  padding: 0.9rem;
+  border: 1px solid rgb(242 213 138 / 72%);
+  border-radius: var(--sq-panel-radius);
+  color: var(--sq-parchment);
+  background: rgb(11 22 40 / 96%);
+  box-shadow: 0 0.9rem 2rem rgb(0 0 0 / 36%);
+}
+
+.tutorial-panel > header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.tutorial-panel h2,
+.tutorial-panel p {
+  margin-block: 0;
+}
+
+.tutorial-panel header p,
+.tutorial-panel__progress {
+  color: var(--sq-gold-soft);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.tutorial-panel > p,
+.tutorial-panel > header + p,
+.tutorial-panel > header + .tutorial-panel__progress {
+  margin-top: 0.75rem;
+}
+
+.tutorial-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+.tutorial-panel__actions button,
+.tutorial-help-button {
+  padding: 0.6rem 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tutorial-panel__actions button:not(.button-secondary),
+.tutorial-help-button {
+  color: var(--sq-ink);
+  background: var(--sq-gold-soft);
+}
+
+.tutorial-help-button {
+  position: fixed;
+  z-index: 900;
+  right: max(0.75rem, env(safe-area-inset-right));
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+@media (max-width: 40rem) {
+  .tutorial-panel {
+    right: 0.5rem;
+    bottom: max(0.5rem, env(safe-area-inset-bottom));
+    width: calc(100vw - 1rem);
+    max-height: min(20rem, calc(100dvh - 1rem));
+  }
+
+  .tutorial-panel > header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tutorial-panel > header button,
+  .tutorial-panel__actions button {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-panel,
+  .tutorial-help-button {
+    scroll-behavior: auto;
+    transition: none;
+  }
 }
 
 .progression-hud {

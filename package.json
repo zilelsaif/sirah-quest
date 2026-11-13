@@ -1,7 +1,7 @@
 {
   "name": "sirah-quest",
   "private": true,
-  "version": "0.20.0",
+  "version": "0.21.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,8 @@
     "world-map:verify": "node scripts/verify-world-map-v015.mjs",
     "npcs:verify": "node scripts/verify-npc-foundation.mjs",
     "npc-quests:verify": "node scripts/verify-npc-quest-integration.mjs",
-    "journal:verify": "node scripts/verify-journal-system.mjs"
+    "journal:verify": "node scripts/verify-journal-system.mjs",
+    "onboarding:verify": "node scripts/verify-onboarding-system.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

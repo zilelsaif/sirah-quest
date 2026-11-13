@@ -37,6 +37,15 @@ import { ALL_AREA_CLUES, getAreaDefinition, KAMPUNG_ILMU_AREA_ID } from './game/
 import { resolveTrackedQuestNavigation } from './game/navigation/questNavigation'
 import { JournalPanel } from './game/journal/JournalPanel'
 import { selectJournalModel } from './game/journal/journalSelectors'
+import { TutorialPanel } from './game/onboarding/TutorialPanel'
+import {
+  completeTutorialStep,
+  createTutorialState,
+  reconcileTutorial,
+  reopenTutorial,
+  skipTutorial,
+  startTutorial,
+} from './game/onboarding/tutorialController'
 
 type PlayerSession = PlayerSessionState
 
@@ -97,6 +106,8 @@ function App() {
   const [isUpgradePanelOpen, setIsUpgradePanelOpen] = useState(false)
   const [isMasteryPanelOpen, setIsMasteryPanelOpen] = useState(false)
   const [isJournalOpen, setIsJournalOpen] = useState(false)
+  const [tutorialState, setTutorialState] = useState(createTutorialState)
+  const [isTutorialOpen, setIsTutorialOpen] = useState(true)
   const [areaWaypoints, setAreaWaypoints] = useState<Record<string, PlayerPosition>>({})
   const [levelUpNotification, setLevelUpNotification] = useState<{
     level: number
@@ -129,6 +140,25 @@ function App() {
     [areaSession, worldSession, masteryState],
   )
   const closeJournal = useCallback(() => setIsJournalOpen(false), [])
+  const openJournal = useCallback(() => {
+    setIsJournalOpen(true)
+    setTutorialState((current) => completeTutorialStep(current, 'journal'))
+  }, [])
+  const recordPlayerMovement = useCallback(() => {
+    setTutorialState((current) => completeTutorialStep(current, 'movement'))
+  }, [])
+  const recordNpcDialogue = useCallback((npcId: string) => {
+    if (npcId === 'npc-penjaga-balai-ilmu') {
+      setTutorialState((current) => completeTutorialStep(current, 'npc-interaction'))
+    }
+  }, [])
+
+  useEffect(() => {
+    setTutorialState((current) => reconcileTutorial(current, {
+      acceptedQuestIds: areaSession.quests.acceptedQuestIds,
+      clues: allClues,
+    }))
+  }, [areaSession.quests.acceptedQuestIds, allClues])
 
   useEffect(() => {
     const state = { mode, playerSession, worldSession, masteryState }
@@ -233,6 +263,8 @@ function App() {
     setIsMasteryPanelOpen(false)
     setIsJournalOpen(false)
     setAreaWaypoints({})
+    setTutorialState(createTutorialState())
+    setIsTutorialOpen(true)
   }, [])
 
   const handlePurchaseUpgrade = (upgradeId: UpgradeId) => {
@@ -269,6 +301,8 @@ function App() {
     setAreaWaypoints({})
     setLevelUpNotification(null)
     previousLevelRef.current = progression.level
+    setTutorialState(createTutorialState())
+    setIsTutorialOpen(true)
   }
 
   const handleAcceptQuest = (questId: string) => {
@@ -353,6 +387,8 @@ function App() {
     setIsJournalOpen(false)
     setIsResetConfirmOpen(false)
     setAreaWaypoints({})
+    setTutorialState(createTutorialState())
+    setIsTutorialOpen(true)
     setSaveBlocked(false)
     try {
       saveGame(fresh)
@@ -365,7 +401,7 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.20.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.21.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -399,7 +435,7 @@ function App() {
           onOpenQuestLog={() => setIsQuestLogOpen(true)}
           onOpenUpgrades={() => setIsUpgradePanelOpen(true)}
           onOpenMastery={() => setIsMasteryPanelOpen(true)}
-          onOpenJournal={() => setIsJournalOpen(true)}
+          onOpenJournal={openJournal}
           interfaceLocked={isInterfaceLocked}
           onTravel={travelTo}
           onEnterArea={enterArea}
@@ -421,7 +457,7 @@ function App() {
               <button type="button" className="mastery-button" disabled={isInterfaceLocked} onClick={() => setIsMasteryPanelOpen(true)}>
                 Penguasaan
               </button>
-              <button type="button" className="journal-button" disabled={isInterfaceLocked} onClick={() => setIsJournalOpen(true)}>
+              <button type="button" className="journal-button" disabled={isInterfaceLocked} onClick={openJournal}>
                 Jurnal
               </button>
               <button type="button" className="return-world-button" disabled={isInterfaceLocked} onClick={() => setMode('WORLD_MAP')}>
@@ -440,6 +476,8 @@ function App() {
             questNavigation={questNavigation}
             quests={areaSession.quests}
             onAcceptQuest={handleAcceptQuestFromNpc}
+            onPlayerMoved={recordPlayerMovement}
+            onNpcDialogueOpen={recordNpcDialogue}
             onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
               if (waypoint) return { ...current, [currentArea.id]: waypoint }
               const next = { ...current }
@@ -478,6 +516,20 @@ function App() {
         <SirahMasteryPanel state={masteryState} onClose={() => setIsMasteryPanelOpen(false)} />
       )}
       {isJournalOpen && <JournalPanel model={journalModel} onClose={closeJournal} />}
+      <TutorialPanel
+        state={tutorialState}
+        open={isTutorialOpen}
+        onStart={() => setTutorialState((current) => startTutorial(current))}
+        onSkip={() => {
+          setTutorialState((current) => skipTutorial(current))
+          setIsTutorialOpen(false)
+        }}
+        onClose={() => setIsTutorialOpen(false)}
+        onOpen={() => {
+          setTutorialState((current) => reopenTutorial(current))
+          setIsTutorialOpen(true)
+        }}
+      />
       <section className="save-controls" aria-label="Data simpanan">
         <div>
           <strong>Data simpanan</strong>

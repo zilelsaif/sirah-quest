@@ -35,6 +35,8 @@ interface GameCanvasProps {
   questNavigation: QuestNavigationState
   quests: QuestSessionState
   onAcceptQuest: (questId: string) => QuestAcceptanceResult
+  onPlayerMoved: () => void
+  onNpcDialogueOpen: (npcId: string) => void
 }
 
 export function GameCanvas({
@@ -49,6 +51,8 @@ export function GameCanvas({
   questNavigation,
   quests,
   onAcceptQuest,
+  onPlayerMoved,
+  onNpcDialogueOpen,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
@@ -63,10 +67,12 @@ export function GameCanvas({
   } | null>(null)
   const [dialogueFeedback, setDialogueFeedback] = useState<DialogueActionFeedback | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
+  const lastPlayerPositionRef = useRef(session.playerPosition)
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
+    lastPlayerPositionRef.current = session.playerPosition
 
     const game = createGame(
       container,
@@ -74,7 +80,14 @@ export function GameCanvas({
       area,
       session,
       (nextSession) => {
-        if (!resetRequestedRef.current) onSessionChange(nextSession)
+        if (!resetRequestedRef.current) {
+          const previous = lastPlayerPositionRef.current
+          if (nextSession.playerPosition.x !== previous.x || nextSession.playerPosition.y !== previous.y) {
+            lastPlayerPositionRef.current = nextSession.playerPosition
+            onPlayerMoved()
+          }
+          onSessionChange(nextSession)
+        }
       },
       effectiveStats,
       cameraViewMode,
@@ -90,6 +103,7 @@ export function GameCanvas({
           : null
         setOpenDialogue({ npc, session: createDialogueSession(npc.dialogueId) })
         setDialogueFeedback(null)
+        onNpcDialogueOpen(npc.id)
       },
     )
     gameRef.current = game
@@ -99,7 +113,7 @@ export function GameCanvas({
       game.destroy(true)
       gameRef.current = null
     }
-  }, [area.id, session.questionRun.assignments, onSessionChange])
+  }, [area.id, session.questionRun.assignments, onSessionChange, onPlayerMoved, onNpcDialogueOpen])
 
   const getScene = () =>
     gameRef.current?.scene.getScene('movement-prototype') as TestScene | undefined

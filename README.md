@@ -5,9 +5,9 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.20.0 adds a read-only Jurnal Pengembara for
-reviewing quest progress, legitimately completed learning content, exploration
-counts and Sirah Mastery while preserving gameplay rules and save schema 3. Backend services,
+question interactions. Version 0.21.0 adds optional, contextual first-adventure
+guidance for movement, NPCs, quests, exploration and the Jurnal Pengembara while
+preserving gameplay freedom and save schema 3. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -199,6 +199,18 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.21.0 — First Adventure and Guided Onboarding
+
+- Adds an optional five-stage **Panduan Pengembara** driven by stable step IDs
+  and existing authoritative gameplay signals.
+- Observes genuine movement, Penjaga Balai Ilmu dialogue, accepted quests,
+  discovered clues and Journal opening without accepting, tracking, revealing,
+  rewarding or completing gameplay state.
+- Keeps tutorial progress session-only, supports skip, close and reopen, and
+  reconciles quest/clue progress already achieved in the current session.
+- Keeps save schema v3 and the existing 24-question bank unchanged. See
+  `docs/ONBOARDING_SYSTEM.md` and run `npm run onboarding:verify`.
 
 ### v0.20.0 — Knowledge Journal and Quest Chronicle
 
