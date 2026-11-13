@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import assert from 'node:assert/strict'
 import ts from 'typescript'
 
 const source = await readFile(resolve('src/game/questions/questionBank.ts'), 'utf8')
@@ -9,18 +10,30 @@ const compiled = ts.transpileModule(source, {
 const { QUESTION_BANK } = await import(
   `data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`
 )
-const review = await readFile(resolve('docs/SIRAH_QUESTIONS_FOR_REVIEW.md'), 'utf8')
+const review = (await readFile(resolve('docs/SIRAH_QUESTIONS_FOR_REVIEW.md'), 'utf8')).replace(/\r\n?/g, '\n')
 
 const failures = []
 const occurrences = (value) => review.split(value).length - 1
+const headingFailures = (text, questionIds) => questionIds.filter(
+  (questionId) => text.split(`#### ${questionId}\n`).length - 1 !== 1,
+)
+
+const headingFixture = '#### alpha\n\nContent\n\n#### beta\n\nContent\n'
+const normalizeLineEndings = (text) => text.replace(/\r\n?/g, '\n')
+assert.deepEqual(headingFailures(normalizeLineEndings(headingFixture), ['alpha', 'beta']), [])
+assert.deepEqual(headingFailures(normalizeLineEndings(headingFixture.replaceAll('\n', '\r\n')), ['alpha', 'beta']), [])
+assert.deepEqual(headingFailures(headingFixture.replace('#### beta\n', ''), ['alpha', 'beta']), ['beta'])
+assert.deepEqual(headingFailures(`${headingFixture}#### alpha\n`, ['alpha', 'beta']), ['alpha'])
+assert.deepEqual(headingFailures(headingFixture.replace('#### beta\n', '#### gamma\n'), ['alpha', 'beta']), ['beta'])
 
 if (QUESTION_BANK.length !== 24) failures.push(`Expected 24 source questions; found ${QUESTION_BANK.length}`)
 if (new Set(QUESTION_BANK.map((question) => question.id)).size !== QUESTION_BANK.length) {
   failures.push('Source question IDs are not unique')
 }
 
+const invalidHeadings = new Set(headingFailures(review, QUESTION_BANK.map((question) => question.id)))
 for (const question of QUESTION_BANK) {
-  if (occurrences(`#### ${question.id}\n`) !== 1) failures.push(`${question.id}: missing or duplicated heading`)
+  if (invalidHeadings.has(question.id)) failures.push(`${question.id}: missing or duplicated heading`)
   const requiredText = [
     question.prompt.bm,
     question.prompt.en,

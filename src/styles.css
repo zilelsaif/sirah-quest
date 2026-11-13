@@ -69,6 +69,7 @@ button {
 .quest-log-button,
 .upgrade-button,
 .mastery-button,
+.journal-button,
 .return-world-button,
 .location-panel button,
 .quest-log button,
@@ -93,7 +94,8 @@ button {
 }
 
 .upgrade-button,
-.mastery-button {
+.mastery-button,
+.journal-button {
   color: var(--sq-parchment);
   background: var(--sq-teal);
 }
@@ -633,6 +635,7 @@ h1 {
 .game-panel__actions,
 .world-map__header-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem;
   align-items: center;
 }
@@ -2736,7 +2739,7 @@ h1 {
 .mastery-panel > header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
 .mastery-panel h2, .mastery-panel h3, .mastery-panel p { margin-block: 0; }
 .mastery-panel__eyebrow { color: #f4d58d; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; }
-.mastery-panel button, .mastery-button { min-height: 44px; border: 1px solid rgba(244, 213, 141, 0.48); border-radius: 8px; padding: 0.6rem 0.85rem; color: #172033; background: #f4d58d; font-weight: 700; cursor: pointer; }
+.mastery-panel button, .mastery-button, .journal-button { min-height: 44px; border: 1px solid rgba(244, 213, 141, 0.48); border-radius: 8px; padding: 0.6rem 0.85rem; color: #172033; background: #f4d58d; font-weight: 700; cursor: pointer; }
 .mastery-overall { display: flex; align-items: center; gap: 1rem; margin-block: 1.25rem; padding: 1rem; border-radius: 12px; background: #1a2944; }
 .mastery-overall > strong { font-size: clamp(2rem, 8vw, 3.6rem); color: #f4d58d; }
 .mastery-overall div { display: grid; gap: 0.3rem; }
@@ -2775,7 +2778,7 @@ h1 {
   color: var(--sq-ink);
   background: var(--sq-gold-soft);
 }
-.upgrade-button, .mastery-button { color: var(--sq-parchment); background: var(--sq-teal); }
+.upgrade-button, .mastery-button, .journal-button { color: var(--sq-parchment); background: var(--sq-teal); }
 .location-panel { color: var(--sq-ink); background: var(--sq-parchment); box-shadow: inset 5px 0 var(--sq-gold); }
 .clue-panel, .quest-log, .upgrade-panel, .level-up-panel {
   border-color: var(--sq-gold);
