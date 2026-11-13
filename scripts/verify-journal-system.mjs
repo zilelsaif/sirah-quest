@@ -36,7 +36,7 @@ assert.match(worldMap, /onOpenJournal/)
 assert.match(saveConfig, /SAVE_SCHEMA_VERSION = 3/)
 
 const pkg = JSON.parse(packageJson)
-assert.equal(pkg.version, '0.21.0')
+assert.equal(pkg.version, '0.22.0')
 assert.equal(pkg.scripts['journal:verify'], 'node scripts/verify-journal-system.mjs')
 
 const questionIds = [...questionBank.matchAll(/draftQuestion\(\s*['"]([^'"]+)['"]/g)].map((match) => match[1])
@@ -49,4 +49,4 @@ const clueStates = ['hidden', 'discovered', 'completed']
 assert.equal(clueStates.filter((state) => state !== 'hidden').length, 2)
 assert.equal(clueStates.filter((state) => state === 'completed').length, 1)
 
-console.log('Verified read-only Journal selectors, four sections, spoiler guards, de-duplication, focus/input locking, version 0.21.0, save schema 3 and 24 unchanged question records.')
+console.log('Verified read-only Journal selectors, four sections, spoiler guards, de-duplication, focus/input locking, version 0.22.0, save schema 3 and 24 unchanged question records.')

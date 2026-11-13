@@ -5,9 +5,9 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.21.0 adds optional, contextual first-adventure
-guidance for movement, NPCs, quests, exploration and the Jurnal Pengembara while
-preserving gameplay freedom and save schema 3. Backend services,
+question interactions. Version 0.22.0 adds three optional two-objective side
+quests and six clue interactions across the existing playable areas, using the
+unchanged 24-question bank while preserving gameplay freedom and save schema 3. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -199,6 +199,19 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.22.0 — Quest and Learning Content Expansion, Pack 1
+
+- Adds **Catatan Zaman Awal**, **Lembaran Ilmu** and **Jejak Perjalanan** as
+  optional side quests with two independently completable clue objectives each.
+- Adds two accessible Pack 1 clues to each existing playable area and assigns
+  five unique questions per topic per run from the unchanged eight-question
+  topic pools.
+- Extends the existing Penjaga Balai Ilmu and Pengembara Bazar declarative quest
+  offerings without adding NPCs or changing explicit acceptance and tracking.
+- Normalizes missing Pack 1 quest, clue and question-assignment defaults into
+  valid schema-3 saves without resetting existing progress. See
+  `docs/CONTENT_PACK_1.md` and run `npm run content-pack:verify`.
 
 ### v0.21.0 — First Adventure and Guided Onboarding
 

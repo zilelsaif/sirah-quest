@@ -59,7 +59,19 @@ function normalizeCurrentSchemaSave(value: Record<string, unknown>) {
 
   const areaStates = { ...savedAreaStates }
   AREA_DEFINITIONS.forEach((area) => {
-    if (!isRecord(areaStates[area.id])) areaStates[area.id] = createDefaultAreaState(area)
+    const savedArea = areaStates[area.id]
+    if (!isRecord(savedArea)) {
+      areaStates[area.id] = createDefaultAreaState(area)
+      return
+    }
+    const defaults = createDefaultAreaState(area)
+    areaStates[area.id] = {
+      ...savedArea,
+      clues: {
+        ...defaults.clues,
+        ...(isRecord(savedArea.clues) ? savedArea.clues : {}),
+      },
+    }
   })
 
   const defaultQuests = createQuestSession()
