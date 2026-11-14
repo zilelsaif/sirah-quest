@@ -57,7 +57,7 @@ try {
   const audioPath = new URL('../src/assets/audio/sirahquestbg2.mp3', import.meta.url)
   const audioStats = await stat(audioPath)
   const audioHeader = await readFile(audioPath).then((buffer) => buffer.subarray(0, 3).toString('ascii'))
-  assert.equal(audioStats.size, 4_406_381)
+  assert.equal(audioStats.size, 2_264_024)
   assert.ok(audioHeader === 'ID3' || audioHeader.startsWith('\xff\xfb'), 'Chosen asset must have an MP3 header')
 
   const playerSource = await readFile(new URL('../src/game/audio/BackgroundMusicPlayer.tsx', import.meta.url), 'utf8')

@@ -24,12 +24,11 @@ The supplied audio inventory is:
 
 | File | Size |
 | --- | ---: |
-| `sirahquestbg1.mp3` | 4,774,829 bytes |
-| `sirahquestbg2.mp3` | 4,406,381 bytes |
+| `sirahquestbg2.mp3` | 2,264,024 bytes |
 
-`sirahquestbg2.mp3` is selected deterministically as the smaller bundled candidate. This selection is technical only and does not assert copyright or licensing approval; the owner must confirm usage rights before release.
+`sirahquestbg2.mp3` remains the selected bundled track. The owner supplied this optimized 96 kbps version before v0.24.0 work; Codex did not re-encode it. This selection does not assert copyright or licensing approval; the owner must confirm usage rights before release.
 
-`BackgroundMusicPlayer` is mounted once at the application root. It creates one `HTMLAudioElement`, uses the Vite-imported MP3 URL, loops at a default volume of `0.30`, and survives World Map/Area Map transitions. No playback is attempted on initial render. The player must press **Main** through a real user gesture. Rejected `play()` promises are handled and leave a ready/paused state.
+`BackgroundMusicPlayer` is mounted once at the application root. On the first **Main** user gesture it creates one `HTMLAudioElement`, uses the Vite-imported MP3 URL, loops at a default volume of `0.30`, and survives World Map/Area Map transitions. No audio element or playback is initialized on first render. Rejected `play()` promises are handled and leave a ready/paused state.
 
 Controls provide **Main/Jeda**, **Senyap/Nyahsenyap**, and a volume slider. Mute and volume are stored under the separate `sirahQuest.audio.preferences.v1` key; they never enter the gameplay save. A refresh never automatically starts playback. When the document becomes hidden, currently playing audio pauses. It resumes on visibility only if the player had started it and had not deliberately paused it. All audio and document listeners are removed on cleanup.
 

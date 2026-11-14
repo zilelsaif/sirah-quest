@@ -69,6 +69,7 @@ export function GameCanvas({
   const [nearbyNpc, setNearbyNpc] = useState<NpcDefinition | null>(null)
   const [nearbyWorldObject, setNearbyWorldObject] = useState<WorldObjectDefinition | null>(null)
   const [openWorldObject, setOpenWorldObject] = useState<WorldObjectPanelData | null>(null)
+  const [isSceneReady, setIsSceneReady] = useState(false)
   const [openDialogue, setOpenDialogue] = useState<{
     npc: NpcDefinition
     session: DialogueSession
@@ -80,6 +81,7 @@ export function GameCanvas({
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
+    setIsSceneReady(false)
     lastPlayerPositionRef.current = session.playerPosition
 
     const game = createGame(
@@ -126,6 +128,7 @@ export function GameCanvas({
           : null
         setOpenWorldObject(object)
       },
+      () => setIsSceneReady(true),
     )
     gameRef.current = game
     resetRequestedRef.current = false
@@ -284,6 +287,7 @@ export function GameCanvas({
         <small>Radius penglihatan: {effectiveStats.visionRadius} unit</small>
       </div>
       <div className="game-canvas-shell">
+        {!isSceneReady && <div className="game-scene-loading" role="status">Menyediakan peta kawasan…</div>}
         <div
           ref={containerRef}
           className="game-canvas"

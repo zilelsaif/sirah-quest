@@ -1,7 +1,7 @@
 {
   "name": "sirah-quest",
   "private": true,
-  "version": "0.23.0",
+  "version": "0.24.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -20,7 +20,8 @@
     "onboarding:verify": "node scripts/verify-onboarding-system.mjs",
     "content-pack:verify": "node scripts/verify-content-pack-1.mjs",
     "world-objects:verify": "node scripts/verify-world-object-system.mjs",
-    "map-music:verify": "node scripts/verify-world-map-menu-music.mjs"
+    "map-music:verify": "node scripts/verify-world-map-menu-music.mjs",
+    "performance:verify": "node scripts/verify-performance-ux-v024.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

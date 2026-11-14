@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { GameCanvas } from './game/GameCanvas'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LevelUpNotification } from './game/progression/LevelUpNotification'
 import {
   applyXPRewards,
@@ -49,6 +48,8 @@ import {
 import { createWorldObjectSession } from './game/worldObjects/worldObjectRules'
 import type { WorldObjectSessionState } from './game/worldObjects/types'
 import { BackgroundMusicPlayer } from './game/audio/BackgroundMusicPlayer'
+
+const GameCanvas = lazy(() => import('./game/GameCanvas').then((module) => ({ default: module.GameCanvas })))
 
 type PlayerSession = PlayerSessionState
 
@@ -411,7 +412,7 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.23.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.24.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -474,28 +475,30 @@ function App() {
               </button>
             </div>
           </div>
-          <GameCanvas
-            area={currentArea}
-            session={playSession}
-            onSessionChange={updateAreaSession}
-            onNewTestRun={startNewTestRun}
-            interfaceLocked={isInterfaceLocked}
-            effectiveStats={effectiveStats}
-            waypoint={areaWaypoints[currentArea.id]}
-            questNavigation={questNavigation}
-            quests={areaSession.quests}
-            onAcceptQuest={handleAcceptQuestFromNpc}
-            onPlayerMoved={recordPlayerMovement}
-            onNpcDialogueOpen={recordNpcDialogue}
-            worldObjectState={worldObjectState}
-            onWorldObjectStateChange={updateWorldObjectState}
-            onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
-              if (waypoint) return { ...current, [currentArea.id]: waypoint }
-              const next = { ...current }
-              delete next[currentArea.id]
-              return next
-            })}
-          />
+          <Suspense fallback={<div className="game-loading" role="status">Memuatkan kawasan pengembaraan…</div>}>
+            <GameCanvas
+              area={currentArea}
+              session={playSession}
+              onSessionChange={updateAreaSession}
+              onNewTestRun={startNewTestRun}
+              interfaceLocked={isInterfaceLocked}
+              effectiveStats={effectiveStats}
+              waypoint={areaWaypoints[currentArea.id]}
+              questNavigation={questNavigation}
+              quests={areaSession.quests}
+              onAcceptQuest={handleAcceptQuestFromNpc}
+              onPlayerMoved={recordPlayerMovement}
+              onNpcDialogueOpen={recordNpcDialogue}
+              worldObjectState={worldObjectState}
+              onWorldObjectStateChange={updateWorldObjectState}
+              onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
+                if (waypoint) return { ...current, [currentArea.id]: waypoint }
+                const next = { ...current }
+                delete next[currentArea.id]
+                return next
+              })}
+            />
+          </Suspense>
         </section>
       )}
       {isQuestLogOpen && (

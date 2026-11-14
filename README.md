@@ -5,10 +5,10 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.23.0 adds six reusable environment objects
-across the three playable areas, with vision-gated inspect and toggle interactions
-that remain session-only. It also adds an anchored World Map location menu and
-gesture-driven bundled background music controls. The 24-question bank and save schema 3 are unchanged. Backend services,
+question interactions. Version 0.24.0 keeps the v0.23.0 interaction, World Map
+menu and music systems while moving the Phaser Area runtime behind an on-demand
+chunk and deferring audio initialization until the player presses Main. The
+24-question bank and save schema 3 are unchanged. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -203,6 +203,19 @@ changing a question's learning objective may require a future content-version
 or Mastery migration policy even if wording corrections retain its stable ID.
 
 ## Development releases
+
+### v0.24.0 — Performance and Player Experience Polish
+
+- Lazy-loads `GameCanvas` and the Phaser Area runtime only when entering a
+  playable Area, reducing the initial main JavaScript from 1,540.52 kB to
+  284.10 kB in the measured production builds.
+- Adds honest, reduced-motion-safe loading feedback for both the deferred module
+  and real Phaser scene initialization without fake percentages.
+- Creates the single background-audio element only after the player presses
+  **Main**, preventing nonessential music initialization on the first World Map.
+- Preserves gameplay behavior, World Map actions, audio preferences, all six
+  World Objects, 24 questions and save schema 3. See
+  `docs/PERFORMANCE_UX_V024.md` and run `npm run performance:verify`.
 
 ### v0.23.0 — RPG World Interaction Foundation
 

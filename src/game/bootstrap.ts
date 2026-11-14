@@ -22,6 +22,7 @@ export function createGame(
   onWorldObjectStateChange: (state: WorldObjectSessionState) => void,
   onNearbyWorldObjectChange: (object: WorldObjectDefinition | null) => void,
   onWorldObjectPanelChange: (object: WorldObjectPanelData | null) => void,
+  onSceneReady: () => void,
 ) {
   return new Phaser.Game({
     type: Phaser.AUTO,
@@ -52,6 +53,7 @@ export function createGame(
       onWorldObjectStateChange,
       onNearbyWorldObjectChange,
       onWorldObjectPanelChange,
+      onSceneReady,
     ),
   })
 }

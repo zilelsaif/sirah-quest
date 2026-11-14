@@ -51,6 +51,7 @@ export class TestScene extends Phaser.Scene {
     private readonly onWorldObjectStateChange: (state: WorldObjectSessionState) => void,
     private readonly onNearbyWorldObjectChange: (object: WorldObjectDefinition | null) => void,
     private readonly onWorldObjectPanelChange: (object: WorldObjectPanelData | null) => void,
+    private readonly onSceneReady: () => void,
   ) {
     super('movement-prototype')
     this.remainingHints = initialSession.remainingHints
@@ -189,6 +190,8 @@ export class TestScene extends Phaser.Scene {
         .setScrollFactor(0)
         .setDepth(200)
     }
+
+    this.onSceneReady()
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.emitSessionState(player.x, player.y)

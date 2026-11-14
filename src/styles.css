@@ -1426,6 +1426,50 @@ h1 {
   overflow: hidden;
 }
 
+.game-loading,
+.game-scene-loading {
+  display: grid;
+  place-items: center;
+  min-height: 22rem;
+  padding: 1rem;
+  color: #fff7df;
+  font-weight: 800;
+  text-align: center;
+  background: linear-gradient(145deg, #111c31, #1b3146);
+}
+
+.game-loading::before,
+.game-scene-loading::before {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 0.65rem;
+  content: "";
+  border: 3px solid rgb(244 213 141 / 30%);
+  border-top-color: #f4d58d;
+  border-radius: 50%;
+  animation: loading-turn 800ms linear infinite;
+}
+
+.game-scene-loading {
+  position: absolute;
+  z-index: 7;
+  inset: 0;
+  min-height: 0;
+  grid-auto-flow: column;
+  pointer-events: none;
+}
+
+@keyframes loading-turn {
+  to { transform: rotate(1turn); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-loading::before,
+  .game-scene-loading::before {
+    animation: none;
+  }
+}
+
 .mini-map {
   position: absolute;
   z-index: 6;

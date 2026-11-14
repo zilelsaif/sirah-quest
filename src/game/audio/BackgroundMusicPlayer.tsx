@@ -30,15 +30,17 @@ export function BackgroundMusicPlayer() {
   const [volume, setVolume] = useState(preference.volume)
   const [message, setMessage] = useState('Sedia untuk dimainkan')
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioCleanupRef = useRef<() => void>(() => undefined)
   const intentPlayingRef = useRef(false)
   const resumeAfterVisibilityRef = useRef(false)
 
-  useEffect(() => {
+  const ensureAudio = () => {
+    if (audioRef.current) return audioRef.current
     const audio = new Audio(musicUrl)
     audio.loop = true
-    audio.preload = 'metadata'
-    audio.volume = preference.volume
-    audio.muted = preference.muted
+    audio.preload = 'none'
+    audio.volume = volume
+    audio.muted = muted
     audioRef.current = audio
 
     const handlePlay = () => {
@@ -51,7 +53,25 @@ export function BackgroundMusicPlayer() {
       setIsPlaying(false)
       setMessage('Muzik tidak dapat dimuatkan')
     }
+    audio.addEventListener('play', handlePlay)
+    audio.addEventListener('pause', handlePause)
+    audio.addEventListener('error', handleError)
+    audioCleanupRef.current = () => {
+      audio.removeEventListener('play', handlePlay)
+      audio.removeEventListener('pause', handlePause)
+      audio.removeEventListener('error', handleError)
+      audio.pause()
+      audio.removeAttribute('src')
+      audio.load()
+      audioRef.current = null
+    }
+    return audio
+  }
+
+  useEffect(() => {
     const handleVisibilityChange = () => {
+      const audio = audioRef.current
+      if (!audio) return
       if (document.hidden) {
         resumeAfterVisibilityRef.current = intentPlayingRef.current && !audio.paused
         audio.pause()
@@ -65,21 +85,12 @@ export function BackgroundMusicPlayer() {
       })
     }
 
-    audio.addEventListener('play', handlePlay)
-    audio.addEventListener('pause', handlePause)
-    audio.addEventListener('error', handleError)
     document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
-      audio.removeEventListener('play', handlePlay)
-      audio.removeEventListener('pause', handlePause)
-      audio.removeEventListener('error', handleError)
-      audio.pause()
-      audio.removeAttribute('src')
-      audio.load()
-      audioRef.current = null
+      audioCleanupRef.current()
     }
-  }, [preference.muted, preference.volume])
+  }, [])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -92,8 +103,7 @@ export function BackgroundMusicPlayer() {
   }, [volume])
 
   const togglePlayback = () => {
-    const audio = audioRef.current
-    if (!audio) return
+    const audio = ensureAudio()
     if (intentPlayingRef.current) {
       intentPlayingRef.current = false
       resumeAfterVisibilityRef.current = false
