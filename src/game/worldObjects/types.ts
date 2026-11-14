@@ -4,6 +4,12 @@ export type WorldObjectInteractionType = 'INSPECT' | 'TOGGLE'
 export type WorldObjectState = 'IDLE' | 'CLOSED' | 'OPEN' | 'OFF' | 'ON'
 export type WorldObjectVisualKey = 'notice-board' | 'tool-chest' | 'direction-board' | 'trade-chest' | 'reference-shelf' | 'reading-lamp'
 
+export interface WorldObjectQuestContext {
+  questId: string
+  textBM: string
+  textEN: string
+}
+
 export interface WorldObjectDefinition {
   id: string
   areaId: string
@@ -16,6 +22,7 @@ export interface WorldObjectDefinition {
   interactionType: WorldObjectInteractionType
   interactionRadius: number
   initialState: WorldObjectState
+  questContexts?: WorldObjectQuestContext[]
 }
 
 export type WorldObjectSessionState = Record<string, WorldObjectState>
@@ -26,6 +33,7 @@ export interface WorldObjectPanelData {
   nameEN: string
   descriptionBM: string
   descriptionEN: string
+  questContexts?: WorldObjectQuestContext[]
 }
 
 export interface WorldObjectInteractionResult {

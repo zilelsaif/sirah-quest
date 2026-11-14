@@ -15,6 +15,11 @@ export const WORLD_OBJECT_DEFINITIONS: WorldObjectDefinition[] = [
     descriptionEN: 'This board displays fictional daily notices for travellers and village residents.',
     position: { x: 1060, y: 360 }, visualKey: 'notice-board', interactionType: 'INSPECT',
     interactionRadius, initialState: 'IDLE',
+    questContexts: [{
+      questId: 'quest-nota-balai-ilmu-pack-2',
+      textBM: 'Satu pesanan menyebut dua nota pembelajaran tersebar antara Kampung Ilmu dan Bazar Lama.',
+      textEN: 'A notice mentions two learning notes shared between the Village of Knowledge and the Old Bazaar.',
+    }],
   },
   {
     id: 'world-object-kampung-tool-chest', areaId: KAMPUNG_ILMU_AREA_ID,
@@ -31,6 +36,11 @@ export const WORLD_OBJECT_DEFINITIONS: WorldObjectDefinition[] = [
     descriptionEN: 'This fictional sign helps visitors identify trading lanes and rest areas.',
     position: { x: 970, y: 570 }, visualKey: 'direction-board', interactionType: 'INSPECT',
     interactionRadius, initialState: 'IDLE',
+    questContexts: [{
+      questId: 'quest-catatan-musafir-pack-2',
+      textBM: 'Tanda umum ini mengingatkan musafir supaya menyemak catatan pembelajaran di Bazar Lama dan Perpustakaan Hikmah.',
+      textEN: 'This general sign reminds travellers to review learning records in the Old Bazaar and the Library of Wisdom.',
+    }],
   },
   {
     id: 'world-object-bazar-trade-chest', areaId: BAZAR_LAMA_AREA_ID,
@@ -47,6 +57,11 @@ export const WORLD_OBJECT_DEFINITIONS: WorldObjectDefinition[] = [
     descriptionEN: 'This shelf holds fictional catalogues that help visitors organise reading materials.',
     position: { x: 780, y: 650 }, visualKey: 'reference-shelf', interactionType: 'INSPECT',
     interactionRadius, initialState: 'IDLE',
+    questContexts: [{
+      questId: 'quest-jejak-lembaran-pack-2',
+      textBM: 'Katalog rekaan merujuk kepada lembaran pembelajaran di Kampung Ilmu dan Perpustakaan Hikmah.',
+      textEN: 'A fictional catalogue refers to learning pages in the Village of Knowledge and the Library of Wisdom.',
+    }],
   },
   {
     id: 'world-object-library-reading-lamp', areaId: PERPUSTAKAAN_HIKMAH_AREA_ID,

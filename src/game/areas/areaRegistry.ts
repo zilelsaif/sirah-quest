@@ -50,6 +50,8 @@ export const AREA_DEFINITIONS: AreaDefinition[] = [
       { ...commonClue, id: 'clue-3', title: 'Clue 3', questionTopicId: 'hijrah', x: 1100, y: 740 },
       { ...commonClue, id: 'pack1-kampung-catatan-awal', title: 'Catatan Pinggir Kampung', questionTopicId: 'early-life', x: 1450, y: 400 },
       { ...commonClue, id: 'pack1-kampung-lembaran-ilmu', title: 'Lembaran Balai Ilmu', questionTopicId: 'first-revelation', x: 1450, y: 1150 },
+      { ...commonClue, id: 'pack2-kampung-nota-balai', title: 'Nota Sudut Balai', questionTopicId: 'early-life', x: 1200, y: 1100 },
+      { ...commonClue, id: 'pack2-kampung-jejak-lembaran', title: 'Jejak Lembaran Kampung', questionTopicId: 'first-revelation', x: 2000, y: 620 },
     ],
   },
   {
@@ -101,6 +103,8 @@ export const AREA_DEFINITIONS: AreaDefinition[] = [
       { ...commonClue, id: 'bazar-clue-3', title: 'Fragmen Peta', questionTopicId: 'hijrah', x: 1460, y: 930 },
       { ...commonClue, id: 'pack1-bazar-catatan-awal', title: 'Catatan Lorong Lama', questionTopicId: 'early-life', x: 1560, y: 400 },
       { ...commonClue, id: 'pack1-bazar-jejak-perjalanan', title: 'Tanda Halaman Kafilah', questionTopicId: 'hijrah', x: 1780, y: 1180 },
+      { ...commonClue, id: 'pack2-bazar-nota-balai', title: 'Nota Lorong Bazar', questionTopicId: 'early-life', x: 330, y: 880 },
+      { ...commonClue, id: 'pack2-bazar-catatan-musafir', title: 'Catatan Persinggahan', questionTopicId: 'hijrah', x: 1660, y: 620 },
     ],
   },
   {
@@ -161,6 +165,8 @@ export const AREA_DEFINITIONS: AreaDefinition[] = [
       { ...commonClue, id: 'library-clue-3', title: 'Folio Perjalanan', questionTopicId: 'hijrah', x: 864, y: 272 },
       { ...commonClue, id: 'pack1-library-lembaran-ilmu', title: 'Lembaran Bilik Kajian', questionTopicId: 'first-revelation', x: 1660, y: 660 },
       { ...commonClue, id: 'pack1-library-jejak-perjalanan', title: 'Jejak Taman Ilmu', questionTopicId: 'hijrah', x: 1660, y: 1120 },
+      { ...commonClue, id: 'pack2-library-jejak-lembaran', title: 'Jejak Lembaran Arkib', questionTopicId: 'first-revelation', x: 1100, y: 650 },
+      { ...commonClue, id: 'pack2-library-catatan-musafir', title: 'Catatan Musafir Taman', questionTopicId: 'hijrah', x: 700, y: 1120 },
     ],
   },
 ]
@@ -174,11 +180,21 @@ export const CONTENT_PACK_1_CLUE_IDS = [
   'pack1-library-lembaran-ilmu',
   'pack1-library-jejak-perjalanan',
 ] as const
+export const CONTENT_PACK_2_CLUE_IDS = [
+  'pack2-kampung-nota-balai',
+  'pack2-kampung-jejak-lembaran',
+  'pack2-bazar-nota-balai',
+  'pack2-bazar-catatan-musafir',
+  'pack2-library-jejak-lembaran',
+  'pack2-library-catatan-musafir',
+] as const
 const allConfiguredClues = AREA_DEFINITIONS.flatMap((area) => area.clues)
 const contentPack1ClueIds = new Set<string>(CONTENT_PACK_1_CLUE_IDS)
+const contentPack2ClueIds = new Set<string>(CONTENT_PACK_2_CLUE_IDS)
 export const ALL_AREA_CLUES = [
-  ...allConfiguredClues.filter((clue) => !contentPack1ClueIds.has(clue.id)),
+  ...allConfiguredClues.filter((clue) => !contentPack1ClueIds.has(clue.id) && !contentPack2ClueIds.has(clue.id)),
   ...CONTENT_PACK_1_CLUE_IDS.map((id) => allConfiguredClues.find((clue) => clue.id === id)!),
+  ...CONTENT_PACK_2_CLUE_IDS.map((id) => allConfiguredClues.find((clue) => clue.id === id)!),
 ]
 export function getAreaDefinition(areaId: string) { return AREA_REGISTRY[areaId] }
 

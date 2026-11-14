@@ -422,7 +422,7 @@ export function GameCanvas({
           onClose={closeDialogue}
         />
       )}
-      {openWorldObject && <WorldObjectPanel object={openWorldObject} onClose={closeWorldObject} />}
+      {openWorldObject && <WorldObjectPanel object={openWorldObject} quests={quests} onClose={closeWorldObject} />}
     </div>
   )
 }

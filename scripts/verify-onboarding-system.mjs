@@ -90,7 +90,7 @@ assert.equal(questionIds.length, 24)
 assert.equal(new Set(questionIds).size, 24)
 
 const pkg = JSON.parse(packageJson)
-assert.equal(pkg.version, '0.24.0')
+assert.equal(pkg.version, '0.25.0')
 assert.equal(pkg.scripts['onboarding:verify'], 'node scripts/verify-onboarding-system.mjs')
 
 console.log('Verified 5 optional session-only onboarding stages, authoritative reconciliation, skip/reopen behavior, input safety, save schema 3 and 24 unchanged questions.')

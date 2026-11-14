@@ -162,5 +162,35 @@ export const QUEST_DATA: QuestDefinition[] = [
     initialStatus: 'AVAILABLE',
     completionXP: XP_REWARDS.sideQuestCompletion,
   },
+  {
+    id: 'quest-nota-balai-ilmu-pack-2', type: 'side', titleBM: 'Nota Balai Ilmu', titleEN: 'Notes from the Hall of Knowledge',
+    descriptionBM: 'Himpunkan dua nota pembelajaran fiksyen dari Kampung Ilmu dan Bazar Lama.',
+    descriptionEN: 'Gather two fictional learning notes from the Village of Knowledge and the Old Bazaar.',
+    areaIds: [KAMPUNG_ILMU_AREA_ID, BAZAR_LAMA_AREA_ID], topicId: 'early-life', prerequisiteQuestIds: [], initialStatus: 'AVAILABLE', completionXP: XP_REWARDS.sideQuestCompletion,
+    objectives: [
+      { id: 'objective-pack2-early-kampung', type: 'complete-clue', relatedAreaId: KAMPUNG_ILMU_AREA_ID, relatedClueId: 'pack2-kampung-nota-balai' },
+      { id: 'objective-pack2-early-bazar', type: 'complete-clue', relatedAreaId: BAZAR_LAMA_AREA_ID, relatedClueId: 'pack2-bazar-nota-balai' },
+    ],
+  },
+  {
+    id: 'quest-jejak-lembaran-pack-2', type: 'side', titleBM: 'Jejak Lembaran', titleEN: 'Traces of the Pages',
+    descriptionBM: 'Jejaki dua lembaran pembelajaran fiksyen di Kampung Ilmu dan Perpustakaan Hikmah.',
+    descriptionEN: 'Trace two fictional learning pages in the Village of Knowledge and the Library of Wisdom.',
+    areaIds: [KAMPUNG_ILMU_AREA_ID, PERPUSTAKAAN_HIKMAH_AREA_ID], topicId: 'first-revelation', prerequisiteQuestIds: [], initialStatus: 'AVAILABLE', completionXP: XP_REWARDS.sideQuestCompletion,
+    objectives: [
+      { id: 'objective-pack2-revelation-kampung', type: 'complete-clue', relatedAreaId: KAMPUNG_ILMU_AREA_ID, relatedClueId: 'pack2-kampung-jejak-lembaran' },
+      { id: 'objective-pack2-revelation-library', type: 'complete-clue', relatedAreaId: PERPUSTAKAAN_HIKMAH_AREA_ID, relatedClueId: 'pack2-library-jejak-lembaran' },
+    ],
+  },
+  {
+    id: 'quest-catatan-musafir-pack-2', type: 'side', titleBM: 'Catatan Musafir', titleEN: 'Traveller’s Notes',
+    descriptionBM: 'Temui dua catatan perjalanan pembelajaran fiksyen di Bazar Lama dan Perpustakaan Hikmah.',
+    descriptionEN: 'Find two fictional learning-journey records in the Old Bazaar and the Library of Wisdom.',
+    areaIds: [BAZAR_LAMA_AREA_ID, PERPUSTAKAAN_HIKMAH_AREA_ID], topicId: 'hijrah', prerequisiteQuestIds: [], initialStatus: 'AVAILABLE', completionXP: XP_REWARDS.sideQuestCompletion,
+    objectives: [
+      { id: 'objective-pack2-hijrah-bazar', type: 'complete-clue', relatedAreaId: BAZAR_LAMA_AREA_ID, relatedClueId: 'pack2-bazar-catatan-musafir' },
+      { id: 'objective-pack2-hijrah-library', type: 'complete-clue', relatedAreaId: PERPUSTAKAAN_HIKMAH_AREA_ID, relatedClueId: 'pack2-library-catatan-musafir' },
+    ],
+  },
 ]
 

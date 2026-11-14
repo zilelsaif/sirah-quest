@@ -5,7 +5,7 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.24.0 keeps the v0.23.0 interaction, World Map
+question interactions. Version 0.25.0 adds Content and Gameplay Expansion Pack 2 while preserving the v0.24.0 interaction, World Map
 menu and music systems while moving the Phaser Area runtime behind an on-demand
 chunk and deferring audio initialization until the player presses Main. The
 24-question bank and save schema 3 are unchanged. Backend services,
@@ -248,6 +248,13 @@ or Mastery migration policy even if wording corrections retain its stable ID.
 - Normalizes missing Pack 1 quest, clue and question-assignment defaults into
   valid schema-3 saves without resetting existing progress. See
   `docs/CONTENT_PACK_1.md` and run `npm run content-pack:verify`.
+
+### v0.25.0 — Content and Gameplay Expansion Pack 2
+
+- Adds three optional cross-area side quests and six topic-matched clues using the unchanged 24-question bank.
+- Adds active-quest context to three suitable inspectable World Objects without changing rewards, discovery, tracking, or toggle state.
+- Preserves save schema 3, the first 15 clue assignment positions, lazy GameCanvas loading, and all v0.24 performance protections.
+- See `docs/CONTENT_PACK_2.md` and run `npm run content-pack-2:verify`.
 
 ### v0.21.0 — First Adventure and Guided Onboarding
 

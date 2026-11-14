@@ -51,8 +51,10 @@ const keeperQuestIds = [
   'quest-rahsia-wahyu-pertama',
   'quest-catatan-zaman-awal-pack-1',
   'quest-lembaran-ilmu-pack-1',
+  'quest-nota-balai-ilmu-pack-2',
+  'quest-jejak-lembaran-pack-2',
 ]
-const travellerQuestIds = ['quest-perjalanan-hijrah', 'quest-jejak-perjalanan-pack-1']
+const travellerQuestIds = ['quest-perjalanan-hijrah', 'quest-jejak-perjalanan-pack-1', 'quest-catatan-musafir-pack-2']
 
 export const DIALOGUE_DEFINITIONS: DialogueDefinition[] = [
   {

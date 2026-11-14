@@ -18,6 +18,8 @@ export const NPC_DEFINITIONS: NpcDefinition[] = [
       'quest-rahsia-wahyu-pertama',
       'quest-catatan-zaman-awal-pack-1',
       'quest-lembaran-ilmu-pack-1',
+      'quest-nota-balai-ilmu-pack-2',
+      'quest-jejak-lembaran-pack-2',
     ],
   },
   {
@@ -31,7 +33,7 @@ export const NPC_DEFINITIONS: NpcDefinition[] = [
     visualKey: 'bazaar-traveller',
     interactionRadius: 92,
     dialogueId: 'dialogue-pengembara-bazar',
-    questIds: ['quest-perjalanan-hijrah', 'quest-jejak-perjalanan-pack-1'],
+    questIds: ['quest-perjalanan-hijrah', 'quest-jejak-perjalanan-pack-1', 'quest-catatan-musafir-pack-2'],
   },
 ]
 

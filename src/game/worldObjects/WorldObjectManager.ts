@@ -94,6 +94,7 @@ export class WorldObjectManager {
         nameEN: object.definition.nameEN,
         descriptionBM: object.definition.descriptionBM,
         descriptionEN: object.definition.descriptionEN,
+        questContexts: object.definition.questContexts,
       })
       return true
     }

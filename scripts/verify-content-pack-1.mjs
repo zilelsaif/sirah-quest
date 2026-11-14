@@ -53,7 +53,7 @@ try {
   assert.equal(new Set(QUEST_DATA.map((quest) => quest.id)).size, QUEST_DATA.length)
   assert.equal(new Set(ALL_AREA_CLUES.map((clue) => clue.id)).size, ALL_AREA_CLUES.length)
   assert.deepEqual(ALL_AREA_CLUES.slice(0, 9).map((clue) => clue.id), Object.values(legacyQuestManifest).flat(), 'Legacy assignment order must remain unchanged')
-  assert.deepEqual(ALL_AREA_CLUES.slice(9).map((clue) => clue.id), [...CONTENT_PACK_1_CLUE_IDS])
+  assert.deepEqual(ALL_AREA_CLUES.slice(9, 15).map((clue) => clue.id), [...CONTENT_PACK_1_CLUE_IDS])
 
   const packQuests = packQuestIds.map((id) => QUEST_DATA.find((quest) => quest.id === id))
   assert.ok(packQuests.every(Boolean))
@@ -74,7 +74,7 @@ try {
     assert.deepEqual(quest?.objectives.map((objective) => objective.relatedClueId), clueIds, `${questId} changed unexpectedly`)
   }
 
-  const run = selectQuestionsForTopics(QUESTION_BANK, ALL_AREA_CLUES.map((clue) => clue.questionTopicId), [], () => 0)
+  const run = selectQuestionsForTopics(QUESTION_BANK, ALL_AREA_CLUES.slice(0, 15).map((clue) => clue.questionTopicId), [], () => 0)
   assert.equal(run.assignments.length, 15)
   assert.equal(new Set(run.assignments.map((assignment) => assignment.question.id)).size, 15, 'Questions must remain unique within the run')
   run.assignments.forEach((assignment, index) => assert.equal(assignment.question.topicId, ALL_AREA_CLUES[index].questionTopicId))
@@ -153,12 +153,12 @@ try {
   const normalized = migrateSave(legacyPayload)
   const validated = validateSavePayload(normalized)
   assert.ok(validated, 'A valid v0.21 schema-3 save must normalize without migration')
-  assert.equal(validated.runState.area.questionRun.assignments.length, 15)
+  assert.equal(validated.runState.area.questionRun.assignments.length, 21)
   assert.ok(packQuestIds.every((id) => validated.runState.area.quests.quests[id].status === 'AVAILABLE'))
   assert.ok(CONTENT_PACK_1_CLUE_IDS.every((id) => getAllClueStates(validated.runState.area)[id].state === 'hidden'))
 
   const reset = createAreaSession()
-  assert.equal(reset.questionRun.assignments.length, 15)
+  assert.equal(reset.questionRun.assignments.length, 21)
   assert.ok(CONTENT_PACK_1_CLUE_IDS.every((id) => getAllClueStates(reset)[id].state === 'hidden'))
   assert.ok(packQuestIds.every((id) => reset.quests.quests[id].status === 'AVAILABLE'))
 
