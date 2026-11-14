@@ -19,6 +19,7 @@ interface WorldMapProps {
   onOpenMastery: () => void
   onOpenJournal: () => void
   interfaceLocked: boolean
+  onContextMenuStateChange: (open: boolean) => void
 }
 
 const STATUS_LABELS = {
@@ -39,6 +40,7 @@ export function WorldMap({
   onOpenMastery,
   onOpenJournal,
   interfaceLocked,
+  onContextMenuStateChange,
 }: WorldMapProps) {
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
   const [menuPosition, setMenuPosition] = useState<ContextMenuPosition>({ left: 8, top: 8, placement: 'right' })
@@ -68,6 +70,11 @@ export function WorldMap({
     () => new Set(currentLocation.connections),
     [currentLocation.connections],
   )
+
+  useEffect(() => {
+    onContextMenuStateChange(selectedLocationId !== null)
+    return () => onContextMenuStateChange(false)
+  }, [selectedLocationId, onContextMenuStateChange])
 
   useEffect(() => {
     setMarkerLocationId(currentLocationId)

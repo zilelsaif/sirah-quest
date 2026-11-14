@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { WORLD_LOCATIONS } from '../../world/locationData'
 import type { ClueSessionState } from '../session/types'
 import { MAX_ACTIVE_QUESTS, QUEST_DATA } from './questData'
@@ -7,7 +8,6 @@ import type { QuestDefinition, QuestSessionState, QuestStatus, QuestType } from 
 interface QuestLogProps {
   session: QuestSessionState
   clues: Record<string, ClueSessionState>
-  onAccept: (questId: string) => void
   onTrack: (questId: string | null) => void
   onClose: () => void
 }
@@ -29,18 +29,12 @@ function QuestCard({
   quest,
   session,
   clues,
-  onAccept,
   onTrack,
 }: Omit<QuestLogProps, 'onClose'> & { quest: QuestDefinition }) {
   const state = session.quests[quest.id]
   const progress = getQuestProgress(quest, session)
   const isTracked = session.trackedQuestId === quest.id
   const relatedLocation = WORLD_LOCATIONS.find((location) => quest.areaIds.includes(location.areaId ?? ''))
-  const activeCount = Object.values(session.quests).filter(
-    (quest) => quest.status === 'ACTIVE',
-  ).length
-  const activeLimitReached = activeCount >= MAX_ACTIVE_QUESTS
-
   return (
     <article className={`quest-card is-${state.status.toLowerCase()}`}>
       <div className="quest-card__heading">
@@ -67,15 +61,7 @@ function QuestCard({
         ))}
       </ul>
       <div className="quest-card__actions">
-        {state.status === 'AVAILABLE' && (
-          <button
-            type="button"
-            disabled={activeLimitReached}
-            onClick={() => onAccept(quest.id)}
-          >
-            {activeLimitReached ? 'Had Quest Aktif Penuh' : 'Terima Quest'}
-          </button>
-        )}
+        {state.status === 'AVAILABLE' && <p className="quest-card__npc-note">Terima misi ini melalui NPC yang berkaitan.</p>}
         {state.status === 'ACTIVE' && !isTracked && (
           <button type="button" onClick={() => onTrack(quest.id)}>Jejaki Quest</button>
         )}
@@ -90,6 +76,8 @@ function QuestCard({
 }
 
 export function QuestLog(props: QuestLogProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => { closeButtonRef.current?.focus() }, [])
   const sections: Array<{ status: QuestStatus; title: string }> = [
     { status: 'AVAILABLE', title: 'Quest Tersedia' },
     { status: 'ACTIVE', title: 'Quest Aktif' },
@@ -108,12 +96,13 @@ export function QuestLog(props: QuestLogProps) {
             <p>Jurnal Pengembaraan</p>
             <h3 id="quest-log-title">Log Quest</h3>
           </div>
-          <button type="button" className="button-secondary" onClick={props.onClose}>Tutup</button>
+          <button ref={closeButtonRef} type="button" className="button-secondary" onClick={props.onClose}>Tutup</button>
         </header>
         <p className="quest-log__summary">
           Quest aktif: {activeCount}/{MAX_ACTIVE_QUESTS}
           {trackedQuest ? ` · Dijejaki: ${trackedQuest.titleBM}` : ' · Tiada quest dijejaki'}
         </p>
+        <p className="quest-log__npc-policy">Quest baharu diterima melalui perbualan NPC. Log ini digunakan untuk semakan kemajuan dan penjejakan.</p>
         <div className="quest-log__sections">
           {sections.map((section) => {
             const quests = QUEST_DATA.filter(

@@ -255,6 +255,7 @@ or Mastery migration policy even if wording corrections retain its stable ID.
 - Adds active-quest context to three suitable inspectable World Objects without changing rewards, discovery, tracking, or toggle state.
 - Preserves save schema 3, the first 15 clue assignment positions, lazy GameCanvas loading, and all v0.24 performance protections.
 - See `docs/CONTENT_PACK_2.md` and run `npm run content-pack-2:verify`.
+- Final gameplay refinement makes quest acceptance NPC-only, adds one validated manual save/load slot, and applies a single-close Escape priority for application overlays. See `docs/GAMEPLAY_REFINEMENT_V025.md`.
 
 ### v0.21.0 — First Adventure and Guided Onboarding
 

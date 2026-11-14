@@ -41,6 +41,7 @@ interface GameCanvasProps {
   onNpcDialogueOpen: (npcId: string) => void
   worldObjectState: WorldObjectSessionState
   onWorldObjectStateChange: (state: WorldObjectSessionState) => void
+  onOverlayStateChange: (open: boolean) => void
 }
 
 export function GameCanvas({
@@ -59,6 +60,7 @@ export function GameCanvas({
   onNpcDialogueOpen,
   worldObjectState,
   onWorldObjectStateChange,
+  onOverlayStateChange,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
@@ -141,6 +143,22 @@ export function GameCanvas({
 
   const getScene = () =>
     gameRef.current?.scene.getScene('movement-prototype') as TestScene | undefined
+
+  useEffect(() => {
+    onOverlayStateChange(openClue !== null || openDialogue !== null || openWorldObject !== null || isExplorationMapOpen)
+    return () => onOverlayStateChange(false)
+  }, [openClue, openDialogue, openWorldObject, isExplorationMapOpen, onOverlayStateChange])
+
+  useEffect(() => {
+    if (!openClue) return
+    const closeClueOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.repeat) return
+      event.preventDefault()
+      getScene()?.closeClue()
+    }
+    window.addEventListener('keydown', closeClueOnEscape)
+    return () => window.removeEventListener('keydown', closeClueOnEscape)
+  }, [openClue])
 
   useEffect(() => {
     getScene()?.setInterfaceLocked(interfaceLocked || isExplorationMapOpen || openDialogue !== null || openWorldObject !== null)

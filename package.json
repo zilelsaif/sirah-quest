@@ -20,6 +20,7 @@
     "onboarding:verify": "node scripts/verify-onboarding-system.mjs",
     "content-pack:verify": "node scripts/verify-content-pack-1.mjs",
     "content-pack-2:verify": "node scripts/verify-content-pack-2.mjs",
+    "gameplay-refinement:verify": "node scripts/verify-gameplay-refinement-v025.mjs",
     "world-objects:verify": "node scripts/verify-world-object-system.mjs",
     "map-music:verify": "node scripts/verify-world-map-menu-music.mjs",
     "performance:verify": "node scripts/verify-performance-ux-v024.mjs"

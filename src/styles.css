@@ -541,6 +541,8 @@ button:disabled {
   background: rgba(7, 16, 29, 0.72);
 }
 .save-controls div { display: grid; gap: 0.2rem; }
+.save-controls__actions { display: flex !important; flex-wrap: wrap; gap: 0.55rem !important; }
+.save-controls__actions button { min-height: 44px; }
 .save-controls small { color: #aebdd0; }
 .save-controls button, .reset-confirm button {
   min-height: 44px;

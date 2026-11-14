@@ -41,7 +41,7 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = [
     id: 'quest-guidance',
     title: { bm: 'Misi', en: 'Quests' },
     instruction: {
-      bm: 'Terima misi melalui perbualan atau Log Quest. Anda boleh memilih sendiri misi yang mahu dijejak.',
+      bm: 'Terima misi melalui perbualan NPC. Anda boleh memilih sendiri misi yang mahu dijejak dalam Log Quest.',
       en: 'Accept a quest through dialogue or the Quest Log. You may choose which quest to track.',
     },
   },

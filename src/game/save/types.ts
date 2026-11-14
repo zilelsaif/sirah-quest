@@ -36,3 +36,22 @@ export interface SaveLoadResult {
   message?: string
 }
 
+export interface ManualSaveMetadata {
+  savedAt: string
+  locationId: string
+  locationNameBM: string
+  level: number
+  completedQuests: number
+  completedClues: number
+}
+
+export interface ManualSaveEnvelope {
+  slotVersion: number
+  metadata: ManualSaveMetadata
+  payload: SavePayload
+}
+
+export interface ManualSaveLoadResult extends SaveLoadResult {
+  metadata?: ManualSaveMetadata
+}
+

@@ -49,12 +49,22 @@ function questNodes(questId: string, menuNodeId: string): DialogueNode[] {
 const keeperQuestIds = [
   'quest-jejak-permulaan',
   'quest-rahsia-wahyu-pertama',
+  'quest-jejak-bazar-lama',
+  'quest-catatan-wahyu',
+  'quest-khazanah-hikmah',
+  'quest-catatan-permulaan-wahyu',
   'quest-catatan-zaman-awal-pack-1',
   'quest-lembaran-ilmu-pack-1',
   'quest-nota-balai-ilmu-pack-2',
   'quest-jejak-lembaran-pack-2',
 ]
-const travellerQuestIds = ['quest-perjalanan-hijrah', 'quest-jejak-perjalanan-pack-1', 'quest-catatan-musafir-pack-2']
+const travellerQuestIds = [
+  'quest-perjalanan-hijrah',
+  'quest-laluan-musafir',
+  'quest-jejak-perjalanan-library',
+  'quest-jejak-perjalanan-pack-1',
+  'quest-catatan-musafir-pack-2',
+]
 
 export const DIALOGUE_DEFINITIONS: DialogueDefinition[] = [
   {

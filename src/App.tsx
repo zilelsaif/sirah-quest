@@ -16,7 +16,6 @@ import type {
 import { QuestLog } from './game/quests/QuestLog'
 import { QUEST_DATA } from './game/quests/questData'
 import {
-  acceptQuest,
   acceptQuestWithResult,
   getQuestProgress,
   setTrackedQuest,
@@ -27,8 +26,8 @@ import type { AreaPlaySession, AreaSessionState, GameMode, PlayerPosition, World
 import { getWorldLocation, STARTING_LOCATION_ID, WORLD_LOCATIONS } from './world/locationData'
 import { WorldMap } from './world/WorldMap'
 import { SAVE_DEBOUNCE_MS } from './game/save/config'
-import { clearSirahQuestStorage, loadGameSave, saveGame } from './game/save/SaveManager'
-import type { PersistedGameState, PlayerSessionState, SaveLoadResult } from './game/save/types'
+import { clearSirahQuestStorage, loadGameSave, loadManualGame, saveGame, saveManualGame } from './game/save/SaveManager'
+import type { ManualSaveLoadResult, PersistedGameState, PlayerSessionState, SaveLoadResult } from './game/save/types'
 import { SirahMasteryPanel } from './game/mastery/SirahMasteryPanel'
 import { calculateEncounterScore, createSirahMastery, recordQuestionMastery } from './game/mastery/SirahMastery'
 import type { SirahMasteryState } from './game/mastery/types'
@@ -104,6 +103,12 @@ function App() {
   const [masteryState, setMasteryState] = useState<SirahMasteryState>(initialState.masteryState)
   const [saveMessage, setSaveMessage] = useState(initialLoad.message ?? '')
   const [saveBlocked, setSaveBlocked] = useState(initialLoad.status === 'incompatible')
+  const [manualSave, setManualSave] = useState<ManualSaveLoadResult>(() => loadManualGame())
+  const [manualDialog, setManualDialog] = useState<'overwrite' | 'load' | null>(null)
+  const [manualMessage, setManualMessage] = useState('')
+  const [gameInstanceKey, setGameInstanceKey] = useState(0)
+  const [isGameOverlayOpen, setIsGameOverlayOpen] = useState(false)
+  const [isWorldContextMenuOpen, setIsWorldContextMenuOpen] = useState(false)
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false)
   const latestSaveStateRef = useRef<PersistedGameState>(initialState)
   const [isQuestLogOpen, setIsQuestLogOpen] = useState(false)
@@ -119,6 +124,8 @@ function App() {
     levelsGained: number
   } | null>(null)
   const previousLevelRef = useRef(playerSession.progression.level)
+  const overlayTriggerRef = useRef<HTMLElement | null>(null)
+  const manualCancelRef = useRef<HTMLButtonElement>(null)
   const areaSession = playerSession.run
   const allClues = useMemo(() => getAllClueStates(areaSession), [areaSession.areaStates])
   const currentAreaId = getWorldLocation(worldSession.currentLocationId)?.areaId ?? KAMPUNG_ILMU_AREA_ID
@@ -139,15 +146,26 @@ function App() {
     [playerSession.progression],
   )
   const isInterfaceLocked =
-    isQuestLogOpen || isUpgradePanelOpen || isMasteryPanelOpen || isJournalOpen || levelUpNotification !== null || isResetConfirmOpen
+    isQuestLogOpen || isUpgradePanelOpen || isMasteryPanelOpen || isJournalOpen || levelUpNotification !== null || isResetConfirmOpen || manualDialog !== null
   const journalModel = useMemo(
     () => selectJournalModel(areaSession, worldSession, masteryState),
     [areaSession, worldSession, masteryState],
   )
   const closeJournal = useCallback(() => setIsJournalOpen(false), [])
   const openJournal = useCallback(() => {
+    overlayTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     setIsJournalOpen(true)
     setTutorialState((current) => completeTutorialStep(current, 'journal'))
+  }, [])
+  const openQuestLog = useCallback(() => {
+    overlayTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setIsQuestLogOpen(true)
+  }, [])
+  const restoreOverlayFocus = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      if (overlayTriggerRef.current?.isConnected) overlayTriggerRef.current.focus()
+      overlayTriggerRef.current = null
+    })
   }, [])
   const recordPlayerMovement = useCallback(() => {
     setTutorialState((current) => completeTutorialStep(current, 'movement'))
@@ -196,6 +214,33 @@ function App() {
       document.removeEventListener('visibilitychange', handleVisibility)
     }
   }, [saveBlocked])
+
+  useEffect(() => {
+    if (manualDialog) manualCancelRef.current?.focus()
+  }, [manualDialog])
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.repeat) return
+      let closed = true
+      if (manualDialog) setManualDialog(null)
+      else if (isResetConfirmOpen) setIsResetConfirmOpen(false)
+      else if (isQuestLogOpen) setIsQuestLogOpen(false)
+      else if (isJournalOpen) setIsJournalOpen(false)
+      else if (isUpgradePanelOpen) setIsUpgradePanelOpen(false)
+      else if (isMasteryPanelOpen) setIsMasteryPanelOpen(false)
+      else if (levelUpNotification) setLevelUpNotification(null)
+      else if (isGameOverlayOpen || isWorldContextMenuOpen) closed = false
+      else if (isTutorialOpen) setIsTutorialOpen(false)
+      else closed = false
+      if (!closed) return
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      restoreOverlayFocus()
+    }
+    window.addEventListener('keydown', handleEscape, true)
+    return () => window.removeEventListener('keydown', handleEscape, true)
+  }, [manualDialog, isResetConfirmOpen, isQuestLogOpen, isJournalOpen, isUpgradePanelOpen, isMasteryPanelOpen, levelUpNotification, isGameOverlayOpen, isWorldContextMenuOpen, isTutorialOpen, restoreOverlayFocus])
 
   useEffect(() => {
     const previousLevel = previousLevelRef.current
@@ -315,22 +360,6 @@ function App() {
     setIsTutorialOpen(true)
   }
 
-  const handleAcceptQuest = (questId: string) => {
-    setPlayerSession((current) => {
-      const run = {
-        ...current.run,
-        quests: acceptQuest(current.run.quests, questId, getAllClueStates(current.run)),
-      }
-      return {
-        run,
-        progression: applyXPRewards(
-          current.progression,
-          collectCompletionRewards(current.run, run),
-        ),
-      }
-    })
-  }
-
   const handleAcceptQuestFromNpc = (questId: string) => {
     const result = acceptQuestWithResult(
       areaSession.quests,
@@ -409,6 +438,71 @@ function App() {
     }
   }
 
+  const writeManualSave = () => {
+    try {
+      const locationName = getWorldLocation(worldSession.currentLocationId)?.nameBM ?? worldSession.currentLocationId
+      const currentState = { mode, playerSession, worldSession, masteryState }
+      latestSaveStateRef.current = currentState
+      saveManualGame(currentState, locationName)
+      setManualSave(loadManualGame())
+      setManualMessage('Simpanan manual berjaya disimpan.')
+    } catch {
+      setManualMessage('Simpanan manual gagal. Semak ruang dan kebenaran storan pelayar.')
+    }
+    setManualDialog(null)
+    restoreOverlayFocus()
+  }
+
+  const requestManualSave = () => {
+    overlayTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    if (manualSave.status === 'loaded') setManualDialog('overwrite')
+    else writeManualSave()
+  }
+
+  const requestManualLoad = () => {
+    overlayTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const result = loadManualGame()
+    setManualSave(result)
+    if (result.status !== 'loaded') {
+      setManualMessage(result.message ?? 'Tiada simpanan manual.')
+      restoreOverlayFocus()
+      return
+    }
+    setManualDialog('load')
+  }
+
+  const restoreManualSave = () => {
+    const result = loadManualGame()
+    if (result.status !== 'loaded' || !result.state) {
+      setManualSave(result)
+      setManualMessage(result.message ?? 'Simpanan manual tidak dapat dimuatkan.')
+      setManualDialog(null)
+      return
+    }
+    const restored = result.state
+    setMode(restored.mode)
+    setPlayerSession(restored.playerSession)
+    setWorldSession(restored.worldSession)
+    setMasteryState(restored.masteryState)
+    latestSaveStateRef.current = restored
+    previousLevelRef.current = restored.playerSession.progression.level
+    setLevelUpNotification(null)
+    setIsQuestLogOpen(false)
+    setIsUpgradePanelOpen(false)
+    setIsMasteryPanelOpen(false)
+    setIsJournalOpen(false)
+    setIsResetConfirmOpen(false)
+    setAreaWaypoints({})
+    setWorldObjectState(createWorldObjectSession())
+    setTutorialState(createTutorialState())
+    setIsTutorialOpen(false)
+    setGameInstanceKey((key) => key + 1)
+    setManualDialog(null)
+    setManualSave(result)
+    setManualMessage('Simpanan manual berjaya dimuatkan.')
+    restoreOverlayFocus()
+  }
+
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
@@ -426,7 +520,7 @@ function App() {
           type="button"
           className="tracked-quest-summary"
           disabled={isInterfaceLocked}
-          onClick={() => setIsQuestLogOpen(true)}
+          onClick={openQuestLog}
         >
           <span>Misi Dijejak</span>
           <strong>{trackedQuest.titleBM}</strong>
@@ -442,11 +536,12 @@ function App() {
           visitedLocationIds={worldSession.visitedLocationIds}
           quests={areaSession.quests}
           questNavigation={questNavigation}
-          onOpenQuestLog={() => setIsQuestLogOpen(true)}
+          onOpenQuestLog={openQuestLog}
           onOpenUpgrades={() => setIsUpgradePanelOpen(true)}
           onOpenMastery={() => setIsMasteryPanelOpen(true)}
           onOpenJournal={openJournal}
           interfaceLocked={isInterfaceLocked}
+          onContextMenuStateChange={setIsWorldContextMenuOpen}
           onTravel={travelTo}
           onEnterArea={enterArea}
         />
@@ -458,7 +553,7 @@ function App() {
               <p>Explore with WASD, arrows, or tap. Answer questions at discovered clues.</p>
             </div>
             <div className="game-panel__actions">
-              <button type="button" className="quest-log-button" disabled={isInterfaceLocked} onClick={() => setIsQuestLogOpen(true)}>
+              <button type="button" className="quest-log-button" disabled={isInterfaceLocked} onClick={openQuestLog}>
                 Log Quest
               </button>
               <button type="button" className="upgrade-button" disabled={isInterfaceLocked} onClick={() => setIsUpgradePanelOpen(true)}>
@@ -477,6 +572,7 @@ function App() {
           </div>
           <Suspense fallback={<div className="game-loading" role="status">Memuatkan kawasan pengembaraan…</div>}>
             <GameCanvas
+              key={gameInstanceKey}
               area={currentArea}
               session={playSession}
               onSessionChange={updateAreaSession}
@@ -491,6 +587,7 @@ function App() {
               onNpcDialogueOpen={recordNpcDialogue}
               worldObjectState={worldObjectState}
               onWorldObjectStateChange={updateWorldObjectState}
+              onOverlayStateChange={setIsGameOverlayOpen}
               onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
                 if (waypoint) return { ...current, [currentArea.id]: waypoint }
                 const next = { ...current }
@@ -505,9 +602,8 @@ function App() {
         <QuestLog
           session={areaSession.quests}
           clues={allClues}
-          onAccept={handleAcceptQuest}
           onTrack={handleTrackQuest}
-          onClose={() => setIsQuestLogOpen(false)}
+          onClose={() => { setIsQuestLogOpen(false); restoreOverlayFocus() }}
         />
       )}
       {levelUpNotification && (
@@ -529,7 +625,7 @@ function App() {
       {isMasteryPanelOpen && (
         <SirahMasteryPanel state={masteryState} onClose={() => setIsMasteryPanelOpen(false)} />
       )}
-      {isJournalOpen && <JournalPanel model={journalModel} onClose={closeJournal} />}
+      {isJournalOpen && <JournalPanel model={journalModel} onClose={() => { closeJournal(); restoreOverlayFocus() }} />}
       <TutorialPanel
         state={tutorialState}
         open={isTutorialOpen}
@@ -547,13 +643,35 @@ function App() {
       <BackgroundMusicPlayer />
       <section className="save-controls" aria-label="Data simpanan">
         <div>
-          <strong>Data simpanan</strong>
+          <strong>Data simpanan · Autosave Aktif</strong>
           <small role="status">{saveMessage || 'Kemajuan disimpan secara automatik pada peranti ini.'}</small>
+          <small>Simpanan Manual: {manualSave.status === 'loaded' && manualSave.metadata
+            ? `${new Date(manualSave.metadata.savedAt).toLocaleString('ms-MY')} · ${manualSave.metadata.locationNameBM} · Tahap ${manualSave.metadata.level}`
+            : (manualSave.message ?? 'Tiada simpanan manual')}</small>
+          {manualMessage && <small role="status">{manualMessage}</small>}
         </div>
-        <button type="button" onClick={() => setIsResetConfirmOpen(true)}>
-          Padam Semua Kemajuan
-        </button>
+        <div className="save-controls__actions">
+          <button type="button" onClick={requestManualSave}>Simpan Permainan</button>
+          <button type="button" disabled={manualSave.status !== 'loaded'} onClick={requestManualLoad}>Muat Permainan</button>
+          <button type="button" onClick={() => setIsResetConfirmOpen(true)}>Padam Semua Kemajuan</button>
+        </div>
       </section>
+      {manualDialog && (
+        <div className="clue-overlay" role="presentation">
+          <section className="reset-confirm" role="dialog" aria-modal="true" aria-labelledby="manual-save-title">
+            <h2 id="manual-save-title">{manualDialog === 'overwrite' ? 'Ganti simpanan manual?' : 'Muat simpanan manual ini?'}</h2>
+            <p>{manualDialog === 'overwrite'
+              ? 'Simpanan manual sedia ada akan digantikan dengan kemajuan semasa.'
+              : 'Kemajuan sesi semasa mungkin digantikan dengan snapshot yang disimpan.'}</p>
+            <div className="reset-confirm__actions">
+              <button ref={manualCancelRef} type="button" onClick={() => { setManualDialog(null); restoreOverlayFocus() }}>Batal</button>
+              <button type="button" onClick={manualDialog === 'overwrite' ? writeManualSave : restoreManualSave}>
+                {manualDialog === 'overwrite' ? 'Ya, Simpan' : 'Ya, Muat Permainan'}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
       {isResetConfirmOpen && (
         <div className="clue-overlay" role="presentation">
           <section className="reset-confirm" role="dialog" aria-modal="true" aria-labelledby="reset-title">
