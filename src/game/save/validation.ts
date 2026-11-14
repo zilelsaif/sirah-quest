@@ -6,6 +6,7 @@ import { QUEST_DATA } from '../quests/questData'
 import { WORLD_LOCATIONS } from '../../world/locationData'
 import type { SavePayload } from './types'
 import { SAVE_SCHEMA_VERSION } from './config'
+import { LANDMARK_DEFINITIONS } from '../worldObjects/landmarkData'
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value)
 const isInt = (value: unknown, min: number, max: number): value is number => typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max
@@ -30,6 +31,8 @@ export function validateSavePayload(value: unknown): SavePayload | null {
   if ((runState.mode !== 'WORLD_MAP' && runState.mode !== 'AREA_MAP') || !isRecord(runState.area) || !isRecord(runState.world)) return null
   const run = runState.area
   if (!isInt(run.remainingHints, 0, 100) || !isRecord(run.questionRun) || !Array.isArray(run.questionRun.assignments) || run.questionRun.assignments.length !== ALL_AREA_CLUES.length || typeof run.questionRun.usedFallback !== 'boolean' || !isRecord(run.areaStates)) return null
+  const landmarkIds = new Set(LANDMARK_DEFINITIONS.map(({ id }) => id))
+  if (!uniqueStrings(run.discoveredLandmarkIds, landmarkIds)) return null
   const seen = new Set<string>()
   const assignments = run.questionRun.assignments.map((assignment, index) => {
     if (!isRecord(assignment) || !isRecord(assignment.question) || typeof assignment.question.id !== 'string' || !Array.isArray(assignment.shuffledOptions)) return null
@@ -75,5 +78,5 @@ export function validateSavePayload(value: unknown): SavePayload | null {
   }
   const locationIds = new Set(WORLD_LOCATIONS.map(({ id }) => id)); const world = runState.world
   if (typeof world.currentLocationId !== 'string' || !locationIds.has(world.currentLocationId) || !uniqueStrings(world.visitedLocationIds, locationIds) || typeof world.hasEnteredArea !== 'boolean') return null
-  return { schemaVersion: SAVE_SCHEMA_VERSION, appVersion: value.appVersion, savedAt: value.savedAt, playerProgression: progression as unknown as SavePayload['playerProgression'], masteryState: { questionRecords }, runState: { mode: runState.mode, area: { questionRun: { assignments: assignments as NonNullable<(typeof assignments)[number]>[], usedFallback: run.questionRun.usedFallback }, areaStates, quests: { quests, acceptedQuestIds: run.quests.acceptedQuestIds, trackedQuestId: run.quests.trackedQuestId }, remainingHints: run.remainingHints }, world: { currentLocationId: world.currentLocationId, visitedLocationIds: world.visitedLocationIds, hasEnteredArea: world.hasEnteredArea } } }
+  return { schemaVersion: SAVE_SCHEMA_VERSION, appVersion: value.appVersion, savedAt: value.savedAt, playerProgression: progression as unknown as SavePayload['playerProgression'], masteryState: { questionRecords }, runState: { mode: runState.mode, area: { questionRun: { assignments: assignments as NonNullable<(typeof assignments)[number]>[], usedFallback: run.questionRun.usedFallback }, areaStates, quests: { quests, acceptedQuestIds: run.quests.acceptedQuestIds, trackedQuestId: run.quests.trackedQuestId }, remainingHints: run.remainingHints, discoveredLandmarkIds: run.discoveredLandmarkIds }, world: { currentLocationId: world.currentLocationId, visitedLocationIds: world.visitedLocationIds, hasEnteredArea: world.hasEnteredArea } } }
 }

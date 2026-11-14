@@ -13,6 +13,7 @@ export function createAreaSession(maxHints = 1): AreaSessionState {
     }])),
     quests: createQuestSession(),
     remainingHints: Math.max(0, maxHints),
+    discoveredLandmarkIds: [],
   }
 }
 

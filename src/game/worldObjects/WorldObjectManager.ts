@@ -7,6 +7,7 @@ import type {
   WorldObjectState,
 } from './types'
 import { applyWorldObjectInteraction } from './worldObjectRules'
+import { attemptLandmarkDiscovery } from './landmarkDiscovery'
 
 interface WorldObjectRuntime {
   definition: WorldObjectDefinition
@@ -26,6 +27,7 @@ export class WorldObjectManager {
   private lastInteractionAt = Number.NEGATIVE_INFINITY
   private playerX = Number.POSITIVE_INFINITY
   private playerY = Number.POSITIVE_INFINITY
+  private readonly discoveredLandmarkIds: Set<string>
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -35,7 +37,10 @@ export class WorldObjectManager {
     private readonly onPanelChange: (object: WorldObjectPanelData | null) => void,
     private readonly onMovementLockChange: (locked: boolean) => void,
     private readonly onStateChange: (state: WorldObjectSessionState) => void,
+    discoveredLandmarkIds: readonly string[] = [],
+    private readonly onLandmarkDiscovered: (landmarkId: string) => void = () => undefined,
   ) {
+    this.discoveredLandmarkIds = new Set(discoveredLandmarkIds)
     this.objects = definitions.map((definition) => this.createObject(definition, initialState[definition.id]))
     this.interactionPrompt = scene.add.text(0, 0, 'E / Tap: Interaksi', {
       color: '#fff7df', fontFamily: 'system-ui, sans-serif', fontSize: '14px', fontStyle: 'bold',
@@ -85,6 +90,15 @@ export class WorldObjectManager {
     if (!result.accepted) return false
     this.lastInteractionAt = now
     if (object.definition.interactionType === 'INSPECT') {
+      const discovery = attemptLandmarkDiscovery(
+        [...this.discoveredLandmarkIds], object.definition, this.scene.registry.get('areaId') ?? object.definition.areaId,
+        distance, object.visual.visible,
+      )
+      const isNewLandmark = discovery.newlyDiscovered
+      if (isNewLandmark) {
+        this.discoveredLandmarkIds.add(object.definition.id)
+        this.onLandmarkDiscovered(object.definition.id)
+      }
       this.openObject = object
       this.setActiveObject(undefined)
       this.onMovementLockChange(true)
@@ -95,6 +109,7 @@ export class WorldObjectManager {
         descriptionBM: object.definition.descriptionBM,
         descriptionEN: object.definition.descriptionEN,
         questContexts: object.definition.questContexts,
+        discoveryNoticeBM: isNewLandmark ? `Lokasi Ditemui: ${object.definition.nameBM}` : undefined,
       })
       return true
     }
@@ -149,6 +164,16 @@ export class WorldObjectManager {
       const shade = this.scene.add.triangle(0, -16, -14, 11, 14, 11, 0, -8, 0xc18b32).setStrokeStyle(2, VISUAL_PALETTE.ink)
       stateShape = shade
       pieces.push(glow, stand, shade)
+    } else if (definition.kind === 'landmark') {
+      const base = this.scene.add.circle(0, 4, 25, VISUAL_PALETTE.deepTeal).setStrokeStyle(4, VISUAL_PALETTE.softGold)
+      const symbolByVisual: Record<string, string> = {
+        'old-well': '◉', 'reading-hut': '⌂', 'trade-gate': '⌘', 'caravan-corner': '◇', 'manuscript-table': '▤', 'map-corner': '✦',
+      }
+      const symbol = this.scene.add.text(0, 2, symbolByVisual[definition.visualKey] ?? '◆', {
+        color: '#fff7df', fontSize: '23px', fontStyle: 'bold',
+      }).setOrigin(0.5)
+      stateShape = symbol
+      pieces.push(base, symbol)
     } else if (definition.visualKey === 'reference-shelf') {
       const shelf = this.scene.add.rectangle(0, -1, 42, 48, 0x5d4635).setStrokeStyle(3, VISUAL_PALETTE.softGold)
       const books = this.scene.add.text(0, -2, '▥', { color: '#f4d58d', fontSize: '25px', fontStyle: 'bold' }).setOrigin(0.5)

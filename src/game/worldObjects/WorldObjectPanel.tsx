@@ -29,6 +29,7 @@ export function WorldObjectPanel({ object, quests, onClose }: WorldObjectPanelPr
       <section className="world-object-panel" role="dialog" aria-modal="true" aria-labelledby="world-object-title">
         <p className="world-object-panel__label">Interaksi Dunia</p>
         <h3 id="world-object-title">{object.nameBM}</h3>
+        {object.discoveryNoticeBM && <p className="world-object-panel__discovery" role="status">{object.discoveryNoticeBM}</p>}
         <p>{object.descriptionBM}</p>
         {activeContext && <p className="world-object-panel__quest-context">Konteks misi: {activeContext.textBM}</p>}
         <button ref={closeButtonRef} type="button" onClick={onClose}>Tutup</button>

@@ -82,6 +82,7 @@ function normalizeCurrentSchemaSave(value: Record<string, unknown>) {
       ...runState,
       area: {
         ...run,
+        discoveredLandmarkIds: run.discoveredLandmarkIds === undefined ? [] : run.discoveredLandmarkIds,
         questionRun: {
           ...questionRun,
           assignments: appendMissingQuestionAssignments(questionRun.assignments),
@@ -158,6 +159,7 @@ export function migrateSave(value: unknown): unknown {
           },
           quests: { ...oldQuestSession, quests: { ...defaultQuests.quests, ...oldQuestRecords } },
           remainingHints: oldArea.remainingHints,
+          discoveredLandmarkIds: [],
         },
       },
     }

@@ -46,10 +46,19 @@ export interface JournalExplorationEntry {
   totalClues: number
 }
 
+export interface JournalLandmarkAreaEntry {
+  areaId: string
+  nameBM: string
+  discovered: number
+  total: number
+  landmarks: Array<{ id: string; discovered: boolean; nameBM: string; descriptionBM: string }>
+}
+
 export interface JournalModel {
   quests: JournalQuestEntry[]
   knowledge: JournalKnowledgeEntry[]
   legacyKnowledge: JournalLegacyKnowledgeEntry[]
   exploration: JournalExplorationEntry[]
+  landmarkDiscoveries: { discovered: number; total: number; areas: JournalLandmarkAreaEntry[] }
   mastery: TopicMasterySummary[]
 }

@@ -2,7 +2,7 @@ import type { PlayerPosition } from '../session/types'
 
 export type WorldObjectInteractionType = 'INSPECT' | 'TOGGLE'
 export type WorldObjectState = 'IDLE' | 'CLOSED' | 'OPEN' | 'OFF' | 'ON'
-export type WorldObjectVisualKey = 'notice-board' | 'tool-chest' | 'direction-board' | 'trade-chest' | 'reference-shelf' | 'reading-lamp'
+export type WorldObjectVisualKey = 'notice-board' | 'tool-chest' | 'direction-board' | 'trade-chest' | 'reference-shelf' | 'reading-lamp' | 'old-well' | 'reading-hut' | 'trade-gate' | 'caravan-corner' | 'manuscript-table' | 'map-corner'
 
 export interface WorldObjectQuestContext {
   questId: string
@@ -23,6 +23,8 @@ export interface WorldObjectDefinition {
   interactionRadius: number
   initialState: WorldObjectState
   questContexts?: WorldObjectQuestContext[]
+  kind?: 'landmark'
+  discoveryRadius?: number
 }
 
 export type WorldObjectSessionState = Record<string, WorldObjectState>
@@ -34,6 +36,7 @@ export interface WorldObjectPanelData {
   descriptionBM: string
   descriptionEN: string
   questContexts?: WorldObjectQuestContext[]
+  discoveryNoticeBM?: string
 }
 
 export interface WorldObjectInteractionResult {

@@ -5,7 +5,7 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.25.0 adds Content and Gameplay Expansion Pack 2 while preserving the v0.24.0 interaction, World Map
+question interactions. Version 0.26.0 adds optional persistent landmark discovery while preserving the v0.25.0 quest, save/load, interaction and performance foundations.
 menu and music systems while moving the Phaser Area runtime behind an on-demand
 chunk and deferring audio initialization until the player presses Main. The
 24-question bank and save schema 3 are unchanged. Backend services,
@@ -256,6 +256,13 @@ or Mastery migration policy even if wording corrections retain its stable ID.
 - Preserves save schema 3, the first 15 clue assignment positions, lazy GameCanvas loading, and all v0.24 performance protections.
 - See `docs/CONTENT_PACK_2.md` and run `npm run content-pack-2:verify`.
 - Final gameplay refinement makes quest acceptance NPC-only, adds one validated manual save/load slot, and applies a single-close Escape priority for application overlays. See `docs/GAMEPLAY_REFINEMENT_V025.md`.
+
+### v0.26.0 — World Discovery and Exploration
+
+- Adds six optional fictional landmarks across the three existing areas, using the established INSPECT interaction path.
+- Records idempotent discoveries in Rekod Penjelajahan and persists them through autosave and manual save/load within backward-compatible save schema 3.
+- Preserves quests, clues, questions, World Map navigation, fog protection, lazy Phaser loading and audio behavior.
+- See `docs/WORLD_DISCOVERY_V026.md` and run `npm run world-discovery:verify`.
 
 ### v0.21.0 — First Adventure and Guided Onboarding
 

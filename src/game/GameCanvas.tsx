@@ -41,6 +41,8 @@ interface GameCanvasProps {
   onNpcDialogueOpen: (npcId: string) => void
   worldObjectState: WorldObjectSessionState
   onWorldObjectStateChange: (state: WorldObjectSessionState) => void
+  discoveredLandmarkIds: readonly string[]
+  onLandmarkDiscovered: (landmarkId: string) => void
   onOverlayStateChange: (open: boolean) => void
 }
 
@@ -60,6 +62,8 @@ export function GameCanvas({
   onNpcDialogueOpen,
   worldObjectState,
   onWorldObjectStateChange,
+  discoveredLandmarkIds,
+  onLandmarkDiscovered,
   onOverlayStateChange,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -119,6 +123,8 @@ export function GameCanvas({
       },
       worldObjectState,
       onWorldObjectStateChange,
+      discoveredLandmarkIds,
+      onLandmarkDiscovered,
       setNearbyWorldObject,
       (object) => {
         if (!object) {

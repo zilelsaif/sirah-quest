@@ -32,6 +32,7 @@ export interface AreaSessionState {
   areaStates: Record<string, AreaRuntimeState>
   quests: QuestSessionState
   remainingHints: number
+  discoveredLandmarkIds: string[]
 }
 
 export interface AreaPlaySession extends AreaRuntimeState {

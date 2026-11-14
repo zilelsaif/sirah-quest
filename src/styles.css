@@ -1969,6 +1969,17 @@ h1 {
   margin-top: 0.25rem;
   font-family: Georgia, "Times New Roman", serif;
 }
+.world-object-panel__discovery {
+  border: 1px solid #d9b65f;
+  border-radius: 0.65rem;
+  background: rgb(217 182 95 / 14%);
+  color: #f8d77d;
+  font-weight: 800;
+  padding: 0.7rem;
+}
+.journal-landmarks { margin-top: 1.25rem; }
+.journal-landmarks li { margin-top: 0.65rem; }
+.journal-landmarks li p { margin: 0.2rem 0 0; }
 
 .world-object-panel > p:not(.world-object-panel__label) {
   margin-top: 0.7rem;

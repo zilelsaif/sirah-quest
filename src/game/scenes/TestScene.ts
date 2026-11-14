@@ -17,6 +17,7 @@ import { getNpcsForArea } from '../npcs/npcData'
 import { NpcManager } from '../npcs/NpcManager'
 import type { NpcDefinition } from '../npcs/types'
 import { getWorldObjectsForArea } from '../worldObjects/worldObjectData'
+import { getLandmarksForArea } from '../worldObjects/landmarkData'
 import { WorldObjectManager } from '../worldObjects/WorldObjectManager'
 import type { WorldObjectDefinition, WorldObjectPanelData, WorldObjectSessionState } from '../worldObjects/types'
 
@@ -49,6 +50,8 @@ export class TestScene extends Phaser.Scene {
     private readonly onNpcDialogueChange: (npc: NpcDefinition | null) => void,
     private readonly initialWorldObjectState: WorldObjectSessionState,
     private readonly onWorldObjectStateChange: (state: WorldObjectSessionState) => void,
+    private readonly discoveredLandmarkIds: readonly string[],
+    private readonly onLandmarkDiscovered: (landmarkId: string) => void,
     private readonly onNearbyWorldObjectChange: (object: WorldObjectDefinition | null) => void,
     private readonly onWorldObjectPanelChange: (object: WorldObjectPanelData | null) => void,
     private readonly onSceneReady: () => void,
@@ -60,6 +63,7 @@ export class TestScene extends Phaser.Scene {
   }
 
   create() {
+    this.registry.set('areaId', this.area.id)
     this.cameras.main.setBounds(0, 0, this.area.width, this.area.height)
     this.drawMap()
 
@@ -141,7 +145,7 @@ export class TestScene extends Phaser.Scene {
 
     this.worldObjectManager = new WorldObjectManager(
       this,
-      getWorldObjectsForArea(this.area.id),
+      [...getWorldObjectsForArea(this.area.id), ...getLandmarksForArea(this.area.id)],
       this.initialWorldObjectState,
       this.onNearbyWorldObjectChange,
       this.onWorldObjectPanelChange,
@@ -150,6 +154,8 @@ export class TestScene extends Phaser.Scene {
         this.applyMovementLock()
       },
       this.onWorldObjectStateChange,
+      this.discoveredLandmarkIds,
+      this.onLandmarkDiscovered,
     )
 
     this.keyboardInput = new KeyboardInput(

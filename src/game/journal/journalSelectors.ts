@@ -6,6 +6,7 @@ import type { QuestionTopicId } from '../questions/types'
 import { QUEST_DATA } from '../quests/questData'
 import type { AreaSessionState, WorldSessionState } from '../session/types'
 import type { JournalModel } from './types'
+import { LANDMARK_DEFINITIONS } from '../worldObjects/landmarkData'
 
 const TOPICS: QuestionTopicId[] = ['early-life', 'first-revelation', 'hijrah']
 
@@ -81,11 +82,26 @@ export function selectJournalModel(
     }
   }).filter((area) => area.visited)
 
+  const discoveredLandmarkIds = new Set(session.discoveredLandmarkIds)
+  const landmarkAreas = AREA_DEFINITIONS.map((area) => {
+    const landmarks = LANDMARK_DEFINITIONS.filter((landmark) => landmark.areaId === area.id).map((landmark) => {
+      const discovered = discoveredLandmarkIds.has(landmark.id)
+      return {
+        id: landmark.id,
+        discovered,
+        nameBM: discovered ? landmark.nameBM : '???',
+        descriptionBM: discovered ? landmark.descriptionBM : 'Belum ditemui.',
+      }
+    })
+    return { areaId: area.id, nameBM: area.nameBM, discovered: landmarks.filter((landmark) => landmark.discovered).length, total: landmarks.length, landmarks }
+  })
+
   return {
     quests,
     knowledge,
     legacyKnowledge,
     exploration,
+    landmarkDiscoveries: { discovered: discoveredLandmarkIds.size, total: LANDMARK_DEFINITIONS.length, areas: landmarkAreas },
     mastery: TOPICS.map((topicId) => getTopicMastery(mastery, topicId)),
   }
 }

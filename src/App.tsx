@@ -178,6 +178,12 @@ function App() {
   const updateWorldObjectState = useCallback((next: WorldObjectSessionState) => {
     setWorldObjectState((current) => ({ ...current, ...next }))
   }, [])
+  const recordLandmarkDiscovery = useCallback((landmarkId: string) => {
+    setPlayerSession((current) => current.run.discoveredLandmarkIds.includes(landmarkId) ? current : ({
+      ...current,
+      run: { ...current.run, discoveredLandmarkIds: [...current.run.discoveredLandmarkIds, landmarkId] },
+    }))
+  }, [])
 
   useEffect(() => {
     setTutorialState((current) => reconcileTutorial(current, {
@@ -506,7 +512,7 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.25.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.26.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -587,6 +593,8 @@ function App() {
               onNpcDialogueOpen={recordNpcDialogue}
               worldObjectState={worldObjectState}
               onWorldObjectStateChange={updateWorldObjectState}
+              discoveredLandmarkIds={areaSession.discoveredLandmarkIds}
+              onLandmarkDiscovered={recordLandmarkDiscovery}
               onOverlayStateChange={setIsGameOverlayOpen}
               onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
                 if (waypoint) return { ...current, [currentArea.id]: waypoint }
