@@ -1,5 +1,5 @@
 export const SAVE_SCHEMA_VERSION = 3
-export const SAVE_APP_VERSION = '0.28.0'
+export const SAVE_APP_VERSION = '0.29.0'
 export const SAVE_STORAGE_KEY = 'sirahQuest.save'
 export const MANUAL_SAVE_STORAGE_KEY = 'sirahQuest.manualSave.v1'
 export const MANUAL_SAVE_SLOT_VERSION = 1

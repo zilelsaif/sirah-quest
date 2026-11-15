@@ -5,9 +5,9 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Development version 0.28.0 audits pre-beta stability,
-save recovery, content integrity, accessibility, performance, and security while
-preserving the released v0.27.0 gameplay scope. The Phaser Area runtime remains
+question interactions. Development version 0.29.0 prepares device compatibility,
+mobile interaction, lifecycle, accessibility, and beta QA while preserving the
+released v0.28.0 gameplay scope. The Phaser Area runtime remains
 an on-demand chunk and audio initialization remains deferred until the player
 presses Main. The 24-question bank and save schema 3 are unchanged. Backend services,
 authentication, database, and mobile packaging have not been added yet.
@@ -278,6 +278,13 @@ or Mastery migration policy even if wording corrections retain its stable ID.
 - Adds focused verification for storage read/write failures, immutable educational content, review isolation, locked counts, lazy-loading boundaries, and historical release integrity.
 - Keeps save schema 3; newly written save metadata now reports the current application version accurately.
 - See `docs/PREBETA_AUDIT_V028.md`, `docs/DEFECT_REGISTER_V028.md`, and `docs/CONTENT_AUDIT_V028.md`; run `npm run prebeta:verify`.
+
+### v0.29.0 — Beta Preparation and Device Compatibility
+
+- Adds no gameplay or educational content; preserves all locked v0.28.0 counts, save schema 3, and historical archives.
+- Adds deterministic coverage for the target viewport matrix, Phaser resize lifecycle, modal input isolation, touch-target rules, HUD coexistence, lazy boundaries, save rollback, and archive integrity.
+- Provides owner-facing Android tablet/phone and Windows desktop QA matrices without claiming unexecuted physical-device results.
+- See `docs/BETA_DEVICE_COMPAT_V029.md`, `docs/BETA_QA_MATRIX_V029.md`, and `docs/BETA_READINESS_V029.md`; run `npm run device-compat:verify`.
 
 ### v0.21.0 — First Adventure and Guided Onboarding
 

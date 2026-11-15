@@ -29,9 +29,9 @@ try {
   const { SAVE_SCHEMA_VERSION, SAVE_APP_VERSION, SAVE_STORAGE_KEY, MANUAL_SAVE_STORAGE_KEY } = await server.ssrLoadModule('/src/game/save/config.ts')
   const { getEligibleReviewQuestions, createReviewSession, answerReviewQuestion } = await server.ssrLoadModule('/src/game/review/reviewEngine.ts')
 
-  assert.equal(pkg.version, '0.28.0')
+  assert.equal(pkg.version, '0.29.0')
   assert.equal(SAVE_SCHEMA_VERSION, 3)
-  assert.equal(SAVE_APP_VERSION, '0.28.0')
+  assert.equal(SAVE_APP_VERSION, '0.29.0')
   assert.equal(QUEST_DATA.length, 15)
   assert.equal(ALL_AREA_CLUES.length, 21)
   assert.equal(QUESTION_BANK.length, 24)
@@ -51,7 +51,7 @@ try {
 
   const state = { mode: 'AREA_MAP', playerSession: { progression: createPlayerProgression(), run: createAreaSession() }, worldSession: { currentLocationId: 'kampung-ilmu', visitedLocationIds: ['kampung-ilmu'], hasEnteredArea: true }, masteryState: createSirahMastery() }
   const payload = createSavePayload(state, '2026-01-01T00:00:00.000Z')
-  assert.equal(payload.schemaVersion, 3); assert.equal(payload.appVersion, '0.28.0')
+  assert.equal(payload.schemaVersion, 3); assert.equal(payload.appVersion, '0.29.0')
   saveGame(state); saveManualGame(state, 'Kampung Ilmu')
   assert.equal(loadGameSave().status, 'loaded'); assert.equal(loadManualGame().status, 'loaded')
   const autosaveBefore = values.get(SAVE_STORAGE_KEY); const manualBefore = values.get(MANUAL_SAVE_STORAGE_KEY)
