@@ -20,7 +20,7 @@ const REVIEW_STATUS: Record<QuestionReviewStatus, string> = {
 }
 const TOPICS: QuestionTopicId[] = ['early-life', 'first-revelation', 'hijrah']
 
-export function JournalPanel({ model, onClose }: { model: JournalModel; onClose: () => void }) {
+export function JournalPanel({ model, onOpenReview, onClose }: { model: JournalModel; onOpenReview: () => void; onClose: () => void }) {
   const [tab, setTab] = useState<JournalTab>('quests')
   const closeRef = useRef<HTMLButtonElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
@@ -61,6 +61,7 @@ export function JournalPanel({ model, onClose }: { model: JournalModel; onClose:
           {tab === 'knowledge' && <section aria-labelledby="journal-knowledge"><h3 id="journal-knowledge">Jurnal Ilmu</h3>
             <p className="journal-note">Catatan ilmu daripada petunjuk selesai. Kandungan berstatus semakan editorial bukan pengesahan agama atau sejarah.</p>
             <p className="journal-note">Catatan lama mungkin tidak mempunyai rekod skor Penguasaan yang sepadan.</p>
+            <button type="button" className="journal-review-button" onClick={onOpenReview}>Ulang Kaji</button>
             {TOPICS.map((topicId) => { const entries = model.knowledge.filter((entry) => entry.topicId === topicId); return <section className="journal-topic" key={topicId}><h4>{TOPIC_LABELS[topicId].bm} <span>{entries.length}</span></h4>{entries.length === 0 ? <p className="journal-empty">Belum ada catatan ilmu yang lengkap.</p> : entries.map((entry) => <article className="journal-card" key={entry.questionId}><span className="journal-id">{entry.questionId}</span><h5>{entry.promptBM}</h5><p><strong>Jawapan:</strong> {entry.answerBM}</p><p>{entry.explanationBM}</p><p className="journal-meta">{entry.areaBM} · {entry.clueTitle} · {REVIEW_STATUS[entry.reviewStatus]}</p></article>)}</section> })}
             {model.legacyKnowledge.length > 0 && <section className="journal-topic"><h4>Rekod simpanan lama</h4>{model.legacyKnowledge.map((entry) => <p className="journal-empty" key={entry.clueId}>Petunjuk selesai di {entry.areaBM} ({entry.clueTitle}), tetapi simpanan ini tidak mempunyai bukti mencukupi untuk mengenal pasti soalan asal.</p>)}</section>}
           </section>}

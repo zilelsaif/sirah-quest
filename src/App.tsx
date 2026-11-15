@@ -49,6 +49,7 @@ import type { WorldObjectSessionState } from './game/worldObjects/types'
 import { BackgroundMusicPlayer } from './game/audio/BackgroundMusicPlayer'
 
 const GameCanvas = lazy(() => import('./game/GameCanvas').then((module) => ({ default: module.GameCanvas })))
+const ReviewPanel = lazy(() => import('./game/review/ReviewPanel').then((module) => ({ default: module.ReviewPanel })))
 
 type PlayerSession = PlayerSessionState
 
@@ -115,6 +116,7 @@ function App() {
   const [isUpgradePanelOpen, setIsUpgradePanelOpen] = useState(false)
   const [isMasteryPanelOpen, setIsMasteryPanelOpen] = useState(false)
   const [isJournalOpen, setIsJournalOpen] = useState(false)
+  const [isReviewOpen, setIsReviewOpen] = useState(false)
   const [tutorialState, setTutorialState] = useState(createTutorialState)
   const [isTutorialOpen, setIsTutorialOpen] = useState(true)
   const [areaWaypoints, setAreaWaypoints] = useState<Record<string, PlayerPosition>>({})
@@ -146,7 +148,7 @@ function App() {
     [playerSession.progression],
   )
   const isInterfaceLocked =
-    isQuestLogOpen || isUpgradePanelOpen || isMasteryPanelOpen || isJournalOpen || levelUpNotification !== null || isResetConfirmOpen || manualDialog !== null
+    isQuestLogOpen || isUpgradePanelOpen || isMasteryPanelOpen || isJournalOpen || isReviewOpen || levelUpNotification !== null || isResetConfirmOpen || manualDialog !== null
   const journalModel = useMemo(
     () => selectJournalModel(areaSession, worldSession, masteryState),
     [areaSession, worldSession, masteryState],
@@ -230,6 +232,7 @@ function App() {
       if (event.key !== 'Escape' || event.repeat) return
       let closed = true
       if (manualDialog) setManualDialog(null)
+      else if (isReviewOpen) setIsReviewOpen(false)
       else if (isResetConfirmOpen) setIsResetConfirmOpen(false)
       else if (isQuestLogOpen) setIsQuestLogOpen(false)
       else if (isJournalOpen) setIsJournalOpen(false)
@@ -246,7 +249,7 @@ function App() {
     }
     window.addEventListener('keydown', handleEscape, true)
     return () => window.removeEventListener('keydown', handleEscape, true)
-  }, [manualDialog, isResetConfirmOpen, isQuestLogOpen, isJournalOpen, isUpgradePanelOpen, isMasteryPanelOpen, levelUpNotification, isGameOverlayOpen, isWorldContextMenuOpen, isTutorialOpen, restoreOverlayFocus])
+  }, [manualDialog, isReviewOpen, isResetConfirmOpen, isQuestLogOpen, isJournalOpen, isUpgradePanelOpen, isMasteryPanelOpen, levelUpNotification, isGameOverlayOpen, isWorldContextMenuOpen, isTutorialOpen, restoreOverlayFocus])
 
   useEffect(() => {
     const previousLevel = previousLevelRef.current
@@ -321,6 +324,7 @@ function App() {
     setIsUpgradePanelOpen(false)
     setIsMasteryPanelOpen(false)
     setIsJournalOpen(false)
+    setIsReviewOpen(false)
     setAreaWaypoints({})
     setWorldObjectState(createWorldObjectSession())
     setTutorialState(createTutorialState())
@@ -430,6 +434,7 @@ function App() {
     setIsUpgradePanelOpen(false)
     setIsMasteryPanelOpen(false)
     setIsJournalOpen(false)
+    setIsReviewOpen(false)
     setIsResetConfirmOpen(false)
     setAreaWaypoints({})
     setWorldObjectState(createWorldObjectSession())
@@ -497,6 +502,7 @@ function App() {
     setIsUpgradePanelOpen(false)
     setIsMasteryPanelOpen(false)
     setIsJournalOpen(false)
+    setIsReviewOpen(false)
     setIsResetConfirmOpen(false)
     setAreaWaypoints({})
     setWorldObjectState(createWorldObjectSession())
@@ -512,7 +518,7 @@ function App() {
   return (
     <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
       <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.26.0 by Zil-el-Saif</p>
+        <p className="build-label">Development Build v0.27.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>
         <p className="tagline">Classic Fantasy Learning Adventure</p>
       </section>
@@ -631,9 +637,10 @@ function App() {
         />
       )}
       {isMasteryPanelOpen && (
-        <SirahMasteryPanel state={masteryState} onClose={() => setIsMasteryPanelOpen(false)} />
+        <SirahMasteryPanel state={masteryState} session={areaSession} onClose={() => setIsMasteryPanelOpen(false)} />
       )}
-      {isJournalOpen && <JournalPanel model={journalModel} onClose={() => { closeJournal(); restoreOverlayFocus() }} />}
+      {isJournalOpen && <JournalPanel model={journalModel} onOpenReview={() => setIsReviewOpen(true)} onClose={() => { closeJournal(); restoreOverlayFocus() }} />}
+      {isReviewOpen && <Suspense fallback={<div className="review-overlay"><div className="game-loading" role="status">Menyediakan ulang kaji…</div></div>}><ReviewPanel mastery={masteryState} onClose={() => setIsReviewOpen(false)} /></Suspense>}
       <TutorialPanel
         state={tutorialState}
         open={isTutorialOpen}

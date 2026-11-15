@@ -338,7 +338,7 @@ export class ClueManager {
         ? {
             tone: 'correct',
             message: {
-              bm: 'Betul! Clue ini telah diselesaikan.',
+              bm: 'Betul. Petunjuk ini telah diselesaikan.',
               en: 'Correct! This clue is now complete.',
             },
           }
@@ -346,7 +346,7 @@ export class ClueManager {
           ? {
               tone: 'incorrect',
               message: {
-                bm: 'Belum tepat. Cuba lagi dan teliti setiap pilihan.',
+                bm: 'Belum Tepat. Cuba lagi dan teliti setiap pilihan.',
                 en: 'Not quite. Try again and consider each choice carefully.',
               },
             }

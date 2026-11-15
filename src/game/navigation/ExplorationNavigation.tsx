@@ -3,6 +3,7 @@ import type { AreaDefinition } from '../areas/types'
 import { Pathfinder } from './Pathfinder'
 import type { AreaPlaySession, PlayerPosition } from '../session/types'
 import type { QuestNavigationState, QuestNavigationTarget } from './questNavigation'
+import type { BilingualText } from '../questions/types'
 
 interface ExplorationNavigationProps {
   area: AreaDefinition
@@ -27,6 +28,10 @@ interface MapCanvasProps {
 }
 
 const MAP_DRAW_WIDTH = 720
+const NORTH_STAR_LABEL: BilingualText = {
+  bm: 'Penunjuk arah utara',
+  en: 'North direction indicator',
+}
 
 function isExplored(session: AreaPlaySession, position: PlayerPosition) {
   return session.fogDiscoveryPoints.some(
@@ -314,6 +319,11 @@ export function ExplorationNavigation({
 
   return (
     <>
+      <svg className="north-star" viewBox="0 0 48 48" role="img" aria-label={NORTH_STAR_LABEL.bm}>
+        <path className="north-star__tip" d="M24 2 30 20 24 17 18 20Z" />
+        <path className="north-star__body" d="M24 46 18 28 24 31 30 28ZM2 24 20 18 17 24 20 30ZM46 24 28 30 31 24 28 18Z" />
+        <circle className="north-star__core" cx="24" cy="24" r="4" />
+      </svg>
       <aside className={`mini-map${collapsed ? ' is-collapsed' : ''}`} aria-label="Mini Map kawasan">
         <div className="mini-map__header">
           <strong>Mini Map</strong>

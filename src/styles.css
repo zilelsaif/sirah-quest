@@ -1487,6 +1487,25 @@ h1 {
   backdrop-filter: blur(2px);
 }
 
+.north-star {
+  position: absolute;
+  z-index: 6;
+  top: max(0.75rem, env(safe-area-inset-top));
+  left: max(0.75rem, env(safe-area-inset-left));
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.25rem;
+  overflow: visible;
+  border: 1px solid rgb(244 213 141 / 58%);
+  border-radius: 50%;
+  background: rgb(7 16 29 / 82%);
+  filter: drop-shadow(0 0.3rem 0.45rem rgb(0 0 0 / 40%));
+  pointer-events: none;
+}
+.north-star__tip { fill: #fff1ad; stroke: #fff7df; stroke-width: 1.25; }
+.north-star__body { fill: #8a6b32; stroke: #d9b65f; stroke-width: 1; }
+.north-star__core { fill: #17233a; stroke: #f4d58d; stroke-width: 1.5; }
+
 .mini-map.is-collapsed {
   width: auto;
 }
@@ -1717,6 +1736,12 @@ h1 {
 }
 
 @media (max-width: 40rem) {
+  .north-star {
+    top: max(0.45rem, env(safe-area-inset-top));
+    left: max(0.45rem, env(safe-area-inset-left));
+    width: 2.35rem;
+    height: 2.35rem;
+  }
   .mini-map {
     top: 0.45rem;
     right: 0.45rem;
@@ -3193,6 +3218,43 @@ h1 {
   background: rgb(11 22 40 / 88%);
 }
 .progression-hud, .save-controls { background: rgb(11 22 40 / 90%); }
+
+.review-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(7 14 27 / 82%);
+}
+.review-panel {
+  width: min(720px, 100%);
+  max-height: min(88vh, 820px);
+  overflow: auto;
+  border: 2px solid #d9b65f;
+  border-radius: 1rem;
+  background: #13243a;
+  color: #fff7df;
+  padding: clamp(1rem, 3vw, 1.6rem);
+}
+.review-panel header { display: flex; justify-content: space-between; gap: 1rem; align-items: start; }
+.review-panel header p, .review-progress { color: #d9b65f; font-weight: 800; }
+.review-topic-grid, .review-options { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.review-topic-grid button, .review-options button, .review-feedback button, .review-summary button, .journal-review-button, .review-panel header button { min-height: 44px; }
+.review-topic-grid button { display: grid; gap: 0.25rem; text-align: left; }
+.review-options button.is-correct { border-color: #75c895; background: rgb(52 123 82 / 42%); }
+.review-options button.is-incorrect { border-color: #e18a78; background: rgb(139 55 48 / 42%); }
+.review-feedback { margin-top: 1rem; border-radius: 0.75rem; padding: 1rem; }
+.review-feedback.is-correct { background: rgb(52 123 82 / 25%); }
+.review-feedback.is-incorrect { background: rgb(139 55 48 / 25%); }
+.review-summary { text-align: center; }
+@media (max-width: 520px) {
+  .review-overlay { padding: 0.5rem; }
+  .review-panel { max-height: 96vh; }
+  .review-panel header { align-items: stretch; }
+  .review-topic-grid, .review-options { grid-template-columns: 1fr; }
+}
 .progression-hud__bar > span { background: linear-gradient(90deg, var(--sq-teal), var(--sq-gold-soft)); }
 .tracked-quest-summary {
   border-color: rgb(242 213 138 / 72%);

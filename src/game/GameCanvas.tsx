@@ -429,7 +429,7 @@ export function GameCanvas({
                 PETUNJUK ({session.remainingHints})
               </button>
               <button type="button" onClick={() => getScene()?.closeClue()}>
-                Close
+                {openClue.state === 'completed' ? 'Teruskan' : 'Tutup'}
               </button>
             </div>
           </section>

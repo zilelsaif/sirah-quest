@@ -1,4 +1,6 @@
 import { createServer } from 'vite'
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 
 const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' })
 
@@ -48,6 +50,19 @@ try {
     throw new Error(`Unexpected vision progression: ${visionRadii.join(',')}`)
   }
   console.log(`Vision radii remain world-space gameplay values: ${visionRadii.join(', ')}`)
+
+  const navigation = await readFile(new URL('../src/game/navigation/ExplorationNavigation.tsx', import.meta.url), 'utf8')
+  const styles = await readFile(new URL('../src/styles.css', import.meta.url), 'utf8')
+  const northStarMarkup = navigation.match(/<svg className="north-star"[\s\S]*?<\/svg>/)?.[0] ?? ''
+  assert.ok(northStarMarkup, 'North Star SVG is missing')
+  assert.doesNotMatch(northStarMarkup, /<text|>\s*(?:N|North|Utara)\s*</i, 'North Star must not contain visible direction text')
+  assert.match(northStarMarkup, /aria-label=\{NORTH_STAR_LABEL\.bm\}/)
+  assert.match(navigation, /NORTH_STAR_LABEL: BilingualText/)
+  assert.match(styles, /\.north-star\s*\{[\s\S]*?pointer-events:\s*none;/)
+  assert.match(styles, /top:\s*max\([^;]*env\(safe-area-inset-top\)/)
+  assert.match(styles, /left:\s*max\([^;]*env\(safe-area-inset-left\)/)
+  assert.match(styles, /\.north-star__tip\s*\{[^}]*fill:\s*#fff1ad/)
+  console.log('North Star remains symbol-only, north-tip-distinct, safe-area anchored, non-interactive and accessibly labelled.')
 } finally {
   await server.close()
 }
