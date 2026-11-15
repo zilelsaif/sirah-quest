@@ -5,10 +5,11 @@ classic fantasy JRPG feel.
 
 This repository contains the web application foundation and a small Phaser
 exploration prototype with movement, radial fog of war, and reusable Sirah
-question interactions. Version 0.27.0 improves learning feedback, clarifies authoritative Mastery metrics, and adds spoiler-safe voluntary review while preserving the v0.26.0 exploration foundations.
-menu and music systems while moving the Phaser Area runtime behind an on-demand
-chunk and deferring audio initialization until the player presses Main. The
-24-question bank and save schema 3 are unchanged. Backend services,
+question interactions. Development version 0.28.0 audits pre-beta stability,
+save recovery, content integrity, accessibility, performance, and security while
+preserving the released v0.27.0 gameplay scope. The Phaser Area runtime remains
+an on-demand chunk and audio initialization remains deferred until the player
+presses Main. The 24-question bank and save schema 3 are unchanged. Backend services,
 authentication, database, and mobile packaging have not been added yet.
 
 ## Requirements
@@ -270,6 +271,13 @@ or Mastery migration policy even if wording corrections retain its stable ID.
 - Separates completed clues, saved best-score coverage and Mastery points in the Sirah Mastery dashboard.
 - Adds session-only Ulang Kaji for questions proven answered by authoritative saved Mastery records; review never changes gameplay or save data.
 - See `docs/LEARNING_PROGRESSION_V027.md` and run `npm run learning-progression:verify`.
+
+### v0.28.0 — Pre-Beta Stability and Content Audit
+
+- Adds no gameplay features and preserves the locked 15 quests, 21 clues, 24 original questions, six World Objects, six landmarks, and three Area Maps.
+- Adds focused verification for storage read/write failures, immutable educational content, review isolation, locked counts, lazy-loading boundaries, and historical release integrity.
+- Keeps save schema 3; newly written save metadata now reports the current application version accurately.
+- See `docs/PREBETA_AUDIT_V028.md`, `docs/DEFECT_REGISTER_V028.md`, and `docs/CONTENT_AUDIT_V028.md`; run `npm run prebeta:verify`.
 
 ### v0.21.0 — First Adventure and Guided Onboarding
 
