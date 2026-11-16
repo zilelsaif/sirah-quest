@@ -2026,13 +2026,13 @@ h1 {
 }
 
 .dialogue-overlay {
-  position: fixed;
-  z-index: 1200;
+  position: absolute;
+  z-index: 9;
   inset: 0;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 0.65rem max(0.65rem, env(safe-area-inset-right)) max(0.65rem, env(safe-area-inset-bottom)) max(0.65rem, env(safe-area-inset-left));
+  padding: 0.65rem;
   background: transparent;
   overscroll-behavior: contain;
   touch-action: none;
@@ -2040,9 +2040,10 @@ h1 {
 
 .dialogue-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   width: min(100%, 68rem);
-  max-height: 28dvh;
+  height: min(54%, 18rem);
+  max-height: min(54%, 18rem);
   overflow: hidden;
   padding: 0.75rem 0.85rem;
   color: #172033;
@@ -2055,16 +2056,11 @@ h1 {
 }
 
 .dialogue-panel.dialogue-panel--expanded {
-  max-height: 45dvh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  height: calc(100% - 1.3rem);
+  max-height: calc(100% - 1.3rem);
 }
 
 .dialogue-panel > header {
-  position: sticky;
-  z-index: 2;
-  top: 0;
-  grid-column: 1 / -1;
   display: flex;
   gap: 0.75rem;
   align-items: flex-start;
@@ -2075,9 +2071,20 @@ h1 {
 
 .dialogue-panel__copy {
   min-width: 0;
-  padding-right: 0.8rem;
+}
+
+.dialogue-panel__content {
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  touch-action: pan-y;
+}
+
+.dialogue-panel__header-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.45rem;
 }
 
 .dialogue-panel__copy > small {
@@ -2095,7 +2102,6 @@ h1 {
 }
 
 .dialogue-panel__quest {
-  grid-column: 1;
   margin-top: 0.85rem;
   padding: 0.8rem;
   border: 1px solid #c6a65e;
@@ -2124,7 +2130,6 @@ h1 {
 }
 
 .dialogue-panel__feedback {
-  grid-column: 1;
   display: grid;
   gap: 0.2rem;
   margin-top: 0.75rem;
@@ -2168,16 +2173,10 @@ h1 {
 
 .dialogue-panel__choices {
   display: grid;
-  grid-column: 2;
-  grid-row: 2 / span 4;
   align-content: start;
-  width: min(25rem, 38vw);
-  max-height: 19dvh;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
-  margin-top: 0.45rem;
-  padding-left: 0.75rem;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  margin-top: 0.75rem;
 }
 
 .dialogue-panel button {
@@ -2215,10 +2214,26 @@ h1 {
 
 .dialogue-panel__continue {
   display: block;
-  grid-column: 2;
   min-width: 10rem;
-  margin-top: 0.45rem;
+  margin-top: 0.55rem;
   margin-left: auto;
+}
+
+@media (max-width: 40rem), (max-height: 32rem) {
+  .dialogue-overlay { padding: 0.4rem; }
+  .dialogue-panel {
+    height: min(62%, 17rem);
+    max-height: min(62%, 17rem);
+    padding: 0.55rem 0.6rem;
+  }
+  .dialogue-panel.dialogue-panel--expanded {
+    height: calc(100% - 0.8rem);
+    max-height: calc(100% - 0.8rem);
+  }
+  .dialogue-panel__choices { grid-template-columns: 1fr; }
+  .dialogue-panel > header { gap: 0.45rem; }
+  .dialogue-panel__header-actions { flex-direction: column; }
+  .dialogue-panel button { min-height: 44px; }
 }
 
 .journal-overlay {
@@ -3110,40 +3125,6 @@ h1 {
     padding: 0.5rem;
   }
 
-  .dialogue-overlay {
-    padding: 0.5rem;
-  }
-
-  .dialogue-panel {
-    grid-template-columns: minmax(0, 1fr);
-    max-height: 45dvh;
-    padding: 0.65rem;
-  }
-
-  .dialogue-panel > header {
-    align-items: center;
-    flex-direction: row;
-  }
-
-  .dialogue-panel__copy,
-  .dialogue-panel__quest,
-  .dialogue-panel__feedback,
-  .dialogue-panel__choices,
-  .dialogue-panel__continue {
-    grid-column: 1;
-  }
-
-  .dialogue-panel__choices {
-    grid-row: auto;
-    width: 100%;
-    max-height: 20dvh;
-    padding-left: 0;
-  }
-
-  .dialogue-panel__continue {
-    width: 100%;
-  }
-
   .npc-interact-button {
     right: 0.45rem;
     bottom: 0.45rem;
@@ -3205,19 +3186,6 @@ h1 {
     overflow-x: auto;
   }
 
-  .dialogue-panel {
-    grid-template-columns: minmax(0, 1fr) minmax(16rem, 38vw);
-    max-height: 44dvh;
-    padding: 0.5rem 0.7rem;
-  }
-
-  .dialogue-panel__choices {
-    grid-column: 2;
-    grid-row: 2 / span 4;
-    width: 100%;
-    max-height: 28dvh;
-    padding-left: 0.6rem;
-  }
 }
 
 @media (max-height: 31.25rem) and (min-width: 40.01rem) {

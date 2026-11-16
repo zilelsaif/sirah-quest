@@ -89,6 +89,7 @@ export function GameCanvas({
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
+    let disposed = false
     setIsSceneReady(false)
     lastPlayerPositionRef.current = session.playerPosition
 
@@ -98,7 +99,7 @@ export function GameCanvas({
       area,
       session,
       (nextSession) => {
-        if (!resetRequestedRef.current) {
+        if (!disposed && !resetRequestedRef.current) {
           const previous = lastPlayerPositionRef.current
           if (nextSession.playerPosition.x !== previous.x || nextSession.playerPosition.y !== previous.y) {
             lastPlayerPositionRef.current = nextSession.playerPosition
@@ -111,6 +112,7 @@ export function GameCanvas({
       cameraViewMode,
       setNearbyNpc,
       (npc) => {
+        if (disposed) return
         if (!npc) {
           setOpenDialogue(null)
           setDialogueFeedback(null)
@@ -130,8 +132,9 @@ export function GameCanvas({
       onWorldObjectStateChange,
       discoveredLandmarkIds,
       onLandmarkDiscovered,
-      setNearbyWorldObject,
+      (object) => { if (!disposed) setNearbyWorldObject(object) },
       (object) => {
+        if (disposed) return
         if (!object) {
           setOpenWorldObject(null)
           return
@@ -141,12 +144,15 @@ export function GameCanvas({
           : null
         setOpenWorldObject(object)
       },
-      () => setIsSceneReady(true),
+      () => { if (!disposed) setIsSceneReady(true) },
     )
     gameRef.current = game
     resetRequestedRef.current = false
 
     return () => {
+      // Phaser emits SHUTDOWN synchronously from destroy(). Ignore callbacks from
+      // the retiring scene so it cannot overwrite a freshly restored save/area.
+      disposed = true
       game.destroy(true)
       gameRef.current = null
     }
@@ -354,6 +360,17 @@ export function GameCanvas({
             Interaksi · {nearbyWorldObject.nameBM}
           </button>
         )}
+        {openDialogue && (
+          <DialoguePanel
+            npc={openDialogue.npc}
+            session={openDialogue.session}
+            questSession={quests}
+            feedback={dialogueFeedback}
+            onAdvance={advanceOpenDialogue}
+            onChoose={chooseOpenDialogueResponse}
+            onClose={closeDialogue}
+          />
+        )}
       </div>
       {openClue && (
         <div className="clue-overlay" role="presentation">
@@ -439,17 +456,6 @@ export function GameCanvas({
             </div>
           </section>
         </div>
-      )}
-      {openDialogue && (
-        <DialoguePanel
-          npc={openDialogue.npc}
-          session={openDialogue.session}
-          questSession={quests}
-          feedback={dialogueFeedback}
-          onAdvance={advanceOpenDialogue}
-          onChoose={chooseOpenDialogueResponse}
-          onClose={closeDialogue}
-        />
       )}
       {openWorldObject && <WorldObjectPanel object={openWorldObject} quests={quests} onClose={closeWorldObject} />}
     </div>
