@@ -90,6 +90,8 @@ Prophet Muhammad ﷺ was born in Makkah.
 - **Editorial review status:** `pending-editorial-review`
 - **Source notes/reference:** Reference to be verified
 
+**Recorded owner-provided reviewer feedback:** Standardize all four BM father-name options with “bin Abdul Muttalib” and the corresponding English options with “ibn Abd al-Muttalib”. No citation or publication-approval decision was provided.
+
 **Bahasa Melayu:** Siapakah nama bapa Nabi Muhammad ﷺ?
 
 **English:** What was the name of Prophet Muhammad’s ﷺ father?
@@ -99,9 +101,9 @@ Prophet Muhammad ﷺ was born in Makkah.
 | Option ID | Bahasa Melayu | English |
 | --- | --- | --- |
 | `abdullah` | Abdullah bin Abdul Muttalib | Abdullah ibn Abd al-Muttalib |
-| `abu-talib` | Abu Talib | Abu Talib |
-| `hamzah` | Hamzah | Hamzah |
-| `abbas` | Al-Abbas | Al-Abbas |
+| `abu-talib` | Abu Talib bin Abdul Muttalib | Abu Talib ibn Abd al-Muttalib |
+| `hamzah` | Hamzah bin Abdul Muttalib | Hamzah ibn Abd al-Muttalib |
+| `abbas` | Al-Abbas bin Abdul Muttalib | Al-Abbas ibn Abd al-Muttalib |
 
 - **Correct option ID:** `abdullah`
 - **Correct answer (BM):** Abdullah bin Abdul Muttalib
@@ -449,6 +451,8 @@ Khadijah bint Khuwaylid was his first wife.
 - **Editorial review status:** `pending-editorial-review`
 - **Source notes/reference:** Reference to be verified
 
+**Recorded owner-provided reviewer feedback:** Standardize the BM spelling to “Gua Hira'” and the corresponding English spelling to “Cave of Hira'” in the answer and explanation. No citation or publication-approval decision was provided.
+
 **Bahasa Melayu:** Di manakah wahyu pertama diterima?
 
 **English:** Where was the first revelation received?
@@ -457,22 +461,22 @@ Khadijah bint Khuwaylid was his first wife.
 
 | Option ID | Bahasa Melayu | English |
 | --- | --- | --- |
-| `hira` | Gua Hira | Cave of Hira |
+| `hira` | Gua Hira' | Cave of Hira' |
 | `thawr` | Gua Thur | Cave of Thawr |
 | `quba` | Quba | Quba |
 | `arafat` | Arafah | Arafat |
 
 - **Correct option ID:** `hira`
-- **Correct answer (BM):** Gua Hira
-- **Correct answer (EN):** Cave of Hira
+- **Correct answer (BM):** Gua Hira'
+- **Correct answer (EN):** Cave of Hira'
 
 **Learning explanation (BM):**
 
-Wahyu pertama diterima di Gua Hira berhampiran Makkah.
+Wahyu pertama diterima di Gua Hira' berhampiran Makkah.
 
 **Learning explanation (EN):**
 
-The first revelation was received in the Cave of Hira near Makkah.
+The first revelation was received in the Cave of Hira' near Makkah.
 
 **Editorial Review Checklist**
 

@@ -19,8 +19,14 @@ try {
   assert.equal(Object.keys(AREA_REGISTRY).length, 3); assert.equal(WORLD_OBJECT_DEFINITIONS.length, 6); assert.equal(LANDMARK_DEFINITIONS.length, 6)
   assert.deepEqual(Object.fromEntries(['early-life', 'first-revelation', 'hijrah'].map((id) => [id, QUESTION_BANK.filter(({ topicId }) => topicId === id).length])), { 'early-life': 8, 'first-revelation': 8, hijrah: 8 })
   const currentBank = await readFile(new URL('../src/game/questions/questionBank.ts', import.meta.url), 'utf8')
-  const releasedBank = execFileSync('git', ['show', 'v0.28.0:src/game/questions/questionBank.ts'], { encoding: 'utf8' })
-  assert.equal(currentBank.replaceAll('\r\n', '\n'), releasedBank.replaceAll('\r\n', '\n'))
+  const releasedBank = execFileSync('git', ['show', 'v0.28.0:src/game/questions/questionBank.ts'], { encoding: 'utf8' }).replaceAll('\r\n', '\n')
+  const editorialBank = releasedBank
+    .replace("option('abu-talib', 'Abu Talib', 'Abu Talib')", "option('abu-talib', 'Abu Talib bin Abdul Muttalib', 'Abu Talib ibn Abd al-Muttalib')")
+    .replace("option('hamzah', 'Hamzah', 'Hamzah')", "option('hamzah', 'Hamzah bin Abdul Muttalib', 'Hamzah ibn Abd al-Muttalib')")
+    .replace("option('abbas', 'Al-Abbas', 'Al-Abbas')", "option('abbas', 'Al-Abbas bin Abdul Muttalib', 'Al-Abbas ibn Abd al-Muttalib')")
+    .replace("option('hira', 'Gua Hira', 'Cave of Hira')", 'option(\'hira\', "Gua Hira\'", "Cave of Hira\'")')
+    .replace("text('Wahyu pertama diterima di Gua Hira berhampiran Makkah.', 'The first revelation was received in the Cave of Hira near Makkah.')", 'text("Wahyu pertama diterima di Gua Hira\' berhampiran Makkah.", "The first revelation was received in the Cave of Hira\' near Makkah.")')
+  assert.equal(currentBank.replaceAll('\r\n', '\n'), editorialBank, 'Only the two owner-approved editorial corrections may differ from v0.28.0')
 
   const viewports = [[1920, 1080], [1366, 768], [1024, 768], [390, 844], [844, 390], [360, 640], [800, 450]]
   for (const [width, height] of viewports) {
@@ -61,5 +67,5 @@ try {
   assert.equal((await stat(new URL(`../releases/v0.28.0/assets/${audio}`, import.meta.url))).size, 2264024)
   assert.equal((await stat(new URL(`../releases/v0.28.0/assets/${map}`, import.meta.url))).size, 603684)
   execFileSync('git', ['diff', '--quiet', '--', 'releases'], { stdio: 'ignore' })
-  console.log('Verified v0.29 device compatibility invariants across 7 viewports, resize/cleanup lifecycle, touch/modal input, HUD/North Star coexistence, accessibility boundaries, lazy loading, deferred audio and immutable v0.28 content/archive.')
+  console.log('Verified v0.29 device compatibility invariants across 7 viewports, resize/cleanup lifecycle, touch/modal input, HUD/North Star coexistence, accessibility boundaries, lazy loading, deferred audio, two approved editorial corrections and immutable archives.')
 } finally { await server.close() }

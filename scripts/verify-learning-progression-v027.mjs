@@ -30,7 +30,13 @@ try {
   assert.deepEqual(Object.fromEntries(['early-life', 'first-revelation', 'hijrah'].map((topicId) => [topicId, QUESTION_BANK.filter((question) => question.topicId === topicId).length])), { 'early-life': 8, 'first-revelation': 8, hijrah: 8 })
   const currentBank = await readFile(new URL('../src/game/questions/questionBank.ts', import.meta.url), 'utf8')
   const baselineBank = execFileSync('git', ['show', 'v0.26.0:src/game/questions/questionBank.ts'], { encoding: 'utf8' }).replaceAll('\r\n', '\n')
-  assert.equal(currentBank.replaceAll('\r\n', '\n'), baselineBank, 'Question wording, options, answers and explanations must remain byte-equivalent to v0.26.0')
+  const editorialBank = baselineBank
+    .replace("option('abu-talib', 'Abu Talib', 'Abu Talib')", "option('abu-talib', 'Abu Talib bin Abdul Muttalib', 'Abu Talib ibn Abd al-Muttalib')")
+    .replace("option('hamzah', 'Hamzah', 'Hamzah')", "option('hamzah', 'Hamzah bin Abdul Muttalib', 'Hamzah ibn Abd al-Muttalib')")
+    .replace("option('abbas', 'Al-Abbas', 'Al-Abbas')", "option('abbas', 'Al-Abbas bin Abdul Muttalib', 'Al-Abbas ibn Abd al-Muttalib')")
+    .replace("option('hira', 'Gua Hira', 'Cave of Hira')", 'option(\'hira\', "Gua Hira\'", "Cave of Hira\'")')
+    .replace("text('Wahyu pertama diterima di Gua Hira berhampiran Makkah.', 'The first revelation was received in the Cave of Hira near Makkah.')", 'text("Wahyu pertama diterima di Gua Hira\' berhampiran Makkah.", "The first revelation was received in the Cave of Hira\' near Makkah.")')
+  assert.equal(currentBank.replaceAll('\r\n', '\n'), editorialBank, 'Only the two owner-approved editorial corrections may differ from the released question bank')
 
   const mastery = createSirahMastery()
   const earlyQuestions = QUESTION_BANK.filter(({ topicId }) => topicId === 'early-life')
@@ -80,5 +86,5 @@ try {
   assert.ok(app.indexOf('if (manualDialog)') < app.indexOf('else if (isReviewOpen)') && app.indexOf('else if (isReviewOpen)') < app.indexOf('else if (isJournalOpen)'))
   assert.equal(QUEST_DATA.length, 15); assert.equal(ALL_AREA_CLUES.length, 21); assert.equal(WORLD_OBJECT_DEFINITIONS.length, 6); assert.equal(LANDMARK_DEFINITIONS.length, 6); assert.equal(SAVE_SCHEMA_VERSION, 3)
   execFileSync('git', ['diff', '--quiet', '--', 'releases'], { stdio: 'ignore' })
-  console.log('Verified unchanged 24-question source, authoritative eligibility/Mastery, isolated review scoring, feedback spoiler policy, manual rollback, Escape/focus safety, 15/21/6/6/schema-3 invariants and lazy loading.')
+  console.log('Verified 24-question source with only the two owner-approved editorial corrections, authoritative eligibility/Mastery, isolated review scoring, feedback spoiler policy, manual rollback, Escape/focus safety, 15/21/6/6/schema-3 invariants and lazy loading.')
 } finally { await server.close() }

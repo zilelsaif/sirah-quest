@@ -22,28 +22,38 @@ export function DialoguePanel({ npc, session, questSession, feedback, onAdvance,
   const quest = node.questId ? QUEST_DATA.find((candidate) => candidate.id === node.questId) : undefined
 
   useEffect(() => {
-    panelRef.current?.querySelector<HTMLButtonElement>('[data-dialogue-primary]')?.focus()
+    if (panelRef.current) panelRef.current.scrollTop = 0
+    panelRef.current?.querySelector<HTMLButtonElement>('[data-dialogue-primary]')?.focus({ preventScroll: true })
   }, [node.id])
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = previousOverflow }
+  }, [])
 
   return (
     <div className="dialogue-overlay" role="presentation" onPointerDown={(event) => event.stopPropagation()}>
       <section
         ref={panelRef}
-        className="dialogue-panel"
+        className={`dialogue-panel${quest || feedback ? ' dialogue-panel--expanded' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="dialogue-npc-name"
       >
         <header>
           <div>
-            <p>PERBUALAN</p>
+            <p>{node.id.startsWith('n07d-') ? 'PROTOTYPE · SEMAKAN NARATIF' : 'PERBUALAN'}</p>
             <h3 id="dialogue-npc-name">{npc.nameBM}</h3>
             <span>{npc.roleBM}</span>
           </div>
           <button type="button" className="button-secondary" onClick={onClose}>Tutup</button>
         </header>
 
-        <p className="dialogue-panel__text">{node.text.bm}</p>
+        <div className="dialogue-panel__copy">
+          <p className="dialogue-panel__text">{node.text.bm}</p>
+          <small lang="en">{node.text.en}</small>
+        </div>
 
         {quest && (
           <section className="dialogue-panel__quest" aria-label="Maklumat misi">
@@ -70,7 +80,8 @@ export function DialoguePanel({ npc, session, questSession, feedback, onAdvance,
                 data-dialogue-primary={index === 0 ? '' : undefined}
                 onClick={() => onChoose(choice.id)}
               >
-                {choice.text.bm}
+                <span>{choice.text.bm}</span>
+                <small lang="en">{choice.text.en}</small>
               </button>
             ))}
           </div>

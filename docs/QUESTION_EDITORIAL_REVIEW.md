@@ -23,3 +23,12 @@ analytics may refer to them in the future. Meaningful answer changes require a
 fresh editorial review. `sourceNotes` are internal reminders only; they must not
 be presented to players as citations or evidence.
 
+## Recorded reviewer corrections after v0.29.0
+
+Owner-provided Sirah reviewer feedback requested these wording corrections only:
+
+- `early-life-002`: standardize all four BM father-name options with “bin Abdul Muttalib” and the corresponding English options with “ibn Abd al-Muttalib”.
+- `first-revelation-001`: standardize the BM answer and explanation to “Gua Hira'” and the English answer and explanation to “Cave of Hira'”.
+
+Applied without changing question IDs, option IDs, correct-answer IDs, question counts, topic mappings, or save schema. No citation source, reviewer identity, review date, or publication approval was supplied with this correction request, so none is inferred and the source status remains `pending-editorial-review`.
+

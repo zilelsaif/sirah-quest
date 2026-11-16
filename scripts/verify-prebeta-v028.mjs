@@ -46,8 +46,14 @@ try {
     assert.equal(question.reviewStatus, 'pending-editorial-review')
   }
   const currentBank = await readFile(new URL('../src/game/questions/questionBank.ts', import.meta.url), 'utf8')
-  const releasedBank = execFileSync('git', ['show', 'v0.27.0:src/game/questions/questionBank.ts'], { encoding: 'utf8' })
-  assert.equal(currentBank.replaceAll('\r\n', '\n'), releasedBank.replaceAll('\r\n', '\n'), 'Original questions must remain byte-identical to v0.27.0')
+  const releasedBank = execFileSync('git', ['show', 'v0.27.0:src/game/questions/questionBank.ts'], { encoding: 'utf8' }).replaceAll('\r\n', '\n')
+  const editorialBank = releasedBank
+    .replace("option('abu-talib', 'Abu Talib', 'Abu Talib')", "option('abu-talib', 'Abu Talib bin Abdul Muttalib', 'Abu Talib ibn Abd al-Muttalib')")
+    .replace("option('hamzah', 'Hamzah', 'Hamzah')", "option('hamzah', 'Hamzah bin Abdul Muttalib', 'Hamzah ibn Abd al-Muttalib')")
+    .replace("option('abbas', 'Al-Abbas', 'Al-Abbas')", "option('abbas', 'Al-Abbas bin Abdul Muttalib', 'Al-Abbas ibn Abd al-Muttalib')")
+    .replace("option('hira', 'Gua Hira', 'Cave of Hira')", 'option(\'hira\', "Gua Hira\'", "Cave of Hira\'")')
+    .replace("text('Wahyu pertama diterima di Gua Hira berhampiran Makkah.', 'The first revelation was received in the Cave of Hira near Makkah.')", 'text("Wahyu pertama diterima di Gua Hira\' berhampiran Makkah.", "The first revelation was received in the Cave of Hira\' near Makkah.")')
+  assert.equal(currentBank.replaceAll('\r\n', '\n'), editorialBank, 'Only the two owner-approved editorial corrections may differ from v0.27.0')
 
   const state = { mode: 'AREA_MAP', playerSession: { progression: createPlayerProgression(), run: createAreaSession() }, worldSession: { currentLocationId: 'kampung-ilmu', visitedLocationIds: ['kampung-ilmu'], hasEnteredArea: true }, masteryState: createSirahMastery() }
   const payload = createSavePayload(state, '2026-01-01T00:00:00.000Z')
@@ -84,5 +90,5 @@ try {
   assert.match(styles, /\.north-star\s*\{[\s\S]*?pointer-events:\s*none;/)
   assert.match(music, /onClick=\{togglePlayback\}/); assert.match(music, /preload = 'none'/)
   execFileSync('git', ['diff', '--quiet', '--', 'releases'], { stdio: 'ignore' })
-  console.log('Verified v0.28 pre-beta invariants: 15/21/24/3x8/6/6/3, schema-3 save recovery including read/write failures, immutable questions, isolated review, North Star, Escape, lazy loading, deferred audio and historical releases.')
+  console.log('Verified pre-beta invariants: 15/21/24/3x8/6/6/3, schema-3 save recovery including read/write failures, only two approved editorial corrections, isolated review, North Star, Escape, lazy loading, deferred audio and historical releases.')
 } finally { await server.close() }

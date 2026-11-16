@@ -83,6 +83,8 @@ export function GameCanvas({
   const [dialogueFeedback, setDialogueFeedback] = useState<DialogueActionFeedback | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const lastPlayerPositionRef = useRef(session.playerPosition)
+  const questsRef = useRef(quests)
+  questsRef.current = quests
 
   useEffect(() => {
     const container = containerRef.current
@@ -117,7 +119,10 @@ export function GameCanvas({
         previousFocusRef.current = document.activeElement instanceof HTMLElement
           ? document.activeElement
           : null
-        setOpenDialogue({ npc, session: createDialogueSession(npc.dialogueId) })
+        setOpenDialogue({
+          npc,
+          session: createDialogueSession(npc.dialogueId, { quests: questsRef.current }),
+        })
         setDialogueFeedback(null)
         onNpcDialogueOpen(npc.id)
       },

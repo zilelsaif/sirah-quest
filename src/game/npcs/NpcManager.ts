@@ -114,6 +114,9 @@ export class NpcManager {
 
   destroy() {
     this.setActiveNpc(undefined)
+    this.openNpc = undefined
+    this.npcs.forEach(({ visual }) => visual.destroy())
+    this.interactionPrompt.destroy()
     this.onDialogueChange(null)
   }
 

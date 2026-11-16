@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { VISUAL_PALETTE } from '../visuals/visualTheme'
 import type { NpcDefinition } from './types'
+import { createCharacterSprite, HALL_KEEPER_VISUAL } from '../visuals/characterVisualManifest'
 
 export function createNpcVisual(scene: Phaser.Scene, npc: NpcDefinition) {
   const isKeeper = npc.visualKey === 'hall-keeper'
@@ -23,5 +24,13 @@ export function createNpcVisual(scene: Phaser.Scene, npc: NpcDefinition) {
   ;[body, mantle, head, roleMark].forEach((part) => {
     part.setData('npcId', npc.id).setInteractive({ useHandCursor: true })
   })
+  if (isKeeper) {
+    const sprite = createCharacterSprite(scene, HALL_KEEPER_VISUAL, HALL_KEEPER_VISUAL.frames.front.idle)
+    if (sprite) {
+      ;[body, mantle, head, roleMark].forEach((part) => part.setVisible(false).disableInteractive())
+      sprite.setData('npcId', npc.id).setInteractive({ useHandCursor: true })
+      visual.addAt(sprite, 1)
+    }
+  }
   return visual
 }

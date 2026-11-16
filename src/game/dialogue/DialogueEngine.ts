@@ -6,10 +6,18 @@ import type {
   DialogueSession,
 } from './types'
 
-export function createDialogueSession(dialogueId: string): DialogueSession {
+export function createDialogueSession(
+  dialogueId: string,
+  context?: DialogueQuestContext,
+): DialogueSession {
   const dialogue = DIALOGUE_DEFINITIONS.find((candidate) => candidate.id === dialogueId)
   if (!dialogue) throw new Error(`Unknown dialogue: ${dialogueId}`)
-  return { dialogueId, nodeId: dialogue.startNodeId }
+  const conditionalStart = context
+    ? dialogue.conditionalStartNodes?.find(({ condition }) =>
+        isDialogueConditionMet(condition, context),
+      )
+    : undefined
+  return { dialogueId, nodeId: conditionalStart?.nodeId ?? dialogue.startNodeId }
 }
 
 export function getDialogueNode(session: DialogueSession) {

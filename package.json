@@ -27,7 +27,9 @@
     "map-music:verify": "node scripts/verify-world-map-menu-music.mjs",
     "performance:verify": "node scripts/verify-performance-ux-v024.mjs",
     "prebeta:verify": "node scripts/verify-prebeta-v028.mjs",
-    "device-compat:verify": "node scripts/verify-device-compat-v029.mjs"
+    "device-compat:verify": "node scripts/verify-device-compat-v029.mjs",
+    "n07c:verify": "node scripts/verify-n07c-phaser-integration.mjs",
+    "n07d:verify": "node scripts/verify-n07d-vertical-slice.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

@@ -20,6 +20,14 @@ import { getWorldObjectsForArea } from '../worldObjects/worldObjectData'
 import { getLandmarksForArea } from '../worldObjects/landmarkData'
 import { WorldObjectManager } from '../worldObjects/WorldObjectManager'
 import type { WorldObjectDefinition, WorldObjectPanelData, WorldObjectSessionState } from '../worldObjects/types'
+import {
+  createCharacterSprite,
+  directionFromDisplacement,
+  frameForCharacter,
+  PLAYER_KAMPUNG_VISUAL,
+  preloadCharacterVisuals,
+  type CharacterDirection,
+} from '../visuals/characterVisualManifest'
 
 export class TestScene extends Phaser.Scene {
   private keyboardInput?: KeyboardInput
@@ -38,6 +46,9 @@ export class TestScene extends Phaser.Scene {
   private remainingHints: number
   private fogDiscoveryPoints: AreaPlaySession['fogDiscoveryPoints']
   private cameraViewMode: CameraViewMode
+  private playerSprite?: Phaser.GameObjects.Sprite
+  private playerFacing: CharacterDirection = 'front'
+  private playerWalkElapsedMs = 0
 
   constructor(
     private readonly onCluePanelChange: (clue: CluePanelData | null) => void,
@@ -60,6 +71,10 @@ export class TestScene extends Phaser.Scene {
     this.remainingHints = initialSession.remainingHints
     this.fogDiscoveryPoints = initialSession.fogDiscoveryPoints
     this.cameraViewMode = initialCameraViewMode
+  }
+
+  preload() {
+    preloadCharacterVisuals(this, this.area.id)
   }
 
   create() {
@@ -212,7 +227,14 @@ export class TestScene extends Phaser.Scene {
 
   update(_time: number, delta: number) {
     this.keyboardInput?.update()
+    const previousPlayerPosition = this.player
+      ? new Phaser.Math.Vector2(this.player.x, this.player.y)
+      : undefined
     this.movementController?.update(delta)
+
+    if (this.player && previousPlayerPosition) {
+      this.updatePlayerVisual(previousPlayerPosition, delta)
+    }
 
     if (this.player) {
       this.npcManager?.setInteractionSuppressed(this.cluePanelLocked || this.worldObjectPanelLocked || this.interfaceLocked)
@@ -343,6 +365,34 @@ export class TestScene extends Phaser.Scene {
     const satchel = this.add.circle(13, 8, 6, VISUAL_PALETTE.gold)
       .setStrokeStyle(2, VISUAL_PALETTE.earth)
     const direction = this.add.triangle(0, -26, -5, 7, 5, 7, 0, -4, VISUAL_PALETTE.parchment)
-    return this.add.container(x, y, [shadow, cloak, scarf, head, satchel, direction]).setDepth(10)
+    const fallbackParts = [cloak, scarf, head, satchel, direction]
+    const player = this.add.container(x, y, [shadow, ...fallbackParts]).setDepth(10)
+    if (this.area.id === PLAYER_KAMPUNG_VISUAL.areaId) {
+      const sprite = createCharacterSprite(this, PLAYER_KAMPUNG_VISUAL)
+      if (sprite) {
+        fallbackParts.forEach((part) => part.setVisible(false))
+        player.addAt(sprite, 1)
+        this.playerSprite = sprite
+      }
+    }
+    return player
+  }
+
+  private updatePlayerVisual(previousPosition: Phaser.Math.Vector2, delta: number) {
+    if (!this.playerSprite || !this.player) return
+    const displacement = new Phaser.Math.Vector2(
+      this.player.x - previousPosition.x,
+      this.player.y - previousPosition.y,
+    )
+    const moving = displacement.lengthSq() >= 0.0001
+    this.playerFacing = directionFromDisplacement(displacement, this.playerFacing)
+    this.playerWalkElapsedMs = moving ? this.playerWalkElapsedMs + delta : 0
+    const frame = frameForCharacter(
+      PLAYER_KAMPUNG_VISUAL,
+      this.playerFacing,
+      moving,
+      this.playerWalkElapsedMs,
+    )
+    if (this.playerSprite.texture.has(String(frame))) this.playerSprite.setFrame(frame)
   }
 }

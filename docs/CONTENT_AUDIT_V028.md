@@ -1,6 +1,6 @@
 # v0.28.0 Educational Content Audit
 
-This is an integrity inventory, not religious or historical approval. The source remains `src/game/questions/questionBank.ts`; it is byte-identical to the annotated v0.27.0 tag. No question, option, answer, explanation, source note, or editorial status was changed.
+This is an integrity inventory, not religious or historical approval. It records the v0.28.0 audit baseline. After v0.29.0, owner-provided reviewer corrections changed only option wording in `early-life-002` and the Hira' spelling in `first-revelation-001`; see `QUESTION_EDITORIAL_REVIEW.md`. IDs, correct-answer IDs, counts, topic mappings, source notes, and editorial statuses remain unchanged.
 
 Technical result: **PASS** — 24 unique IDs, three valid topics with eight questions each, valid correct-option references, and BM+EN explanations for every record. Editorial result: **EDITORIAL REVIEW REQUIRED** for all 24 records.
 

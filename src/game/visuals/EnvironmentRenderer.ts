@@ -136,6 +136,43 @@ function drawLightwell(graphics: EnvironmentGraphics, x: number, y: number, radi
   graphics.fillEllipse(x - radius * 0.22, y - radius * 0.25, radius * 0.75, radius * 0.34)
 }
 
+function drawKampungOpeningPilot(scene: Phaser.Scene, graphics: EnvironmentGraphics) {
+  // N07-D temporary layered visual pilot. These marks have no collision or interaction state.
+  graphics.lineStyle(24, 0xd8b978, 0.24)
+  graphics.beginPath()
+  graphics.moveTo(300, 300)
+  graphics.lineTo(430, 400)
+  graphics.lineTo(500, 600)
+  graphics.strokePath()
+  graphics.lineStyle(3, VISUAL_PALETTE.cream, 0.18)
+  graphics.strokePath()
+
+  const plantClusters = [
+    { x: 265, y: 355 }, { x: 338, y: 397 }, { x: 492, y: 450 },
+    { x: 390, y: 505 }, { x: 565, y: 535 }, { x: 445, y: 650 },
+  ]
+  plantClusters.forEach(({ x, y }, index) => {
+    graphics.fillStyle(index % 2 === 0 ? 0x65855a : 0x789765, 0.72)
+    graphics.fillEllipse(x - 6, y, 13, 7)
+    graphics.fillEllipse(x + 6, y - 2, 13, 7)
+    graphics.fillStyle(index % 3 === 0 ? 0xe8c873 : 0xd99083, 0.9)
+    graphics.fillCircle(x, y - 5, 3)
+  })
+
+  graphics.fillStyle(0x6f4a2f, 0.88)
+  graphics.fillRoundedRect(316, 544, 92, 38, 4)
+  graphics.lineStyle(3, VISUAL_PALETTE.softGold, 0.74)
+  graphics.strokeRoundedRect(316, 544, 92, 38, 4)
+  graphics.fillStyle(0x5b3b27, 0.9)
+  graphics.fillRect(356, 582, 9, 31)
+  scene.add.text(362, 563, 'Jejak Ilmu', {
+    color: '#fff2c9',
+    fontFamily: 'Georgia, serif',
+    fontSize: '12px',
+    fontStyle: 'bold',
+  }).setOrigin(0.5).setDepth(1)
+}
+
 const ZONE_COLORS: Record<AreaZone['environment'], number> = {
   village: 0x8d6b48,
   garden: 0x6f8b59,
@@ -188,6 +225,7 @@ export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition) {
   const ground = scene.add.graphics()
   drawZones(scene, ground, area.zones)
   drawFloorPattern(ground, area, area.gridColor)
+  if (area.id === KAMPUNG_ILMU_AREA_ID) drawKampungOpeningPilot(scene, ground)
   ground.lineStyle(area.id === KAMPUNG_ILMU_AREA_ID ? 54 : 42, visuals.path, 0.34)
   ground.beginPath()
   ground.moveTo(area.spawn.x, area.spawn.y)

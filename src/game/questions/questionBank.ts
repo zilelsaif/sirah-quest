@@ -58,9 +58,9 @@ export const QUESTION_BANK: SirahQuestion[] = [
     text('Siapakah nama bapa Nabi Muhammad ﷺ?', 'What was the name of Prophet Muhammad’s ﷺ father?'),
     [
       option('abdullah', 'Abdullah bin Abdul Muttalib', 'Abdullah ibn Abd al-Muttalib'),
-      option('abu-talib', 'Abu Talib', 'Abu Talib'),
-      option('hamzah', 'Hamzah', 'Hamzah'),
-      option('abbas', 'Al-Abbas', 'Al-Abbas'),
+      option('abu-talib', 'Abu Talib bin Abdul Muttalib', 'Abu Talib ibn Abd al-Muttalib'),
+      option('hamzah', 'Hamzah bin Abdul Muttalib', 'Hamzah ibn Abd al-Muttalib'),
+      option('abbas', 'Al-Abbas bin Abdul Muttalib', 'Al-Abbas ibn Abd al-Muttalib'),
     ],
     'abdullah',
     text('Bapa baginda ialah Abdullah bin Abdul Muttalib.', 'His father was Abdullah ibn Abd al-Muttalib.'),
@@ -156,13 +156,13 @@ export const QUESTION_BANK: SirahQuestion[] = [
     'introductory',
     text('Di manakah wahyu pertama diterima?', 'Where was the first revelation received?'),
     [
-      option('hira', 'Gua Hira', 'Cave of Hira'),
+      option('hira', "Gua Hira'", "Cave of Hira'"),
       option('thawr', 'Gua Thur', 'Cave of Thawr'),
       option('quba', 'Quba', 'Quba'),
       option('arafat', 'Arafah', 'Arafat'),
     ],
     'hira',
-    text('Wahyu pertama diterima di Gua Hira berhampiran Makkah.', 'The first revelation was received in the Cave of Hira near Makkah.'),
+    text("Wahyu pertama diterima di Gua Hira' berhampiran Makkah.", "The first revelation was received in the Cave of Hira' near Makkah."),
   ),
   draftQuestion(
     'first-revelation-002',

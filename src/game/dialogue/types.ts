@@ -37,6 +37,10 @@ export interface DialogueNode {
 export interface DialogueDefinition {
   id: string
   startNodeId: string
+  conditionalStartNodes?: Array<{
+    condition: DialogueQuestCondition
+    nodeId: string
+  }>
   nodes: DialogueNode[]
 }
 

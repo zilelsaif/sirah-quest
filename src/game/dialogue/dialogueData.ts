@@ -68,8 +68,50 @@ const travellerQuestIds = [
 
 export const DIALOGUE_DEFINITIONS: DialogueDefinition[] = [
   {
-    id: 'dialogue-penjaga-balai-ilmu', startNodeId: 'welcome',
+    id: 'dialogue-penjaga-balai-ilmu',
+    startNodeId: 'welcome',
+    conditionalStartNodes: [
+      { condition: { type: 'QUEST_STATUS', questId: 'quest-jejak-permulaan', status: 'AVAILABLE' }, nodeId: 'n07d-prologue-available' },
+      { condition: { type: 'QUEST_STATUS', questId: 'quest-jejak-permulaan', status: 'ACTIVE' }, nodeId: 'n07d-prologue-active' },
+      { condition: { type: 'QUEST_STATUS', questId: 'quest-jejak-permulaan', status: 'COMPLETED' }, nodeId: 'n07d-prologue-completed' },
+    ],
     nodes: [
+      // N07-D PROTOTYPE / narrative review pending. Fictional learning-route framing only.
+      {
+        id: 'n07d-prologue-available',
+        text: {
+          bm: 'Selamat datang ke Kampung Ilmu. Kami sedang menyediakan Laluan Jejak Ilmu, tetapi bahagian permulaannya belum cukup jelas.',
+          en: 'Welcome to the Village of Knowledge. We are preparing the Trail of Knowledge, but its opening section is not yet clear enough.',
+        },
+        choices: [
+          { id: 'n07d-offer-help', text: { bm: 'Apa yang saya boleh bantu?', en: 'How can I help?' }, nextNodeId: 'n07d-prologue-guidance' },
+          { id: 'n07d-not-now', text: { bm: 'Bukan sekarang', en: 'Not now' }, nextNodeId: 'keeper-menu' },
+        ],
+      },
+      {
+        id: 'n07d-prologue-guidance',
+        text: {
+          bm: 'Mulakan dengan satu petunjuk tentang kehidupan awal Nabi Muhammad ﷺ. Fahami maklumatnya, bukan sekadar kumpulkan jawapan.',
+          en: 'Begin with one clue about the early life of Prophet Muhammad ﷺ. Understand the information rather than merely collecting answers.',
+        },
+        nextNodeId: 'quest-jejak-permulaan-offer',
+      },
+      {
+        id: 'n07d-prologue-active',
+        text: {
+          bm: 'Petunjuk awal berada di sekitar kampung. Teruskan meneroka apabila kamu bersedia.',
+          en: 'The opening clue is somewhere around the village. Continue exploring when you are ready.',
+        },
+        nextNodeId: 'keeper-menu',
+      },
+      {
+        id: 'n07d-prologue-completed',
+        text: {
+          bm: 'Kamu telah menyelesaikan Jejak Permulaan. Sekarang kita mempunyai asas untuk menyusun bahagian pertama laluan pembelajaran. Kawasan lain boleh diterokai kemudian apabila kamu bersedia.',
+          en: 'You have completed the Opening Trail. We now have a foundation for arranging the first part of the learning route. The other areas can be explored later when you are ready.',
+        },
+        nextNodeId: 'keeper-menu',
+      },
       {
         id: 'welcome',
         text: { bm: 'Selamat datang, pengembara. Aku boleh membantumu memilih misi atau memahami cara meneroka.', en: 'Welcome, traveller. I can help you choose a quest or understand how to explore.' },
@@ -78,8 +120,17 @@ export const DIALOGUE_DEFINITIONS: DialogueDefinition[] = [
       {
         id: 'keeper-menu', text: { bm: 'Apakah yang ingin kamu bincangkan?', en: 'What would you like to discuss?' },
         choices: [
-          ...keeperQuestIds.flatMap(questChoiceSet),
+          ...questChoiceSet('quest-jejak-permulaan'),
+          { id: 'keeper-other-missions', text: { bm: 'Misi Lain', en: 'Other Missions' }, nextNodeId: 'keeper-other-menu' },
           { id: 'keeper-guidance', text: { bm: 'Panduan penerokaan', en: 'Exploration guidance' }, nextNodeId: 'explore' },
+        ],
+      },
+      {
+        id: 'keeper-other-menu',
+        text: { bm: 'Pilih misi lain yang ingin kamu semak.', en: 'Choose another mission you would like to review.' },
+        choices: [
+          ...keeperQuestIds.slice(1).flatMap(questChoiceSet),
+          { id: 'keeper-other-back', text: { bm: 'Kembali', en: 'Back' }, nextNodeId: 'keeper-menu' },
         ],
       },
       {
@@ -88,7 +139,10 @@ export const DIALOGUE_DEFINITIONS: DialogueDefinition[] = [
         nextNodeId: 'farewell',
       },
       { id: 'farewell', text: { bm: 'Semoga perjalanan pembelajaranmu dipermudah.', en: 'May your learning journey be made easy.' } },
-      ...keeperQuestIds.flatMap((questId) => questNodes(questId, 'keeper-menu')),
+      ...keeperQuestIds.flatMap((questId) => questNodes(
+        questId,
+        questId === 'quest-jejak-permulaan' ? 'keeper-menu' : 'keeper-other-menu',
+      )),
     ],
   },
   {
