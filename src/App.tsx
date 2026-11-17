@@ -47,6 +47,8 @@ import {
 import { createWorldObjectSession } from './game/worldObjects/worldObjectRules'
 import type { WorldObjectSessionState } from './game/worldObjects/types'
 import { BackgroundMusicPlayer } from './game/audio/BackgroundMusicPlayer'
+import { ImmersiveModeControl } from './game/ui/ImmersiveModeControl'
+import type { ImmersiveMode } from './game/ui/ImmersiveModeControl'
 
 const GameCanvas = lazy(() => import('./game/GameCanvas').then((module) => ({ default: module.GameCanvas })))
 const ReviewPanel = lazy(() => import('./game/review/ReviewPanel').then((module) => ({ default: module.ReviewPanel })))
@@ -96,6 +98,8 @@ function collectCompletionRewards(
 }
 
 function App() {
+  const appShellRef = useRef<HTMLElement>(null)
+  const [immersiveMode, setImmersiveMode] = useState<ImmersiveMode>('windowed')
   const [initialLoad] = useState<SaveLoadResult>(() => loadGameSave())
   const [initialState] = useState<PersistedGameState>(() => initialLoad.state ?? createFreshState())
   const [mode, setMode] = useState<GameMode>(initialState.mode)
@@ -516,7 +520,17 @@ function App() {
   }
 
   return (
-    <main className={`app-shell is-${mode.toLowerCase().replace('_', '-')}`}>
+    <main
+      ref={appShellRef}
+      className={`app-shell is-${mode.toLowerCase().replace('_', '-')}${immersiveMode !== 'windowed' ? ' is-immersive' : ''}${immersiveMode === 'focus-mode' ? ' is-focus-mode' : ''}${immersiveMode === 'native-fullscreen' ? ' is-native-fullscreen' : ''}`}
+      data-immersive-mode={immersiveMode}
+    >
+      <ImmersiveModeControl
+        hostRef={appShellRef}
+        mode={immersiveMode}
+        escapeBlocked={isInterfaceLocked || isGameOverlayOpen || isWorldContextMenuOpen || isTutorialOpen}
+        onModeChange={setImmersiveMode}
+      />
       <section className="starter-card" aria-labelledby="game-title">
         <p className="build-label">Development Build v0.29.0 by Zil-el-Saif</p>
         <h1 id="game-title">Sirah Quest</h1>

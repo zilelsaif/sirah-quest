@@ -29,7 +29,8 @@
     "prebeta:verify": "node scripts/verify-prebeta-v028.mjs",
     "device-compat:verify": "node scripts/verify-device-compat-v029.mjs",
     "n07c:verify": "node scripts/verify-n07c-phaser-integration.mjs",
-    "n07d:verify": "node scripts/verify-n07d-vertical-slice.mjs"
+    "n07d:verify": "node scripts/verify-n07d-vertical-slice.mjs",
+    "n08a:verify": "node scripts/verify-n08a-immersive-mode.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

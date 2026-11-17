@@ -28,6 +28,96 @@
     linear-gradient(145deg, var(--sq-navy), #223650);
 }
 
+.immersive-toolbar {
+  position: relative;
+  z-index: 1400;
+  display: flex;
+  width: min(100%, 64rem);
+  min-height: 44px;
+  gap: 0.55rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 0 auto 0.55rem;
+}
+
+.immersive-toolbar__status {
+  padding: 0.3rem 0.55rem;
+  color: #fff7df;
+  font-size: 0.78rem;
+  font-weight: 900;
+  border: 1px solid rgb(244 213 141 / 58%);
+  border-radius: 999px;
+  background: rgb(11 22 40 / 92%);
+}
+
+.immersive-toggle {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  padding: 0;
+  color: #172033;
+  border: 1px solid #f4d58d;
+  border-radius: 0.55rem;
+  background: #f4d58d;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.immersive-toggle svg {
+  width: 1.45rem;
+  height: 1.45rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.app-shell.is-focus-mode {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.app-shell:fullscreen {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: linear-gradient(145deg, #172033, #263653);
+}
+
+.app-shell.is-immersive {
+  padding: max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right)) max(0.5rem, env(safe-area-inset-bottom)) max(0.5rem, env(safe-area-inset-left));
+}
+
+.app-shell.is-immersive .immersive-toolbar {
+  position: sticky;
+  top: 0;
+  margin-bottom: 0.35rem;
+  pointer-events: none;
+}
+
+.app-shell.is-immersive .immersive-toolbar > * { pointer-events: auto; }
+.app-shell.is-immersive .starter-card { display: none; }
+.app-shell.is-immersive .progression-hud { padding-block: 0.55rem; }
+.app-shell.is-immersive .progression-hud > small,
+.app-shell.is-immersive .progression-hud > code { display: none; }
+.app-shell.is-immersive .game-canvas { height: max(22rem, calc(100dvh - 13rem)); }
+.app-shell.is-immersive .world-map__viewport { min-height: max(24rem, calc(100dvh - 14rem)); }
+
+@media (max-width: 40rem), (max-height: 32rem) {
+  .app-shell.is-immersive .progression-hud { display: none; }
+  .app-shell.is-immersive .game-canvas { height: max(20rem, calc(100dvh - 8rem)); }
+  .app-shell.is-immersive .world-map__viewport { min-height: max(20rem, calc(100dvh - 9rem)); }
+}
+
 .starter-card,
 .game-panel,
 .world-map {
