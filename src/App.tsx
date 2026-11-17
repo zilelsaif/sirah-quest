@@ -6,7 +6,6 @@ import {
   getEffectivePlayerStats,
   purchaseUpgrade,
 } from './game/progression/PlayerProgression'
-import { PlayerProgressionHUD } from './game/progression/PlayerProgressionHUD'
 import { UpgradePanel } from './game/progression/UpgradePanel'
 import { XP_REWARDS } from './game/progression/progressionConfig'
 import type {
@@ -49,6 +48,8 @@ import type { WorldObjectSessionState } from './game/worldObjects/types'
 import { BackgroundMusicPlayer } from './game/audio/BackgroundMusicPlayer'
 import { ImmersiveModeControl } from './game/ui/ImmersiveModeControl'
 import type { ImmersiveMode } from './game/ui/ImmersiveModeControl'
+import { AdventureHUD } from './game/ui/AdventureHUD'
+import type { CameraViewMode } from './game/camera/cameraConfig'
 
 const GameCanvas = lazy(() => import('./game/GameCanvas').then((module) => ({ default: module.GameCanvas })))
 const ReviewPanel = lazy(() => import('./game/review/ReviewPanel').then((module) => ({ default: module.ReviewPanel })))
@@ -100,6 +101,9 @@ function collectCompletionRewards(
 function App() {
   const appShellRef = useRef<HTMLElement>(null)
   const [immersiveMode, setImmersiveMode] = useState<ImmersiveMode>('windowed')
+  const [isAdventureMenuOpen, setIsAdventureMenuOpen] = useState(false)
+  const [cameraViewMode, setCameraViewMode] = useState<CameraViewMode>('normal')
+  const [mapViewMode, setMapViewMode] = useState<'region' | 'location'>('region')
   const [initialLoad] = useState<SaveLoadResult>(() => loadGameSave())
   const [initialState] = useState<PersistedGameState>(() => initialLoad.state ?? createFreshState())
   const [mode, setMode] = useState<GameMode>(initialState.mode)
@@ -151,8 +155,9 @@ function App() {
     () => getEffectivePlayerStats(playerSession.progression),
     [playerSession.progression],
   )
-  const isInterfaceLocked =
+  const isPanelOpen =
     isQuestLogOpen || isUpgradePanelOpen || isMasteryPanelOpen || isJournalOpen || isReviewOpen || levelUpNotification !== null || isResetConfirmOpen || manualDialog !== null
+  const isInterfaceLocked = isPanelOpen || isAdventureMenuOpen
   const journalModel = useMemo(
     () => selectJournalModel(areaSession, worldSession, masteryState),
     [areaSession, worldSession, masteryState],
@@ -166,6 +171,27 @@ function App() {
   const openQuestLog = useCallback(() => {
     overlayTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     setIsQuestLogOpen(true)
+  }, [])
+  const openUpgradePanel = useCallback(() => {
+    overlayTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setIsUpgradePanelOpen(true)
+  }, [])
+  const openMasteryPanel = useCallback(() => {
+    overlayTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setIsMasteryPanelOpen(true)
+  }, [])
+  const openReviewPanel = useCallback(() => {
+    overlayTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setIsReviewOpen(true)
+  }, [])
+  const openTutorialPanel = useCallback(() => {
+    overlayTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setTutorialState((current) => reopenTutorial(current))
+    setIsTutorialOpen(true)
+  }, [])
+  const openResetConfirm = useCallback(() => {
+    overlayTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setIsResetConfirmOpen(true)
   }, [])
   const restoreOverlayFocus = useCallback(() => {
     window.requestAnimationFrame(() => {
@@ -525,21 +551,37 @@ function App() {
       className={`app-shell is-${mode.toLowerCase().replace('_', '-')}${immersiveMode !== 'windowed' ? ' is-immersive' : ''}${immersiveMode === 'focus-mode' ? ' is-focus-mode' : ''}${immersiveMode === 'native-fullscreen' ? ' is-native-fullscreen' : ''}`}
       data-immersive-mode={immersiveMode}
     >
-      <ImmersiveModeControl
-        hostRef={appShellRef}
-        mode={immersiveMode}
-        escapeBlocked={isInterfaceLocked || isGameOverlayOpen || isWorldContextMenuOpen || isTutorialOpen}
-        onModeChange={setImmersiveMode}
-      />
-      <section className="starter-card" aria-labelledby="game-title">
-        <p className="build-label">Development Build v0.29.0 by Zil-el-Saif</p>
-        <h1 id="game-title">Sirah Quest</h1>
-        <p className="tagline">Classic Fantasy Learning Adventure</p>
-      </section>
-      <PlayerProgressionHUD
+      <AdventureHUD
+        title={mode === 'WORLD_MAP' ? 'Peta Dunia' : currentArea.nameBM}
         progression={playerSession.progression}
         remainingHints={areaSession.remainingHints}
         maxHints={effectiveStats.maxHints}
+        mode={mode}
+        menuOpen={isAdventureMenuOpen}
+        actionsLocked={isPanelOpen || isGameOverlayOpen || isWorldContextMenuOpen || isTutorialOpen}
+        reviewAvailable={Object.values(masteryState.questionRecords).some(({ bestScore }) => bestScore > 0)}
+        cameraViewMode={cameraViewMode}
+        mapViewMode={mapViewMode}
+        visionRadius={effectiveStats.visionRadius}
+        saveStatus={[saveMessage || 'Kemajuan disimpan secara automatik pada peranti ini.', manualMessage].filter(Boolean).join(' · ')}
+        manualSaveStatus={`Simpanan Manual: ${manualSave.status === 'loaded' && manualSave.metadata ? `${new Date(manualSave.metadata.savedAt).toLocaleString('ms-MY')} · ${manualSave.metadata.locationNameBM} · Tahap ${manualSave.metadata.level}` : (manualSave.message ?? 'Tiada simpanan manual')}`}
+        immersiveControl={<ImmersiveModeControl hostRef={appShellRef} mode={immersiveMode} escapeBlocked={isInterfaceLocked || isGameOverlayOpen || isWorldContextMenuOpen || isTutorialOpen} onModeChange={setImmersiveMode} />}
+        audioControl={<BackgroundMusicPlayer />}
+        onMenuOpenChange={setIsAdventureMenuOpen}
+        onOpenQuestLog={openQuestLog}
+        onOpenJournal={openJournal}
+        onReturnWorldMap={() => setMode('WORLD_MAP')}
+        onOpenUpgrades={openUpgradePanel}
+        onOpenMastery={openMasteryPanel}
+        onOpenReview={openReviewPanel}
+        onCameraViewModeChange={setCameraViewMode}
+        onMapViewModeChange={setMapViewMode}
+        onManualSave={requestManualSave}
+        onManualLoad={requestManualLoad}
+        manualLoadDisabled={manualSave.status !== 'loaded'}
+        onOpenTutorial={openTutorialPanel}
+        onOpenReset={openResetConfirm}
+        onNewTestRun={startNewTestRun}
       />
       {mode === 'AREA_MAP' && trackedQuest && trackedProgress && (
         <button
@@ -562,10 +604,7 @@ function App() {
           visitedLocationIds={worldSession.visitedLocationIds}
           quests={areaSession.quests}
           questNavigation={questNavigation}
-          onOpenQuestLog={openQuestLog}
-          onOpenUpgrades={() => setIsUpgradePanelOpen(true)}
-          onOpenMastery={() => setIsMasteryPanelOpen(true)}
-          onOpenJournal={openJournal}
+          mapViewMode={mapViewMode}
           interfaceLocked={isInterfaceLocked}
           onContextMenuStateChange={setIsWorldContextMenuOpen}
           onTravel={travelTo}
@@ -577,23 +616,6 @@ function App() {
             <div>
               <h2 id="prototype-title">{currentArea.nameBM} · Area Map</h2>
               <p>Explore with WASD, arrows, or tap. Answer questions at discovered clues.</p>
-            </div>
-            <div className="game-panel__actions">
-              <button type="button" className="quest-log-button" disabled={isInterfaceLocked} onClick={openQuestLog}>
-                Log Quest
-              </button>
-              <button type="button" className="upgrade-button" disabled={isInterfaceLocked} onClick={() => setIsUpgradePanelOpen(true)}>
-                Naik Taraf
-              </button>
-              <button type="button" className="mastery-button" disabled={isInterfaceLocked} onClick={() => setIsMasteryPanelOpen(true)}>
-                Penguasaan
-              </button>
-              <button type="button" className="journal-button" disabled={isInterfaceLocked} onClick={openJournal}>
-                Jurnal
-              </button>
-              <button type="button" className="return-world-button" disabled={isInterfaceLocked} onClick={() => setMode('WORLD_MAP')}>
-                Kembali ke Peta Dunia
-              </button>
             </div>
           </div>
           <Suspense fallback={<div className="game-loading" role="status">Memuatkan kawasan pengembaraan…</div>}>
@@ -616,6 +638,7 @@ function App() {
               discoveredLandmarkIds={areaSession.discoveredLandmarkIds}
               onLandmarkDiscovered={recordLandmarkDiscovery}
               onOverlayStateChange={setIsGameOverlayOpen}
+              cameraViewMode={cameraViewMode}
               onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
                 if (waypoint) return { ...current, [currentArea.id]: waypoint }
                 const next = { ...current }
@@ -645,16 +668,16 @@ function App() {
         <UpgradePanel
           progression={playerSession.progression}
           onPurchase={handlePurchaseUpgrade}
-          onClose={() => setIsUpgradePanelOpen(false)}
+          onClose={() => { setIsUpgradePanelOpen(false); restoreOverlayFocus() }}
           onGrantTestPoints={grantTestUpgradePoints}
           onResetTestProgression={resetTestProgression}
         />
       )}
       {isMasteryPanelOpen && (
-        <SirahMasteryPanel state={masteryState} session={areaSession} onClose={() => setIsMasteryPanelOpen(false)} />
+        <SirahMasteryPanel state={masteryState} session={areaSession} onClose={() => { setIsMasteryPanelOpen(false); restoreOverlayFocus() }} />
       )}
       {isJournalOpen && <JournalPanel model={journalModel} onOpenReview={() => setIsReviewOpen(true)} onClose={() => { closeJournal(); restoreOverlayFocus() }} />}
-      {isReviewOpen && <Suspense fallback={<div className="review-overlay"><div className="game-loading" role="status">Menyediakan ulang kaji…</div></div>}><ReviewPanel mastery={masteryState} onClose={() => setIsReviewOpen(false)} /></Suspense>}
+      {isReviewOpen && <Suspense fallback={<div className="review-overlay"><div className="game-loading" role="status">Menyediakan ulang kaji…</div></div>}><ReviewPanel mastery={masteryState} onClose={() => { setIsReviewOpen(false); restoreOverlayFocus() }} /></Suspense>}
       <TutorialPanel
         state={tutorialState}
         open={isTutorialOpen}
@@ -663,28 +686,13 @@ function App() {
           setTutorialState((current) => skipTutorial(current))
           setIsTutorialOpen(false)
         }}
-        onClose={() => setIsTutorialOpen(false)}
+        onClose={() => { setIsTutorialOpen(false); restoreOverlayFocus() }}
         onOpen={() => {
           setTutorialState((current) => reopenTutorial(current))
           setIsTutorialOpen(true)
         }}
+        showHelpTrigger={false}
       />
-      <BackgroundMusicPlayer />
-      <section className="save-controls" aria-label="Data simpanan">
-        <div>
-          <strong>Data simpanan · Autosave Aktif</strong>
-          <small role="status">{saveMessage || 'Kemajuan disimpan secara automatik pada peranti ini.'}</small>
-          <small>Simpanan Manual: {manualSave.status === 'loaded' && manualSave.metadata
-            ? `${new Date(manualSave.metadata.savedAt).toLocaleString('ms-MY')} · ${manualSave.metadata.locationNameBM} · Tahap ${manualSave.metadata.level}`
-            : (manualSave.message ?? 'Tiada simpanan manual')}</small>
-          {manualMessage && <small role="status">{manualMessage}</small>}
-        </div>
-        <div className="save-controls__actions">
-          <button type="button" onClick={requestManualSave}>Simpan Permainan</button>
-          <button type="button" disabled={manualSave.status !== 'loaded'} onClick={requestManualLoad}>Muat Permainan</button>
-          <button type="button" onClick={() => setIsResetConfirmOpen(true)}>Padam Semua Kemajuan</button>
-        </div>
-      </section>
       {manualDialog && (
         <div className="clue-overlay" role="presentation">
           <section className="reset-confirm" role="dialog" aria-modal="true" aria-labelledby="manual-save-title">
@@ -707,7 +715,7 @@ function App() {
             <h2 id="reset-title">Padam semua kemajuan?</h2>
             <p>Tindakan ini memadam XP, tahap, naik taraf, Penguasaan Sirah, quest, petunjuk, jawapan, kedudukan pemain dan kawasan kabus yang telah diterokai pada peranti ini. Tindakan ini tidak boleh dibatalkan.</p>
             <div className="reset-confirm__actions">
-              <button type="button" onClick={() => setIsResetConfirmOpen(false)}>Batal</button>
+               <button type="button" onClick={() => { setIsResetConfirmOpen(false); restoreOverlayFocus() }}>Batal</button>
               <button type="button" className="is-danger" onClick={resetAllProgress}>Ya, Padam Kemajuan</button>
             </div>
           </section>
