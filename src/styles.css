@@ -3448,3 +3448,118 @@ h1 {
   }
   .game-panel__actions button { width: 100%; }
 }
+
+/* N08-B compact adventure HUD and grouped utility menu. */
+.adventure-hud {
+  position: relative;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) auto auto;
+  width: min(100%, 64rem);
+  gap: 0.55rem 1rem;
+  align-items: center;
+  margin: 0 auto 0.55rem;
+  padding: 0.55rem 0.65rem;
+  color: #fff7df;
+  border: 1px solid rgb(244 213 141 / 32%);
+  border-radius: 0.75rem;
+  background: rgb(11 22 40 / 94%);
+  box-shadow: 0 0.45rem 1.2rem rgb(0 0 0 / 24%);
+}
+
+.adventure-hud__identity,
+.adventure-hud__progress { min-width: 0; }
+.adventure-hud__identity { display: grid; gap: 0.1rem; }
+.adventure-hud__identity strong { color: #f4d58d; font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+.adventure-hud__identity span { overflow: hidden; color: #dbe4f0; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+.adventure-hud__progress { display: flex; flex-wrap: wrap; gap: 0.25rem 0.7rem; align-items: center; font-size: 0.74rem; }
+.adventure-hud__progress strong { color: #f4d58d; }
+.adventure-hud__shortcuts { display: flex; gap: 0.4rem; align-items: center; }
+.adventure-hud__shortcuts > button,
+.adventure-hud .immersive-toggle {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  padding: 0;
+  color: #fff7df;
+  border: 1px solid rgb(244 213 141 / 60%);
+  border-radius: 0.55rem;
+  background: #245f5b;
+  cursor: pointer;
+}
+.adventure-hud__shortcuts svg { width: 1.35rem; height: 1.35rem; fill: none; stroke: currentcolor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.adventure-hud .immersive-toolbar { position: static; width: auto; min-height: 0; margin: 0; pointer-events: auto; }
+.adventure-hud .immersive-toolbar__status { position: absolute; top: calc(100% + 0.35rem); right: 0; white-space: nowrap; }
+
+.adventure-menu-overlay {
+  position: fixed;
+  z-index: 1600;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: max(4.25rem, env(safe-area-inset-top)) max(0.65rem, env(safe-area-inset-right)) max(0.65rem, env(safe-area-inset-bottom)) max(0.65rem, env(safe-area-inset-left));
+  background: rgb(3 7 18 / 46%);
+  overscroll-behavior: contain;
+}
+.adventure-menu-overlay[hidden] { display: none; }
+.adventure-menu {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(27rem, 100%);
+  max-height: calc(100dvh - 5rem);
+  overflow: hidden;
+  color: #172033;
+  border: 2px solid #d5a83f;
+  border-radius: 0.85rem;
+  background: #fff9e7;
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 48%);
+}
+.adventure-menu > header { display: flex; gap: 1rem; align-items: start; justify-content: space-between; padding: 0.85rem; border-bottom: 1px solid #d5bd82; }
+.adventure-menu > header p,
+.adventure-menu > header h2 { margin: 0; }
+.adventure-menu > header p { color: #765713; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.1em; }
+.adventure-menu > header h2 { margin-top: 0.15rem; font-family: Georgia, "Times New Roman", serif; font-size: 1.25rem; }
+.adventure-menu__content { min-height: 0; padding: 0.65rem; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+.adventure-menu details { border-bottom: 1px solid #d8c79b; }
+.adventure-menu summary { min-height: 44px; padding: 0.75rem 0.35rem; font-weight: 900; cursor: pointer; }
+.adventure-menu__section { display: grid; gap: 0.55rem; padding: 0 0.35rem 0.75rem; }
+.adventure-menu__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; padding: 0 0.35rem 0.75rem; }
+.adventure-menu button { min-height: 44px; padding: 0.55rem 0.65rem; font-weight: 800; border: 1px solid #b99a53; border-radius: 0.5rem; background: #f2d58a; cursor: pointer; }
+.adventure-menu button[aria-pressed="true"] { color: #fff7df; background: #245f5b; }
+.adventure-menu button.is-danger { color: #fff7df; background: #8b3730; }
+.adventure-menu .music-player { width: 100%; margin: 0; grid-template-columns: 1fr auto auto; padding: 0.65rem; }
+.adventure-menu .music-player label { grid-column: 1 / -1; }
+.adventure-menu .music-player button { min-width: 0; }
+
+.game-panel__header { padding-block: 0.55rem; }
+.game-panel__header > div > p { display: none; }
+.world-map__header { padding-block: 0.6rem; }
+.world-map__header > p { font-size: 0.75rem; }
+.app-shell.is-immersive .adventure-hud { position: sticky; z-index: 1450; top: 0; }
+
+@media (max-width: 48rem) {
+  .adventure-hud { grid-template-columns: minmax(8rem, 1fr) auto; }
+  .adventure-hud__progress { grid-column: 1 / -1; grid-row: 2; }
+  .adventure-hud__shortcuts { grid-column: 2; grid-row: 1 / span 2; flex-wrap: wrap; justify-content: flex-end; }
+  .world-map__header { align-items: start; }
+}
+
+@media (max-width: 32rem) {
+  .adventure-hud { grid-template-columns: minmax(0, 1fr); }
+  .adventure-hud__identity { grid-row: 1; padding-right: 3rem; }
+  .adventure-hud__progress { grid-row: 2; }
+  .adventure-hud__shortcuts { grid-column: 1; grid-row: 3; justify-content: space-between; }
+  .adventure-menu-overlay { align-items: flex-end; padding: 0.45rem max(0.45rem, env(safe-area-inset-right)) max(0.45rem, env(safe-area-inset-bottom)) max(0.45rem, env(safe-area-inset-left)); }
+  .adventure-menu { width: 100%; max-height: min(88dvh, 42rem); border-radius: 0.85rem 0.85rem 0.35rem 0.35rem; }
+}
+
+@media (max-height: 32rem) and (orientation: landscape) {
+  .adventure-hud { grid-template-columns: minmax(8rem, 1fr) auto auto; }
+  .adventure-hud__progress { grid-column: auto; grid-row: auto; }
+  .adventure-hud__shortcuts { grid-column: auto; grid-row: auto; flex-wrap: nowrap; }
+  .adventure-menu-overlay { padding-top: max(0.35rem, env(safe-area-inset-top)); }
+  .adventure-menu { max-height: calc(100dvh - 0.7rem); }
+}

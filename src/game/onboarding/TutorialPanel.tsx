@@ -8,9 +8,10 @@ interface TutorialPanelProps {
   onSkip: () => void
   onClose: () => void
   onOpen: () => void
+  showHelpTrigger?: boolean
 }
 
-export function TutorialPanel({ state, open, onStart, onSkip, onClose, onOpen }: TutorialPanelProps) {
+export function TutorialPanel({ state, open, onStart, onSkip, onClose, onOpen, showHelpTrigger = true }: TutorialPanelProps) {
   const helpRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -28,7 +29,9 @@ export function TutorialPanel({ state, open, onStart, onSkip, onClose, onOpen }:
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [open, onClose])
 
-  if (!open) return <button ref={helpRef} type="button" className="tutorial-help-button" onClick={onOpen}>Panduan</button>
+  if (!open) return showHelpTrigger
+    ? <button ref={helpRef} type="button" className="tutorial-help-button" onClick={onOpen}>Panduan</button>
+    : null
 
   const step = getActiveTutorialStep(state)
   const stepNumber = TUTORIAL_STEPS.findIndex((candidate) => candidate.id === step.id) + 1

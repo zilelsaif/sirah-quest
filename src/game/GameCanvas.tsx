@@ -44,6 +44,7 @@ interface GameCanvasProps {
   discoveredLandmarkIds: readonly string[]
   onLandmarkDiscovered: (landmarkId: string) => void
   onOverlayStateChange: (open: boolean) => void
+  cameraViewMode: CameraViewMode
 }
 
 export function GameCanvas({
@@ -65,12 +66,12 @@ export function GameCanvas({
   discoveredLandmarkIds,
   onLandmarkDiscovered,
   onOverlayStateChange,
+  cameraViewMode,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
   const resetRequestedRef = useRef(false)
   const [openClue, setOpenClue] = useState<CluePanelData | null>(null)
-  const [cameraViewMode, setCameraViewMode] = useState<CameraViewMode>('normal')
   const [isExplorationMapOpen, setIsExplorationMapOpen] = useState(false)
   const [nearbyNpc, setNearbyNpc] = useState<NpcDefinition | null>(null)
   const [nearbyWorldObject, setNearbyWorldObject] = useState<WorldObjectDefinition | null>(null)
@@ -301,26 +302,6 @@ export function GameCanvas({
           </button>
         </div>
       )}
-      <div className="camera-toolbar" aria-label="Tetapan paparan kamera">
-        <span>Zum kamera</span>
-        <div>
-          <button
-            type="button"
-            aria-pressed={cameraViewMode === 'normal'}
-            onClick={() => setCameraViewMode('normal')}
-          >
-            Paparan Biasa
-          </button>
-          <button
-            type="button"
-            aria-pressed={cameraViewMode === 'wide'}
-            onClick={() => setCameraViewMode('wide')}
-          >
-            Paparan Luas
-          </button>
-        </div>
-        <small>Radius penglihatan: {effectiveStats.visionRadius} unit</small>
-      </div>
       <div className="game-canvas-shell">
         {!isSceneReady && <div className="game-scene-loading" role="status">Menyediakan peta kawasan…</div>}
         <div

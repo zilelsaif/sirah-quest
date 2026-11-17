@@ -30,7 +30,8 @@
     "device-compat:verify": "node scripts/verify-device-compat-v029.mjs",
     "n07c:verify": "node scripts/verify-n07c-phaser-integration.mjs",
     "n07d:verify": "node scripts/verify-n07d-vertical-slice.mjs",
-    "n08a:verify": "node scripts/verify-n08a-immersive-mode.mjs"
+    "n08a:verify": "node scripts/verify-n08a-immersive-mode.mjs",
+    "n08b:verify": "node scripts/verify-n08b-compact-hud.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

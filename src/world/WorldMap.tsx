@@ -14,10 +14,7 @@ interface WorldMapProps {
   onEnterArea: (areaId: string) => void
   quests: QuestSessionState
   questNavigation: QuestNavigationState
-  onOpenQuestLog: () => void
-  onOpenUpgrades: () => void
-  onOpenMastery: () => void
-  onOpenJournal: () => void
+  mapViewMode: 'region' | 'location'
   interfaceLocked: boolean
   onContextMenuStateChange: (open: boolean) => void
 }
@@ -35,10 +32,7 @@ export function WorldMap({
   onEnterArea,
   quests,
   questNavigation,
-  onOpenQuestLog,
-  onOpenUpgrades,
-  onOpenMastery,
-  onOpenJournal,
+  mapViewMode,
   interfaceLocked,
   onContextMenuStateChange,
 }: WorldMapProps) {
@@ -46,7 +40,6 @@ export function WorldMap({
   const [menuPosition, setMenuPosition] = useState<ContextMenuPosition>({ left: 8, top: 8, placement: 'right' })
   const [markerLocationId, setMarkerLocationId] = useState(currentLocationId)
   const [isTravelling, setIsTravelling] = useState(false)
-  const [mapViewMode, setMapViewMode] = useState<'region' | 'location'>('region')
   const travelTimerRef = useRef<number | undefined>(undefined)
   const viewportRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLElement>(null)
@@ -288,28 +281,7 @@ export function WorldMap({
           <p className="world-map__eyebrow">Mod Peta Dunia</p>
           <h2 id="world-map-title">Peta Dunia Sirah Quest</h2>
         </div>
-        <div className="world-map__header-actions">
-          <p>Pilih nod yang bersambung untuk bergerak antara lokasi.</p>
-          <button type="button" className="quest-log-button" disabled={interfaceLocked} onClick={onOpenQuestLog}>
-            Log Quest
-          </button>
-          <button type="button" className="upgrade-button" disabled={interfaceLocked} onClick={onOpenUpgrades}>
-            Naik Taraf
-          </button>
-          <button type="button" className="mastery-button" disabled={interfaceLocked} onClick={onOpenMastery}>
-            Penguasaan
-          </button>
-          <button type="button" className="journal-button" disabled={interfaceLocked} onClick={onOpenJournal}>
-            Jurnal
-          </button>
-        </div>
-      </div>
-
-      <div className="world-map__view-controls" aria-label="Skala Peta Dunia">
-        <span>Skala peta</span>
-        <button type="button" aria-pressed={mapViewMode === 'region'} onClick={() => setMapViewMode('region')}>Rantau</button>
-        <button type="button" aria-pressed={mapViewMode === 'location'} onClick={() => setMapViewMode('location')}>Lokasi</button>
-        <small>Seret peta untuk meneroka rantau.</small>
+        <p>Pilih nod yang bersambung untuk bergerak antara lokasi.</p>
       </div>
 
       <label className={`world-map__mobile-location-picker is-${mapViewMode}`}>
