@@ -8,6 +8,7 @@ import type {
 } from './types'
 import { applyWorldObjectInteraction } from './worldObjectRules'
 import { attemptLandmarkDiscovery } from './landmarkDiscovery'
+import { KAMPUNG_TEXTURES } from '../visuals/kampungEnvironmentManifest'
 
 interface WorldObjectRuntime {
   definition: WorldObjectDefinition
@@ -153,7 +154,20 @@ export class WorldObjectManager {
     let stateShape: Phaser.GameObjects.GameObject
     let glow: Phaser.GameObjects.Arc | undefined
     const pieces: Phaser.GameObjects.GameObject[] = [shadow]
-    if (definition.visualKey.includes('chest')) {
+    const kampungTexture = definition.visualKey === 'notice-board' ? KAMPUNG_TEXTURES.noticeBoard
+      : definition.visualKey === 'tool-chest' ? KAMPUNG_TEXTURES.toolChestClosed
+        : definition.visualKey === 'old-well' ? KAMPUNG_TEXTURES.oldWell
+          : definition.visualKey === 'reading-hut' ? KAMPUNG_TEXTURES.readingHut
+            : undefined
+    if (kampungTexture && this.scene.textures.exists(kampungTexture)) {
+      const image = this.scene.add.image(0, 18, kampungTexture).setOrigin(0.5, 1)
+      const targetWidth = definition.visualKey === 'reading-hut' ? 112
+        : definition.visualKey === 'notice-board' ? 82 : 76
+      image.setScale(targetWidth / image.width)
+      stateShape = image
+      shadow.setScale(definition.visualKey === 'reading-hut' ? 1.7 : 1.15)
+      pieces.push(image)
+    } else if (definition.visualKey.includes('chest')) {
       const body = this.scene.add.rectangle(0, 4, 38, 25, 0x8b5a2b).setStrokeStyle(3, VISUAL_PALETTE.softGold)
       const lid = this.scene.add.rectangle(0, -9, 38, 12, 0x6f451f).setStrokeStyle(3, VISUAL_PALETTE.ink)
       stateShape = lid
@@ -200,8 +214,14 @@ export class WorldObjectManager {
 
   private updateVisual(object: WorldObjectRuntime) {
     if (object.definition.visualKey.includes('chest')) {
-      const lid = object.stateShape as Phaser.GameObjects.Rectangle
-      lid.setPosition(0, object.state === 'OPEN' ? -19 : -9).setRotation(object.state === 'OPEN' ? -0.2 : 0)
+      if (object.stateShape instanceof Phaser.GameObjects.Image) {
+        object.stateShape.setTexture(object.state === 'OPEN'
+          ? KAMPUNG_TEXTURES.toolChestOpen
+          : KAMPUNG_TEXTURES.toolChestClosed)
+      } else {
+        const lid = object.stateShape as Phaser.GameObjects.Rectangle
+        lid.setPosition(0, object.state === 'OPEN' ? -19 : -9).setRotation(object.state === 'OPEN' ? -0.2 : 0)
+      }
     }
     if (object.definition.visualKey === 'reading-lamp') {
       const shade = object.stateShape as Phaser.GameObjects.Triangle

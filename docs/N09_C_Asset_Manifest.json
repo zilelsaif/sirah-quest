@@ -1,0 +1,734 @@
+{
+  "project": "Sirah Quest",
+  "milestone": "N09-C",
+  "areaId": "kampung-ilmu-area",
+  "worldSize": [
+    2200,
+    1600
+  ],
+  "status": "OWNER_VISUAL_APPROVED_ASSET_HANDOFF_RUNTIME_QA_PENDING",
+  "assetCount": 23,
+  "assets": [
+    {
+      "id": "KI-G01",
+      "file": "assets/ki_g01_grass_base.png",
+      "sha256": "255c817d5c0d01131fafa5f95ef7846032c47b474862315b1c7d39c16c65bb24",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "alphaBounds": null,
+      "sourceBatch": "N09-A",
+      "sourcePackage": "Sirah_Quest_N09_A_Terrain_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-G02",
+      "file": "assets/ki_g02_grass_variation.png",
+      "sha256": "4d903c910bced2d216bd92fd605ee71fea46730d5ed470e4389ea8e7376ec47c",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "alphaBounds": null,
+      "sourceBatch": "N09-A",
+      "sourcePackage": "Sirah_Quest_N09_A_Terrain_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-G03",
+      "file": "assets/ki_g03_dirt_fill.png",
+      "sha256": "7f7e89d5b1dcb8099bb24f7a354dd51467c0ff43d8ec4fbc68dca702277f9345",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGB",
+      "alphaBounds": null,
+      "sourceBatch": "N09-A",
+      "sourcePackage": "Sirah_Quest_N09_A_Terrain_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-G04",
+      "file": "assets/ki_g04_dirt_edge.png",
+      "sha256": "ef7ee7d52af23c4bf4bba702cd7a10b1cc13daefdd255542964f17b5cb3d76db",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        153,
+        256
+      ],
+      "sourceBatch": "N09-A",
+      "sourcePackage": "Sirah_Quest_N09_A_Terrain_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-V01",
+      "file": "assets/ki_v01_grass_tuft.png",
+      "sha256": "6b7d2179827fd6485ccdcff1e0c87578a500ec3751872a0bc6e5febc5d440cc7",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        57,
+        124,
+        199,
+        240
+      ],
+      "sourceBatch": "N09-A",
+      "sourcePackage": "Sirah_Quest_N09_A_Terrain_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-V02",
+      "file": "assets/ki_v02_wildflowers.png",
+      "sha256": "b39ef77f7a93aa836e62855660e36c2fe9cd3b7fd0686633d7fab47c3db14eae",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        59,
+        139,
+        197,
+        240
+      ],
+      "sourceBatch": "N09-A",
+      "sourcePackage": "Sirah_Quest_N09_A_Terrain_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-V03",
+      "file": "assets/ki_v03_shrub.png",
+      "sha256": "420a991d834591d05f82f1a043a5ba113ec38db56cf050bd07ea217109deabc5",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        60,
+        139,
+        196,
+        240
+      ],
+      "sourceBatch": "N09-A",
+      "sourcePackage": "Sirah_Quest_N09_A_Terrain_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-V04",
+      "file": "assets/ki_v04_small_rocks.png",
+      "sha256": "102ca900de5b80595af4f6a8cb15d35ab1eecbd01840446b52f027e3b7601727",
+      "size": [
+        256,
+        256
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        78,
+        157,
+        178,
+        240
+      ],
+      "sourceBatch": "N09-A",
+      "sourcePackage": "Sirah_Quest_N09_A_Terrain_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-B01",
+      "file": "assets/ki-b01_house_wide.png",
+      "sha256": "3b0f77e409726d19a8150d1614a9f493f2b0819f770e86502519c7d7aef71a22",
+      "size": [
+        446,
+        335
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        438,
+        327
+      ],
+      "sourceBatch": "N09-B1",
+      "sourcePackage": "Sirah_Quest_N09_B1_Buildings_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-B02",
+      "file": "assets/ki-b02_house_compact.png",
+      "sha256": "1e07165b6b742b562c88765abf881dc4ad1d8581da34b9722bf2fcdec9c3a507",
+      "size": [
+        327,
+        300
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        319,
+        292
+      ],
+      "sourceBatch": "N09-B1",
+      "sourcePackage": "Sirah_Quest_N09_B1_Buildings_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-B03",
+      "file": "assets/ki-b03_learning_hall.png",
+      "sha256": "c0eb373b59ffea4fda8234ba755695dd5be76f99a4e1dbfda007d083519bfbba",
+      "size": [
+        457,
+        385
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        449,
+        377
+      ],
+      "sourceBatch": "N09-B1",
+      "sourcePackage": "Sirah_Quest_N09_B1_Buildings_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-B04",
+      "file": "assets/ki-b04_reading_hut.png",
+      "sha256": "b8481513cd45ea951b89cfc3bd793af46d0012dfc1f4c70af8a6a0243742c251",
+      "size": [
+        383,
+        360
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        375,
+        352
+      ],
+      "sourceBatch": "N09-B1",
+      "sourcePackage": "Sirah_Quest_N09_B1_Buildings_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-B05",
+      "file": "assets/ki-b05_storage_shed.png",
+      "sha256": "f16a4c823c9d8e3074b849aaa53d3b8eae21af83c6f7603e5e0396bebe495e16",
+      "size": [
+        400,
+        261
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        392,
+        253
+      ],
+      "sourceBatch": "N09-B1",
+      "sourcePackage": "Sirah_Quest_N09_B1_Buildings_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-F01",
+      "file": "assets/ki-f01_fence_horizontal.png",
+      "sha256": "6c8848337a47cf23f9302fac11cda653941856016fd225d7a3cc71b4a4ef2097",
+      "size": [
+        395,
+        170
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        387,
+        162
+      ],
+      "sourceBatch": "N09-B1",
+      "sourcePackage": "Sirah_Quest_N09_B1_Buildings_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-F02",
+      "file": "assets/ki-f02_fence_vertical.png",
+      "sha256": "d8e2e3ab203a5c2283ee135f5b924677f651e0e6a4d1e067f605f0884940acf8",
+      "size": [
+        200,
+        413
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        192,
+        405
+      ],
+      "sourceBatch": "N09-B1",
+      "sourcePackage": "Sirah_Quest_N09_B1_Buildings_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-L01",
+      "file": "assets/ki-l01_well.png",
+      "sha256": "e8530f9c234d76f8957fc49424af4876d03703ac5d76b968c464640f6b5ffbcb",
+      "size": [
+        361,
+        375
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        353,
+        367
+      ],
+      "sourceBatch": "N09-B1",
+      "sourcePackage": "Sirah_Quest_N09_B1_Buildings_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-T01",
+      "file": "assets/ki-t01_tree.png",
+      "sha256": "58730ebd294559a34cc7ec1f6443b5a9522bac2685271584e4fe827ca6b6879f",
+      "size": [
+        440,
+        418
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        432,
+        410
+      ],
+      "sourceBatch": "N09-B1",
+      "sourcePackage": "Sirah_Quest_N09_B1_Buildings_Prototype.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-P01",
+      "file": "assets/ki-p01_notice_board.png",
+      "sha256": "d5dac1d8a08faa220efb7932680a7c6a937eb4fe2d2d73ca62cbfcca9d7bc9e1",
+      "size": [
+        513,
+        430
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        505,
+        422
+      ],
+      "sourceBatch": "N09-B2",
+      "sourcePackage": "Sirah_Quest_N09_B2_Supporting_Props.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-P02",
+      "file": "assets/ki-p02_trail_sign_blank.png",
+      "sha256": "2d18076ef2973790a4114ed3afbeae55f8e40063f863ca0185a029901fb9b3c2",
+      "size": [
+        319,
+        392
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        311,
+        384
+      ],
+      "sourceBatch": "N09-B2",
+      "sourcePackage": "Sirah_Quest_N09_B2_Supporting_Props.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-P03",
+      "file": "assets/ki-p03_tool_chest_closed.png",
+      "sha256": "ae78f14aef559247dc4a843af65662b602f521baa9d94edcf2b0c8dc4424332e",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        21,
+        207,
+        491,
+        500
+      ],
+      "sourceBatch": "N09-B2",
+      "sourcePackage": "Sirah_Quest_N09_B2_Supporting_Props.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-P04",
+      "file": "assets/ki-p04_tool_chest_open.png",
+      "sha256": "e83e3bda32fcf574cd79a564b168b46889ea46aadedfef4d1994b66bc21609da",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        19,
+        105,
+        493,
+        500
+      ],
+      "sourceBatch": "N09-B2",
+      "sourcePackage": "Sirah_Quest_N09_B2_Supporting_Props.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-P05",
+      "file": "assets/ki-p05_raised_planter.png",
+      "sha256": "f8b6615e690e303df7408e8caa1aa46aab8299810135bd4374336a739c7ce789",
+      "size": [
+        308,
+        406
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        300,
+        398
+      ],
+      "sourceBatch": "N09-B2",
+      "sourcePackage": "Sirah_Quest_N09_B2_Supporting_Props.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    },
+    {
+      "id": "KI-P06",
+      "file": "assets/ki-p06_stone_wall.png",
+      "sha256": "f83404b7c71283937a07c9e57233e0bb6785a6e7101b0c984287df43feeba91b",
+      "size": [
+        519,
+        214
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        8,
+        8,
+        511,
+        206
+      ],
+      "sourceBatch": "N09-B2",
+      "sourcePackage": "Sirah_Quest_N09_B2_Supporting_Props.zip",
+      "ownerVisualAcceptance": "ACCEPTED",
+      "runtimeQA": "PENDING"
+    }
+  ],
+  "obstacleVisualMapping": [
+    {
+      "id": "KI-O01",
+      "sourceObstacleIndex": 0,
+      "footprint": {
+        "x": 520,
+        "y": 220,
+        "width": 240,
+        "height": 90
+      },
+      "proposedVisualKey": "house-wide-a",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-B01",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch."
+    },
+    {
+      "id": "KI-O02",
+      "sourceObstacleIndex": 1,
+      "footprint": {
+        "x": 900,
+        "y": 510,
+        "width": 110,
+        "height": 300
+      },
+      "proposedVisualKey": "structure-narrow-a",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-P05",
+      "notes": "Two vertically repeated planter units as initial candidate, uniform scale only; use procedural fallback if footprint mismatch."
+    },
+    {
+      "id": "KI-O03",
+      "sourceObstacleIndex": 2,
+      "footprint": {
+        "x": 260,
+        "y": 760,
+        "width": 320,
+        "height": 100
+      },
+      "proposedVisualKey": "house-wide-b",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-B01",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch."
+    },
+    {
+      "id": "KI-O04",
+      "sourceObstacleIndex": 3,
+      "footprint": {
+        "x": 1180,
+        "y": 860,
+        "width": 210,
+        "height": 130
+      },
+      "proposedVisualKey": "house-standard-a",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-B02",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch."
+    },
+    {
+      "id": "KI-O05",
+      "sourceObstacleIndex": 4,
+      "footprint": {
+        "x": 1640,
+        "y": 170,
+        "width": 220,
+        "height": 120
+      },
+      "proposedVisualKey": "residential-a",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-B01",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch."
+    },
+    {
+      "id": "KI-O06",
+      "sourceObstacleIndex": 5,
+      "footprint": {
+        "x": 1930,
+        "y": 210,
+        "width": 190,
+        "height": 110
+      },
+      "proposedVisualKey": "residential-b",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-B02",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch."
+    },
+    {
+      "id": "KI-O07",
+      "sourceObstacleIndex": 6,
+      "footprint": {
+        "x": 1720,
+        "y": 430,
+        "width": 250,
+        "height": 120
+      },
+      "proposedVisualKey": "residential-c",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-B01",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch."
+    },
+    {
+      "id": "KI-O08",
+      "sourceObstacleIndex": 7,
+      "footprint": {
+        "x": 1560,
+        "y": 760,
+        "width": 90,
+        "height": 270
+      },
+      "proposedVisualKey": "garden-wall-vertical",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-F02",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch.",
+      "alternativeAssetId": "KI-P05"
+    },
+    {
+      "id": "KI-O09",
+      "sourceObstacleIndex": 8,
+      "footprint": {
+        "x": 1740,
+        "y": 760,
+        "width": 90,
+        "height": 270
+      },
+      "proposedVisualKey": "garden-wall-vertical",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-F02",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch.",
+      "alternativeAssetId": "KI-P05"
+    },
+    {
+      "id": "KI-O10",
+      "sourceObstacleIndex": 9,
+      "footprint": {
+        "x": 1920,
+        "y": 760,
+        "width": 90,
+        "height": 270
+      },
+      "proposedVisualKey": "garden-wall-vertical",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-F02",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch.",
+      "alternativeAssetId": "KI-P05"
+    },
+    {
+      "id": "KI-O11",
+      "sourceObstacleIndex": 10,
+      "footprint": {
+        "x": 690,
+        "y": 1260,
+        "width": 420,
+        "height": 150
+      },
+      "proposedVisualKey": "learning-hall",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-B03",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch."
+    },
+    {
+      "id": "KI-O12",
+      "sourceObstacleIndex": 11,
+      "footprint": {
+        "x": 180,
+        "y": 1320,
+        "width": 230,
+        "height": 90
+      },
+      "proposedVisualKey": "outskirts-wall-horizontal",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-F01",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch.",
+      "alternativeAssetId": "KI-P06"
+    },
+    {
+      "id": "KI-O13",
+      "sourceObstacleIndex": 12,
+      "footprint": {
+        "x": 1320,
+        "y": 1280,
+        "width": 210,
+        "height": 100
+      },
+      "proposedVisualKey": "house-standard-b",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-B05",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch."
+    },
+    {
+      "id": "KI-O14",
+      "sourceObstacleIndex": 13,
+      "footprint": {
+        "x": 1760,
+        "y": 1240,
+        "width": 260,
+        "height": 100
+      },
+      "proposedVisualKey": "house-wide-c",
+      "status": "CANDIDATE_RUNTIME_ALIGNMENT_PENDING",
+      "candidateAssetId": "KI-B01",
+      "notes": "Candidate only; retain collision, preserve art aspect ratio, audit visible footprint/overhang and fall back if mismatch."
+    }
+  ],
+  "interactiveAndSignPlacement": [
+    {
+      "assetIds": [
+        "KI-P01"
+      ],
+      "targetId": "world-object-kampung-notice-board",
+      "position": [
+        1060,
+        360
+      ],
+      "state": "INSPECT"
+    },
+    {
+      "assetIds": [
+        "KI-P03",
+        "KI-P04"
+      ],
+      "targetId": "world-object-kampung-tool-chest",
+      "position": [
+        670,
+        1040
+      ],
+      "state": "CLOSED/OPEN existing toggle"
+    },
+    {
+      "assetIds": [
+        "KI-L01"
+      ],
+      "targetId": "landmark-kampung-telaga-lama",
+      "position": [
+        1300,
+        600
+      ],
+      "state": "existing landmark discovery/INSPECT"
+    },
+    {
+      "assetIds": [
+        "KI-B04"
+      ],
+      "targetId": "landmark-kampung-pondok-bacaan",
+      "position": [
+        450,
+        1120
+      ],
+      "state": "existing landmark discovery/INSPECT"
+    },
+    {
+      "assetIds": [
+        "KI-P02"
+      ],
+      "targetId": "N07-D decorative trail sign",
+      "position": [
+        362,
+        613
+      ],
+      "state": "visual-only proposed bottom anchor; separate text"
+    }
+  ],
+  "constraints": [
+    "No new collision or gameplay entities",
+    "Tree KI-T01 must have a safe existing footprint or remain reserved; no walk-through solid tree trunk",
+    "KI-G04 is one straight alpha transition, not an autotile set",
+    "Source manifests unchanged; older pending labels superseded by owner visual acceptance, not runtime QA",
+    "Do not stretch art to force footprint match",
+    "Unused or fallback assets/placements must be explicitly reported"
+  ],
+  "checks": {
+    "zipCRC": "PASS (three source zips)",
+    "sha256": "23/23 PASS",
+    "png_decode_dimensions": "23/23 PASS",
+    "alpha": "20 RGBA nonempty, 3 RGB fill textures",
+    "runtime": "NOT RUN",
+    "formal_license_review": "NOT ASSERTED"
+  }
+}

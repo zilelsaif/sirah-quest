@@ -78,12 +78,12 @@ try {
   assert.match(styles, /\.dialogue-panel__content[\s\S]*overflow-y: auto[\s\S]*touch-action: pan-y/)
   assert.match(panel, /aria-expanded=\{expanded\}[\s\S]*Kecilkan[\s\S]*Besarkan/)
   assert.match(styles, /@media \(max-width: 40rem\), \(max-height: 32rem\)[\s\S]*grid-template-columns: 1fr/)
-  assert.match(environment, /N07-D temporary layered visual pilot/)
-  assert.match(environment, /if \(area\.id === KAMPUNG_ILMU_AREA_ID\) drawKampungOpeningPilot/)
+  assert.match(environment, /KAMPUNG_TEXTURES\.trailSign/)
+  assert.match(environment, /if \(area\.id === KAMPUNG_ILMU_AREA_ID\) renderKampungGround\(scene, area\)/)
   assert.doesNotMatch(environment, /obstacles\.push|setCollision/)
   assert.doesNotMatch(questManager, /n07d|Jejak Ilmu|Laluan yang Terputus/i)
 
-  console.log('Verified N07-D conditional story, explicit consent, 10 Keeper offers, compact dialogue dock, visual-pilot gating and unchanged 15/21/24/3/2/6/6/schema-3 invariants.')
+  console.log('Verified N07-D conditional story, explicit consent, 10 Keeper offers, compact dialogue dock, preserved trail-sign layer and unchanged 15/21/24/3/2/6/6/schema-3 invariants.')
 } finally {
   await server.close()
 }

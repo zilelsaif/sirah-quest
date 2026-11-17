@@ -28,6 +28,8 @@ import {
   preloadCharacterVisuals,
   type CharacterDirection,
 } from '../visuals/characterVisualManifest'
+import { preloadKampungEnvironmentVisuals } from '../visuals/kampungEnvironmentManifest'
+import { KAMPUNG_ILMU_AREA_ID } from '../areas/areaRegistry'
 
 export class TestScene extends Phaser.Scene {
   private keyboardInput?: KeyboardInput
@@ -75,6 +77,7 @@ export class TestScene extends Phaser.Scene {
 
   preload() {
     preloadCharacterVisuals(this, this.area.id)
+    if (this.area.id === KAMPUNG_ILMU_AREA_ID) preloadKampungEnvironmentVisuals(this)
   }
 
   create() {
