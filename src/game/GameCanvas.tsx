@@ -72,6 +72,7 @@ export function GameCanvas({
   const gameRef = useRef<Phaser.Game | null>(null)
   const resetRequestedRef = useRef(false)
   const [openClue, setOpenClue] = useState<CluePanelData | null>(null)
+  const [selectedClueOptionId, setSelectedClueOptionId] = useState('')
   const [isExplorationMapOpen, setIsExplorationMapOpen] = useState(false)
   const [nearbyNpc, setNearbyNpc] = useState<NpcDefinition | null>(null)
   const [nearbyWorldObject, setNearbyWorldObject] = useState<WorldObjectDefinition | null>(null)
@@ -179,6 +180,16 @@ export function GameCanvas({
   }, [openClue])
 
   useEffect(() => {
+    setSelectedClueOptionId('')
+  }, [openClue?.id, openClue?.state])
+
+  useEffect(() => {
+    if (selectedClueOptionId && openClue?.eliminatedOptionIds.includes(selectedClueOptionId)) {
+      setSelectedClueOptionId('')
+    }
+  }, [openClue?.eliminatedOptionIds, selectedClueOptionId])
+
+  useEffect(() => {
     getScene()?.setInterfaceLocked(interfaceLocked || isExplorationMapOpen || openDialogue !== null || openWorldObject !== null)
   }, [interfaceLocked, isExplorationMapOpen, openDialogue, openWorldObject])
 
@@ -200,6 +211,12 @@ export function GameCanvas({
     setOpenDialogue(null)
     setDialogueFeedback(null)
     onNewTestRun()
+  }
+
+  const submitClueAnswer = () => {
+    if (!openClue || openClue.state === 'completed' || !selectedClueOptionId || openClue.eliminatedOptionIds.includes(selectedClueOptionId)) return
+    getScene()?.answerClue(selectedClueOptionId)
+    setSelectedClueOptionId('')
   }
 
   const closeDialogue = () => {
@@ -361,39 +378,29 @@ export function GameCanvas({
             aria-modal="true"
             aria-labelledby="clue-title"
           >
-            <p className="clue-panel__label">Sirah question · {openClue.title}</p>
+            <p className="clue-panel__label">Soalan Sirah · {openClue.title}</p>
             <h3 id="clue-title">{openClue.prompt.bm}</h3>
-            <p className="clue-panel__translation" lang="en">
-              {openClue.prompt.en}
-            </p>
+            <label className="clue-panel__answer-field">
+              <span>Jawapan</span>
+              <select
+                value={openClue.state === 'completed' ? (openClue.correctOptionId ?? '') : selectedClueOptionId}
+                disabled={openClue.state === 'completed'}
+                onChange={(event) => setSelectedClueOptionId(event.target.value)}
+              >
+                <option value="">Pilih jawapan…</option>
+                {openClue.options.map((option) => (
+                  <option key={option.id} value={option.id} disabled={openClue.eliminatedOptionIds.includes(option.id)}>
+                    {option.text.bm}{openClue.eliminatedOptionIds.includes(option.id) ? ' — disingkirkan' : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-            <div className="clue-panel__options" aria-label="Answer choices">
-              {openClue.options.map((option) => {
-                const isCorrectReview =
-                  openClue.state === 'completed' && option.id === openClue.correctOptionId
-
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    disabled={
-                      openClue.state === 'completed' ||
-                      openClue.eliminatedOptionIds.includes(option.id)
-                    }
-                    className={`${isCorrectReview ? 'is-correct' : ''}${
-                      openClue.eliminatedOptionIds.includes(option.id) ? ' is-eliminated' : ''
-                    }`.trim() || undefined}
-                    aria-label={`${option.text.bm} / ${option.text.en}${
-                      isCorrectReview ? ' — correct answer' : ''
-                    }`}
-                    onClick={() => getScene()?.answerClue(option.id)}
-                  >
-                    <span>{option.text.bm}</span>
-                    <small lang="en">{option.text.en}</small>
-                  </button>
-                )
-              })}
-            </div>
+            <details className="clue-panel__english">
+              <summary>English translation</summary>
+              <p lang="en">{openClue.prompt.en}</p>
+              <ol lang="en">{openClue.options.map((option) => <li key={option.id}>{option.text.en}</li>)}</ol>
+            </details>
 
             {openClue.feedback && (
               <div
@@ -429,7 +436,15 @@ export function GameCanvas({
                 }
                 onClick={() => getScene()?.useHint()}
               >
-                PETUNJUK ({session.remainingHints})
+                Petunjuk ({session.remainingHints})
+              </button>
+              <button
+                type="button"
+                className="clue-panel__answer-button"
+                disabled={openClue.state === 'completed' || !selectedClueOptionId}
+                onClick={submitClueAnswer}
+              >
+                Jawab
               </button>
               <button type="button" onClick={() => getScene()?.closeClue()}>
                 {openClue.state === 'completed' ? 'Teruskan' : 'Tutup'}

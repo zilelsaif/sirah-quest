@@ -3563,3 +3563,124 @@ h1 {
   .adventure-menu-overlay { padding-top: max(0.35rem, env(safe-area-inset-top)); }
   .adventure-menu { max-height: calc(100dvh - 0.7rem); }
 }
+
+/* N08-C compact Sirah question and illustrated JRPG dialogue. */
+.clue-panel {
+  width: min(100%, 34rem);
+  max-height: calc(100% - 0.75rem);
+  padding: clamp(0.75rem, 2vw, 1rem);
+}
+.clue-panel__label { margin-bottom: 0.25rem !important; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+.clue-panel h3 { margin-bottom: 0.65rem; font-size: clamp(1.1rem, 3vw, 1.35rem); line-height: 1.25; }
+.clue-panel__answer-field { display: grid; gap: 0.3rem; font-weight: 900; }
+.clue-panel__answer-field select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem 2.2rem 0.55rem 0.7rem;
+  color: #172033;
+  border: 1px solid #b99a53;
+  border-radius: 0.5rem;
+  background: #fffdf5;
+}
+.clue-panel__english { margin-top: 0.55rem; color: #52606d; font-size: 0.82rem; }
+.clue-panel__english summary { min-height: 44px; padding-block: 0.65rem; font-weight: 800; cursor: pointer; }
+.clue-panel__english p,
+.clue-panel__english ol { margin: 0.35rem 0 0; }
+.clue-panel__english ol { padding-left: 1.35rem; }
+.clue-panel__feedback,
+.clue-panel__explanation { margin-top: 0.65rem; }
+.clue-panel__actions { position: sticky; bottom: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; margin-top: 0.65rem; padding-top: 0.55rem; background: #fff9e7; }
+.clue-panel__actions button { min-height: 44px; padding: 0.45rem 0.55rem; }
+.clue-panel__answer-button { color: #172033; background: #f2d58a; }
+
+.dialogue-overlay { padding: 0.45rem; }
+.dialogue-panel {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: min(48%, 17rem);
+  max-height: min(48%, 17rem);
+  padding: 0.55rem 0.65rem;
+  color: #172033;
+  border-color: #d5a83f;
+  border-radius: 0.7rem;
+  background: linear-gradient(100deg, #fff2c9, #fff9e7 36%);
+  box-shadow: 0 0.7rem 1.8rem rgb(0 0 0 / 45%);
+}
+.dialogue-panel.has-portrait { grid-template-columns: 4.75rem minmax(0, 1fr); column-gap: 0.65rem; }
+.dialogue-panel.dialogue-panel--expanded { height: calc(100% - 0.9rem); max-height: calc(100% - 0.9rem); }
+.dialogue-panel__portrait {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  width: 4.75rem;
+  height: 7.1rem;
+  align-self: end;
+  border: 1px solid #b98d38;
+  border-radius: 0.55rem;
+  background-color: #1b2a42;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 400% 400%;
+  box-shadow: inset 0 0 0 2px rgb(255 249 231 / 30%);
+}
+.dialogue-panel > header,
+.dialogue-panel__content,
+.dialogue-panel__continue { grid-column: 1; }
+.dialogue-panel.has-portrait > header,
+.dialogue-panel.has-portrait .dialogue-panel__content,
+.dialogue-panel.has-portrait .dialogue-panel__continue { grid-column: 2; }
+.dialogue-panel > header { align-items: center; padding-bottom: 0.35rem; border-bottom: 1px solid rgb(185 141 56 / 42%); }
+.dialogue-panel > header h3 {
+  display: inline-flex;
+  min-height: 1.8rem;
+  align-items: center;
+  margin: 0;
+  padding: 0.2rem 0.6rem;
+  color: #fff7df;
+  border: 1px solid #d5a83f;
+  border-radius: 0.35rem;
+  background: #17233a;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}
+.dialogue-panel__header-actions { flex-direction: row; }
+.dialogue-panel .dialogue-panel__icon-button,
+.dialogue-panel__continue {
+  display: grid;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  place-items: center;
+  padding: 0;
+  color: #fff7df;
+  border-color: #d5a83f;
+  background: #17233a;
+}
+.dialogue-panel__icon-button svg,
+.dialogue-panel__continue svg { width: 1.3rem; height: 1.3rem; fill: none; stroke: currentcolor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dialogue-panel__copy > small { display: none; }
+.dialogue-panel__text { margin-top: 0.55rem; font-size: clamp(0.9rem, 2vw, 1rem); line-height: 1.4; }
+.dialogue-panel__quest { margin-top: 0.55rem; padding: 0.6rem; }
+.dialogue-panel__choice-menu { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.45rem; align-items: end; margin-top: 0.55rem; }
+.dialogue-panel__choice-menu label { display: grid; min-width: 0; gap: 0.25rem; font-size: 0.75rem; font-weight: 900; }
+.dialogue-panel__choice-menu select { width: 100%; min-height: 44px; padding: 0.5rem 0.65rem; border: 1px solid #b99a53; border-radius: 0.5rem; background: #fffdf5; }
+.dialogue-panel__choice-menu > button { min-width: 5rem; }
+.dialogue-panel__choices { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+.dialogue-panel__choices button { min-height: 44px; padding: 0.5rem 0.65rem; }
+.dialogue-panel__continue { margin-top: 0.4rem; margin-left: auto; }
+
+@media (max-width: 32rem) {
+  .clue-overlay { padding: 0.35rem; }
+  .clue-panel { max-height: calc(100% - 0.25rem); padding: 0.65rem; }
+  .clue-panel__actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dialogue-panel { height: min(58%, 18rem); max-height: min(58%, 18rem); }
+  .dialogue-panel.has-portrait { grid-template-columns: 3.7rem minmax(0, 1fr); column-gap: 0.45rem; }
+  .dialogue-panel__portrait { width: 3.7rem; height: 5.55rem; }
+  .dialogue-panel__choice-menu { grid-template-columns: minmax(0, 1fr); }
+  .dialogue-panel__choice-menu > button { width: 100%; }
+}
+
+@media (max-height: 32rem) and (orientation: landscape) {
+  .dialogue-panel { height: calc(100% - 0.6rem); max-height: calc(100% - 0.6rem); }
+  .dialogue-panel__portrait { height: 5.25rem; }
+}

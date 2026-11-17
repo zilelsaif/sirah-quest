@@ -4,6 +4,7 @@ import { getDialogueNode, getVisibleDialogueChoices } from './DialogueEngine'
 import { QUEST_DATA } from '../quests/questData'
 import type { QuestSessionState } from '../quests/types'
 import type { DialogueActionFeedback, DialogueSession } from './types'
+import keeperPortraitSheet from '../../assets/characters/npc-hall-keeper-n07c.png'
 
 interface DialoguePanelProps {
   npc: NpcDefinition
@@ -20,11 +21,15 @@ export function DialoguePanel({ npc, session, questSession, feedback, onAdvance,
   const node = getDialogueNode(session)
   const choices = getVisibleDialogueChoices(session, { quests: questSession })
   const quest = node.questId ? QUEST_DATA.find((candidate) => candidate.id === node.questId) : undefined
-  const [expanded, setExpanded] = useState(Boolean(quest) || choices.length > 4)
+  const [expanded, setExpanded] = useState(Boolean(quest))
+  const [selectedChoiceId, setSelectedChoiceId] = useState('')
+  const usesChoiceMenu = choices.length > 4
+  const hasApprovedPortrait = npc.id === 'npc-penjaga-balai-ilmu'
 
   useEffect(() => {
     panelRef.current?.querySelector<HTMLElement>('.dialogue-panel__content')?.scrollTo(0, 0)
-    setExpanded(Boolean(quest) || choices.length > 4)
+    setExpanded(Boolean(quest))
+    setSelectedChoiceId('')
     panelRef.current?.querySelector<HTMLButtonElement>('[data-dialogue-primary]')?.focus({ preventScroll: true })
   }, [node.id])
 
@@ -32,27 +37,32 @@ export function DialoguePanel({ npc, session, questSession, feedback, onAdvance,
     <div className="dialogue-overlay" role="presentation" onPointerDown={(event) => event.stopPropagation()}>
       <section
         ref={panelRef}
-        className={`dialogue-panel${expanded ? ' dialogue-panel--expanded' : ''}`}
+        className={`dialogue-panel${expanded ? ' dialogue-panel--expanded' : ''}${hasApprovedPortrait ? ' has-portrait' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="dialogue-npc-name"
       >
+        {hasApprovedPortrait && <div
+          className="dialogue-panel__portrait"
+          aria-hidden="true"
+          style={{ backgroundImage: `url(${keeperPortraitSheet})` }}
+        />}
         <header>
-          <div>
-            <p>{node.id.startsWith('n07d-') ? 'PROTOTYPE · SEMAKAN NARATIF' : 'PERBUALAN'}</p>
-            <h3 id="dialogue-npc-name">{npc.nameBM}</h3>
-            <span>{npc.roleBM}</span>
-          </div>
+          <h3 id="dialogue-npc-name">{npc.nameBM}</h3>
           <div className="dialogue-panel__header-actions">
             <button
               type="button"
-              className="button-secondary"
+              className="dialogue-panel__icon-button"
               aria-expanded={expanded}
+              aria-label={expanded ? 'Kecilkan dialog' : 'Besarkan dialog'}
+              title={expanded ? 'Kecilkan' : 'Besarkan'}
               onClick={() => setExpanded((current) => !current)}
             >
-              {expanded ? 'Kecilkan' : 'Besarkan'}
+              <svg viewBox="0 0 24 24" aria-hidden="true">{expanded ? <path d="M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6" /> : <path d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6" />}</svg>
             </button>
-            <button type="button" className="button-secondary" onClick={onClose}>Tutup</button>
+            <button type="button" className="dialogue-panel__icon-button" aria-label="Tutup dialog" title="Tutup" onClick={onClose}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+            </button>
           </div>
         </header>
 
@@ -78,7 +88,20 @@ export function DialoguePanel({ npc, session, questSession, feedback, onAdvance,
           </div>
           )}
 
-          {choices.length > 0 && (
+          {usesChoiceMenu && (
+          <div className="dialogue-panel__choice-menu">
+            <label>
+              <span>Pilih misi</span>
+              <select value={selectedChoiceId} onChange={(event) => setSelectedChoiceId(event.target.value)}>
+                <option value="">Pilih pilihan…</option>
+                {choices.map((choice) => <option key={choice.id} value={choice.id}>{choice.text.bm} — {choice.text.en}</option>)}
+              </select>
+            </label>
+            <button type="button" disabled={!selectedChoiceId} onClick={() => { onChoose(selectedChoiceId); setSelectedChoiceId('') }}>Pilih</button>
+          </div>
+          )}
+
+          {choices.length > 0 && !usesChoiceMenu && (
           <div className="dialogue-panel__choices" aria-label="Pilihan jawapan">
             {choices.map((choice, index) => (
               <button
@@ -96,8 +119,8 @@ export function DialoguePanel({ npc, session, questSession, feedback, onAdvance,
         </div>
 
         {choices.length === 0 && (
-          <button type="button" data-dialogue-primary className="dialogue-panel__continue" onClick={onAdvance}>
-            {node.nextNodeId ? 'Teruskan' : 'Tamat Perbualan'}
+          <button type="button" data-dialogue-primary className="dialogue-panel__continue" aria-label={node.nextNodeId ? 'Teruskan' : 'Tamat Perbualan'} title={node.nextNodeId ? 'Teruskan' : 'Tamat Perbualan'} onClick={onAdvance}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
           </button>
         )}
       </section>
