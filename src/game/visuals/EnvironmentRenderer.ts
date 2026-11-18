@@ -5,8 +5,11 @@ import { getAreaVisuals, VISUAL_PALETTE } from './visualTheme'
 import { kampungWorldDepth, KAMPUNG_OBSTACLE_TEXTURES, KAMPUNG_TEXTURES } from './kampungEnvironmentManifest'
 import {
   KAMPUNG_DECORATION_POINTS,
+  KAMPUNG_ENTRANCE_PATHS,
+  KAMPUNG_FRONT_YARD_DETAILS,
   KAMPUNG_GARDEN_ROWS,
   KAMPUNG_ROAD_PATHS,
+  KAMPUNG_TREE_PLACEMENT,
   type KampungRoadPath,
 } from './kampungEnvironmentLayout'
 
@@ -156,13 +159,13 @@ function createOrganicTerrainMask(
     points.slice(0, -1).forEach((point, segmentIndex) => {
       const next = points[segmentIndex + 1]
       const distance = point.distance(next)
-      const steps = Math.ceil(distance / 26)
+      const steps = Math.ceil(distance / 12)
       for (let step = 0; step <= steps; step += 1) {
         const progress = step / steps
         const x = Phaser.Math.Linear(point.x, next.x, progress)
         const y = Phaser.Math.Linear(point.y, next.y, progress)
-        const irregularity = Math.sin((step + segmentIndex * 11 + pathIndex * 7 + phase) * 1.71) * 3
-          + Math.cos((step + pathIndex * 5 + phase) * 0.83) * 2
+        const irregularity = Math.sin((step + segmentIndex * 17 + pathIndex * 11 + phase) * 0.67) * 1.5
+          + Math.cos((step + pathIndex * 7 + phase) * 0.31) * 1
         source.fillCircle(x, y, (path.width + widthExpansion) / 2 + irregularity)
       }
     })
@@ -207,6 +210,16 @@ function renderKampungGround(scene: Phaser.Scene, area: AreaDefinition) {
   const pathFill = scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.dirtFill)
     .setOrigin(0).setDepth(0.19).setTilePosition(37, 61)
   pathFill.setMask(createOrganicTerrainMask(scene, KAMPUNG_ROAD_PATHS, 0, 19))
+  const pathMottle = scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.dirtFill)
+    .setOrigin(0).setDepth(0.195).setAlpha(0.24).setTilePosition(181, 113).setTileScale(1.17)
+  pathMottle.setMask(createOrganicTerrainMask(scene, KAMPUNG_ROAD_PATHS, -6, 31))
+
+  const doorstepEdge = scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.dirtEdge)
+    .setOrigin(0).setDepth(0.2).setAlpha(0.46).setTilePosition(53, 29)
+  doorstepEdge.setMask(createOrganicTerrainMask(scene, KAMPUNG_ENTRANCE_PATHS, 8, 43))
+  const doorstepFill = scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.dirtFill)
+    .setOrigin(0).setDepth(0.21).setTilePosition(109, 73)
+  doorstepFill.setMask(createOrganicTerrainMask(scene, KAMPUNG_ENTRANCE_PATHS, 0, 47))
 
   const decorationKeys = [
     KAMPUNG_TEXTURES.grassTuft, KAMPUNG_TEXTURES.wildflowers,
@@ -216,6 +229,16 @@ function renderKampungGround(scene: Phaser.Scene, area: AreaDefinition) {
     scene.add.image(x, y, decorationKeys[index % decorationKeys.length])
       .setOrigin(0.5, 1).setScale(0.29 + (index % 4) * 0.028).setDepth(kampungWorldDepth(y, -4))
   })
+  const detailTextures = {
+    grassTuft: KAMPUNG_TEXTURES.grassTuft,
+    wildflowers: KAMPUNG_TEXTURES.wildflowers,
+    shrub: KAMPUNG_TEXTURES.shrub,
+    smallRocks: KAMPUNG_TEXTURES.smallRocks,
+  } as const
+  KAMPUNG_FRONT_YARD_DETAILS.forEach(({ texture, point: [x, y], scale }) => {
+    scene.add.image(x, y, detailTextures[texture])
+      .setOrigin(0.5, 1).setScale(scale).setDepth(kampungWorldDepth(y, -3))
+  })
   scene.add.image(362, 613, KAMPUNG_TEXTURES.trailSign).setOrigin(0.5, 1).setScale(0.23)
     .setDepth(kampungWorldDepth(613))
   scene.add.text(362, 552, 'Jejak Ilmu', {
@@ -224,12 +247,26 @@ function renderKampungGround(scene: Phaser.Scene, area: AreaDefinition) {
   }).setOrigin(0.5).setDepth(kampungWorldDepth(613, 1))
 }
 
-function addKampungContactShadow(scene: Phaser.Scene, obstacle: AreaObstacle) {
-  const centerX = obstacle.x + obstacle.width / 2 + 8
-  const bottomY = obstacle.y + obstacle.height
-  const width = Math.max(48, obstacle.width * 0.78)
-  scene.add.ellipse(centerX, bottomY + 6, width, Math.min(28, obstacle.height * 0.2), 0x07101d, 0.22)
+function addKampungContactShadow(
+  scene: Phaser.Scene,
+  x: number,
+  bottomY: number,
+  width: number,
+  height: number,
+) {
+  scene.add.ellipse(x + 7, bottomY + 4, width, height, 0x07101d, 0.22)
     .setDepth(kampungWorldDepth(bottomY, -2))
+}
+
+function renderKampungTree(scene: Phaser.Scene, obstacle: AreaObstacle, index: number) {
+  if (index !== KAMPUNG_TREE_PLACEMENT.obstacleIndex || !scene.textures.exists(KAMPUNG_TEXTURES.tree)) {
+    return false
+  }
+  const [x, y] = KAMPUNG_TREE_PLACEMENT.point
+  addKampungContactShadow(scene, x, y, 96, 24)
+  scene.add.image(x, y, KAMPUNG_TEXTURES.tree).setOrigin(0.5, 1)
+    .setScale(KAMPUNG_TREE_PLACEMENT.scale).setDepth(kampungWorldDepth(y))
+  return obstacle.x <= x && x <= obstacle.x + obstacle.width
 }
 
 function renderKampungGardenRow(scene: Phaser.Scene, obstacle: AreaObstacle, index: number) {
@@ -248,6 +285,7 @@ function renderKampungGardenRow(scene: Phaser.Scene, obstacle: AreaObstacle, ind
   const planterScale = Math.min(70 / planterSource.width, 82 / planterSource.height)
   const cropTextures = [KAMPUNG_TEXTURES.grassTuft, KAMPUNG_TEXTURES.wildflowers, KAMPUNG_TEXTURES.shrub]
   row.planterBottoms.forEach((bottomY, cropIndex) => {
+    addKampungContactShadow(scene, obstacle.x + obstacle.width / 2, bottomY, 52, 12)
     scene.add.image(obstacle.x + obstacle.width / 2, bottomY, KAMPUNG_TEXTURES.raisedPlanter)
       .setOrigin(0.5, 1).setScale(planterScale).setDepth(kampungWorldDepth(bottomY))
     const cropKey = cropTextures[(index + cropIndex) % cropTextures.length]
@@ -259,6 +297,7 @@ function renderKampungGardenRow(scene: Phaser.Scene, obstacle: AreaObstacle, ind
   if (row.boundaryFence && scene.textures.exists(KAMPUNG_TEXTURES.fenceVertical)) {
     const fenceX = row.boundaryFence === 'west' ? obstacle.x + 31 : obstacle.x + obstacle.width - 31
     ;[895, 1025].forEach((bottomY) => {
+      addKampungContactShadow(scene, fenceX, bottomY, 40, 10)
       scene.add.image(fenceX, bottomY, KAMPUNG_TEXTURES.fenceVertical)
         .setOrigin(0.5, 1).setScale(0.31).setDepth(kampungWorldDepth(bottomY, -1))
     })
@@ -267,24 +306,32 @@ function renderKampungGardenRow(scene: Phaser.Scene, obstacle: AreaObstacle, ind
 }
 
 function renderKampungObstacle(scene: Phaser.Scene, obstacle: AreaObstacle, index: number) {
+  if (renderKampungTree(scene, obstacle, index)) return true
   if (renderKampungGardenRow(scene, obstacle, index)) return true
   const mapping = KAMPUNG_OBSTACLE_TEXTURES[index]
   if (!mapping) return false
   const keys = typeof mapping === 'string' ? [mapping] : mapping
   if (keys.some((key) => !scene.textures.exists(key))) return false
-  addKampungContactShadow(scene, obstacle)
   const segmentHeight = obstacle.height / keys.length
   keys.forEach((key, pieceIndex) => {
     const texture = scene.textures.get(key).getSourceImage() as { width: number, height: number }
     const maxWidth = obstacle.width * (key === KAMPUNG_TEXTURES.fenceVertical ? 0.92 : 1.08)
     const maxHeight = keys.length > 1 ? segmentHeight * 1.08 : Number.POSITIVE_INFINITY
     const scale = Math.min(maxWidth / texture.width, maxHeight / texture.height)
+    const bottomY = obstacle.y + segmentHeight * (pieceIndex + 1)
+    addKampungContactShadow(
+      scene,
+      obstacle.x + obstacle.width / 2,
+      bottomY,
+      Math.max(34, texture.width * scale * 0.7),
+      Math.min(24, Math.max(9, texture.height * scale * 0.08)),
+    )
     scene.add.image(
       obstacle.x + obstacle.width / 2,
-      obstacle.y + segmentHeight * (pieceIndex + 1),
+      bottomY,
       key,
     ).setOrigin(0.5, 1).setScale(scale)
-      .setDepth(kampungWorldDepth(obstacle.y + segmentHeight * (pieceIndex + 1)))
+      .setDepth(kampungWorldDepth(bottomY))
   })
   return true
 }

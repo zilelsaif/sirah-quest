@@ -168,7 +168,8 @@ export class WorldObjectManager {
         : definition.visualKey === 'notice-board' ? 82 : 76
       image.setScale(targetWidth / image.width)
       stateShape = image
-      shadow.setScale(definition.visualKey === 'reading-hut' ? 1.7 : 1.15)
+      shadow.setPosition(7, 18).setDisplaySize(targetWidth * 0.72, definition.visualKey === 'reading-hut' ? 16 : 12)
+        .setFillStyle(VISUAL_PALETTE.ink, 0.22)
       pieces.push(image)
     } else if (definition.visualKey.includes('chest')) {
       const body = this.scene.add.rectangle(0, 4, 38, 25, 0x8b5a2b).setStrokeStyle(3, VISUAL_PALETTE.softGold)

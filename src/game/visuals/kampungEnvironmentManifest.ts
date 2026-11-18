@@ -54,15 +54,14 @@ const KAMPUNG_TEXTURE_URLS: ReadonlyArray<readonly [string, string]> = [
   [KAMPUNG_TEXTURES.learningHall, learningHallUrl], [KAMPUNG_TEXTURES.readingHut, readingHutUrl],
   [KAMPUNG_TEXTURES.storageShed, storageShedUrl], [KAMPUNG_TEXTURES.fenceHorizontal, fenceHorizontalUrl],
   [KAMPUNG_TEXTURES.fenceVertical, fenceVerticalUrl], [KAMPUNG_TEXTURES.oldWell, oldWellUrl],
-  [KAMPUNG_TEXTURES.noticeBoard, noticeBoardUrl],
+  [KAMPUNG_TEXTURES.tree, treeUrl], [KAMPUNG_TEXTURES.noticeBoard, noticeBoardUrl],
   [KAMPUNG_TEXTURES.trailSign, trailSignUrl], [KAMPUNG_TEXTURES.toolChestClosed, toolChestClosedUrl],
   [KAMPUNG_TEXTURES.toolChestOpen, toolChestOpenUrl], [KAMPUNG_TEXTURES.raisedPlanter, raisedPlanterUrl],
 ]
 
-// Accepted handoff assets without a safe current collision footprint. Kept for future mapped use,
+// Accepted handoff asset without a safe current collision footprint. Kept for future mapped use,
 // but deliberately excluded from the runtime preload list.
 export const KAMPUNG_RESERVED_TEXTURE_URLS = {
-  [KAMPUNG_TEXTURES.tree]: treeUrl,
   [KAMPUNG_TEXTURES.stoneWall]: stoneWallUrl,
 } as const
 

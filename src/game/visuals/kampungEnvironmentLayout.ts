@@ -46,6 +46,37 @@ export const KAMPUNG_RESIDENTIAL_ENTRANCES = [
   { obstacleIndex: 6, roadId: 'lower-house-access', point: [1845, 600] },
 ] as const
 
+export const KAMPUNG_ENTRANCE_PATHS: readonly KampungRoadPath[] = [
+  {
+    id: 'doorstep-house-o05', purpose: 'Threshold from upper-house road to O05 visible steps', width: 28,
+    points: [[1750, 340], [1750, 306]],
+  },
+  {
+    id: 'doorstep-house-o06', purpose: 'Threshold from upper-house road to O06 visible steps', width: 28,
+    points: [[2025, 370], [2025, 335]],
+  },
+  {
+    id: 'doorstep-house-o07', purpose: 'Threshold from lower-house road to O07 visible steps', width: 28,
+    points: [[1845, 600], [1845, 565]],
+  },
+  {
+    id: 'doorstep-balai-ilmu', purpose: 'Entrance apron meeting the Learning Hall steps', width: 28,
+    points: [[900, 1455], [900, 1422]],
+  },
+  {
+    id: 'doorstep-storage-shed', purpose: 'Side branch and threshold for storage shed O13', width: 28,
+    points: [[1180, 1400], [1260, 1420], [1425, 1395]],
+  },
+] as const
+
+export const KAMPUNG_ENTRANCE_TARGETS = [
+  { pathId: 'doorstep-house-o05', obstacleIndex: 4, visibleGroundY: 286, maxVisualIntrusion: 6 },
+  { pathId: 'doorstep-house-o06', obstacleIndex: 5, visibleGroundY: 315, maxVisualIntrusion: 7 },
+  { pathId: 'doorstep-house-o07', obstacleIndex: 6, visibleGroundY: 545, maxVisualIntrusion: 7 },
+  { pathId: 'doorstep-balai-ilmu', obstacleIndex: 10, visibleGroundY: 1402, maxVisualIntrusion: 10 },
+  { pathId: 'doorstep-storage-shed', obstacleIndex: 12, visibleGroundY: 1375, maxVisualIntrusion: 9 },
+] as const
+
 export const KAMPUNG_GARDEN_ROWS = [
   { obstacleIndex: 7, planterBottoms: [848, 936, 1024], boundaryFence: 'west' },
   { obstacleIndex: 8, planterBottoms: [848, 936, 1024], boundaryFence: null },
@@ -58,3 +89,19 @@ export const KAMPUNG_DECORATION_POINTS = [
   [2080, 1160], [1510, 1470], [620, 1180], [1160, 1190], [1480, 720], [2110, 1390],
   [90, 850], [850, 1160], [1260, 1030], [2020, 390], [1600, 1120], [430, 940],
 ] as const
+
+export const KAMPUNG_FRONT_YARD_DETAILS = [
+  { texture: 'wildflowers', point: [1680, 340], scale: 0.2 },
+  { texture: 'shrub', point: [1820, 330], scale: 0.2 },
+  { texture: 'wildflowers', point: [1960, 355], scale: 0.19 },
+  { texture: 'shrub', point: [2100, 350], scale: 0.21 },
+  { texture: 'wildflowers', point: [1775, 590], scale: 0.2 },
+  { texture: 'shrub', point: [1915, 590], scale: 0.2 },
+  { texture: 'wildflowers', point: [630, 1465], scale: 0.18 },
+  { texture: 'shrub', point: [620, 1240], scale: 0.2 },
+] as const
+
+export const KAMPUNG_TREE_PLACEMENT = {
+  assetId: 'KI-T01', obstacleIndex: 11, point: [295, 1410], scale: 0.46,
+  purpose: 'Village Outskirts boundary tree using the existing O12 non-walkable footprint',
+} as const
