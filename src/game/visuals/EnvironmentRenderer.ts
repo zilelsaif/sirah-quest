@@ -3,6 +3,12 @@ import type { AreaDefinition, AreaObstacle, AreaObstacleVisual, AreaZone } from 
 import { BAZAR_LAMA_AREA_ID, KAMPUNG_ILMU_AREA_ID, PERPUSTAKAAN_HIKMAH_AREA_ID } from '../areas/areaRegistry'
 import { getAreaVisuals, VISUAL_PALETTE } from './visualTheme'
 import { kampungWorldDepth, KAMPUNG_OBSTACLE_TEXTURES, KAMPUNG_TEXTURES } from './kampungEnvironmentManifest'
+import {
+  KAMPUNG_DECORATION_POINTS,
+  KAMPUNG_GARDEN_ROWS,
+  KAMPUNG_ROAD_PATHS,
+  type KampungRoadPath,
+} from './kampungEnvironmentLayout'
 
 type EnvironmentGraphics = Phaser.GameObjects.Graphics
 
@@ -139,24 +145,27 @@ function drawLightwell(graphics: EnvironmentGraphics, x: number, y: number, radi
 
 function createOrganicTerrainMask(
   scene: Phaser.Scene,
-  points: readonly Phaser.Math.Vector2[],
-  width: number,
+  paths: readonly KampungRoadPath[],
+  widthExpansion: number,
   phase: number,
 ) {
   const source = new Phaser.GameObjects.Graphics(scene)
   source.fillStyle(0xffffff, 1)
-  points.slice(0, -1).forEach((point, segmentIndex) => {
-    const next = points[segmentIndex + 1]
-    const distance = point.distance(next)
-    const steps = Math.ceil(distance / 30)
-    for (let step = 0; step <= steps; step += 1) {
-      const progress = step / steps
-      const x = Phaser.Math.Linear(point.x, next.x, progress)
-      const y = Phaser.Math.Linear(point.y, next.y, progress)
-      const irregularity = Math.sin((step + segmentIndex * 11 + phase) * 1.71) * 5
-        + Math.cos((step + phase) * 0.83) * 3
-      source.fillCircle(x, y, width / 2 + irregularity)
-    }
+  paths.forEach((path, pathIndex) => {
+    const points = path.points.map(([x, y]) => new Phaser.Math.Vector2(x, y))
+    points.slice(0, -1).forEach((point, segmentIndex) => {
+      const next = points[segmentIndex + 1]
+      const distance = point.distance(next)
+      const steps = Math.ceil(distance / 26)
+      for (let step = 0; step <= steps; step += 1) {
+        const progress = step / steps
+        const x = Phaser.Math.Linear(point.x, next.x, progress)
+        const y = Phaser.Math.Linear(point.y, next.y, progress)
+        const irregularity = Math.sin((step + segmentIndex * 11 + pathIndex * 7 + phase) * 1.71) * 3
+          + Math.cos((step + pathIndex * 5 + phase) * 0.83) * 2
+        source.fillCircle(x, y, (path.width + widthExpansion) / 2 + irregularity)
+      }
+    })
   })
   const mask = source.createGeometryMask()
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -192,29 +201,18 @@ function renderKampungGround(scene: Phaser.Scene, area: AreaDefinition) {
     .setOrigin(0).setDepth(0.05).setAlpha(0.34).setTilePosition(173, 89)
   variation.setMask(createLandscapeVariationMask(scene))
 
-  const pathCenterline = [
-    new Phaser.Math.Vector2(area.spawn.x, area.spawn.y),
-    new Phaser.Math.Vector2(area.width / 2, area.height / 2),
-    new Phaser.Math.Vector2(area.width * 0.78, area.height * 0.3),
-  ] as const
   const pathEdge = scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.dirtEdge)
     .setOrigin(0).setDepth(0.18).setAlpha(0.52).setTilePosition(91, 147)
-  pathEdge.setMask(createOrganicTerrainMask(scene, pathCenterline, 154, 7))
+  pathEdge.setMask(createOrganicTerrainMask(scene, KAMPUNG_ROAD_PATHS, 24, 7))
   const pathFill = scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.dirtFill)
     .setOrigin(0).setDepth(0.19).setTilePosition(37, 61)
-  pathFill.setMask(createOrganicTerrainMask(scene, pathCenterline, 126, 19))
+  pathFill.setMask(createOrganicTerrainMask(scene, KAMPUNG_ROAD_PATHS, 0, 19))
 
   const decorationKeys = [
     KAMPUNG_TEXTURES.grassTuft, KAMPUNG_TEXTURES.wildflowers,
     KAMPUNG_TEXTURES.shrub, KAMPUNG_TEXTURES.smallRocks,
   ] as const
-  const decorationPoints = [
-    [145, 470], [190, 650], [790, 355], [840, 890], [1120, 265], [1410, 610],
-    [1530, 350], [2070, 560], [1490, 1160], [1230, 1480], [545, 1480], [175, 1080],
-    [2080, 1160], [1510, 1470], [620, 1180], [1160, 1190], [1480, 720], [2110, 1390],
-    [90, 850], [850, 1160], [1260, 1030], [2020, 390], [1600, 1120], [430, 940],
-  ] as const
-  decorationPoints.forEach(([x, y], index) => {
+  KAMPUNG_DECORATION_POINTS.forEach(([x, y], index) => {
     scene.add.image(x, y, decorationKeys[index % decorationKeys.length])
       .setOrigin(0.5, 1).setScale(0.29 + (index % 4) * 0.028).setDepth(kampungWorldDepth(y, -4))
   })
@@ -234,7 +232,42 @@ function addKampungContactShadow(scene: Phaser.Scene, obstacle: AreaObstacle) {
     .setDepth(kampungWorldDepth(bottomY, -2))
 }
 
+function renderKampungGardenRow(scene: Phaser.Scene, obstacle: AreaObstacle, index: number) {
+  const row = KAMPUNG_GARDEN_ROWS.find(({ obstacleIndex }) => obstacleIndex === index)
+  if (!row || !scene.textures.exists(KAMPUNG_TEXTURES.raisedPlanter)) return false
+
+  const soil = scene.add.graphics().setDepth(0.3)
+  soil.fillStyle(0x6f4b2d, 0.78)
+  soil.fillRoundedRect(obstacle.x + 7, obstacle.y + 5, obstacle.width - 14, obstacle.height - 10, 18)
+  soil.lineStyle(3, 0x9b7445, 0.58)
+  soil.strokeRoundedRect(obstacle.x + 7, obstacle.y + 5, obstacle.width - 14, obstacle.height - 10, 18)
+
+  const planterSource = scene.textures.get(KAMPUNG_TEXTURES.raisedPlanter).getSourceImage() as {
+    width: number, height: number,
+  }
+  const planterScale = Math.min(70 / planterSource.width, 82 / planterSource.height)
+  const cropTextures = [KAMPUNG_TEXTURES.grassTuft, KAMPUNG_TEXTURES.wildflowers, KAMPUNG_TEXTURES.shrub]
+  row.planterBottoms.forEach((bottomY, cropIndex) => {
+    scene.add.image(obstacle.x + obstacle.width / 2, bottomY, KAMPUNG_TEXTURES.raisedPlanter)
+      .setOrigin(0.5, 1).setScale(planterScale).setDepth(kampungWorldDepth(bottomY))
+    const cropKey = cropTextures[(index + cropIndex) % cropTextures.length]
+    scene.add.image(obstacle.x + obstacle.width / 2, bottomY - 42, cropKey)
+      .setOrigin(0.5, 1).setScale(0.18 + cropIndex * 0.015)
+      .setDepth(kampungWorldDepth(bottomY, 1))
+  })
+
+  if (row.boundaryFence && scene.textures.exists(KAMPUNG_TEXTURES.fenceVertical)) {
+    const fenceX = row.boundaryFence === 'west' ? obstacle.x + 31 : obstacle.x + obstacle.width - 31
+    ;[895, 1025].forEach((bottomY) => {
+      scene.add.image(fenceX, bottomY, KAMPUNG_TEXTURES.fenceVertical)
+        .setOrigin(0.5, 1).setScale(0.31).setDepth(kampungWorldDepth(bottomY, -1))
+    })
+  }
+  return true
+}
+
 function renderKampungObstacle(scene: Phaser.Scene, obstacle: AreaObstacle, index: number) {
+  if (renderKampungGardenRow(scene, obstacle, index)) return true
   const mapping = KAMPUNG_OBSTACLE_TEXTURES[index]
   if (!mapping) return false
   const keys = typeof mapping === 'string' ? [mapping] : mapping

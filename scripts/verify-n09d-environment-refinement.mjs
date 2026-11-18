@@ -5,8 +5,9 @@ import { createServer } from 'vite'
 await import('./verify-n09c-environment-integration.mjs')
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
-const [renderer, fog, scene, clueManager, npcManager, objectManager, environmentManifest, packageJson] = await Promise.all([
-  read('src/game/visuals/EnvironmentRenderer.ts'), read('src/game/fog/FogOfWar.ts'),
+const [renderer, layout, fog, scene, clueManager, npcManager, objectManager, environmentManifest, packageJson] = await Promise.all([
+  read('src/game/visuals/EnvironmentRenderer.ts'), read('src/game/visuals/kampungEnvironmentLayout.ts'),
+  read('src/game/fog/FogOfWar.ts'),
   read('src/game/scenes/TestScene.ts'), read('src/game/clues/ClueManager.ts'), read('src/game/npcs/NpcManager.ts'),
   read('src/game/worldObjects/WorldObjectManager.ts'), read('src/game/visuals/kampungEnvironmentManifest.ts'),
   read('package.json'),
@@ -15,7 +16,8 @@ const [renderer, fog, scene, clueManager, npcManager, objectManager, environment
 assert.match(renderer, /createOrganicTerrainMask/)
 assert.match(renderer, /KAMPUNG_TEXTURES\.dirtEdge/)
 assert.match(renderer, /KAMPUNG_TEXTURES\.dirtFill/)
-assert.match(renderer, /pathCenterline[\s\S]*area\.spawn\.x[\s\S]*area\.width \/ 2[\s\S]*area\.width \* 0\.78/)
+assert.match(renderer, /createOrganicTerrainMask\(scene, KAMPUNG_ROAD_PATHS/)
+assert.match(layout, /main-village-road[\s\S]*north-residential-road[\s\S]*balai-ilmu-approach/)
 assert.doesNotMatch(renderer, /addTexturedPathSegment/)
 assert.match(renderer, /createLandscapeVariationMask/)
 assert.match(renderer, /Phaser\.Scenes\.Events\.SHUTDOWN[\s\S]*mask\.destroy\(\)[\s\S]*source\.destroy\(\)/)
@@ -24,7 +26,8 @@ assert.match(renderer, /setDepth\(kampungWorldDepth\(obstacle\.y \+ segmentHeigh
 assert.match(renderer, /keys\.some\(\(key\) => !scene\.textures\.exists\(key\)\)/)
 assert.match(renderer, /if \(area\.id !== KAMPUNG_ILMU_AREA_ID\) area\.landmarks\.forEach/)
 assert.match(renderer, /if \(area\.id !== KAMPUNG_ILMU_AREA_ID\) \{[\s\S]*strokeRoundedRect/)
-assert.match(renderer, /const decorationPoints = \[[\s\S]*\[430, 940\]/)
+assert.match(renderer, /KAMPUNG_DECORATION_POINTS\.forEach/)
+assert.match(layout, /KAMPUNG_DECORATION_POINTS[\s\S]*\[430, 940\]/)
 assert.match(renderer, /'Jejak Ilmu'[\s\S]*setOrigin\(0\.5\)/)
 assert.match(environmentManifest, /KAMPUNG_WORLD_DEPTH_BASE = 10/)
 assert.match(environmentManifest, /KAMPUNG_WORLD_DEPTH_SCALE = 0\.03/)
