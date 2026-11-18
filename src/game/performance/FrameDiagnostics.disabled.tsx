@@ -5,6 +5,8 @@ export class FrameDiagnostics {
   record() {}
   pause() {}
   setSceneMetrics() {}
+  recordMiniMapDraw() {}
+  recordReactCommit() {}
 }
 
 export function FrameDiagnosticsOverlay() {

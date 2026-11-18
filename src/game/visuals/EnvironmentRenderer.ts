@@ -414,13 +414,14 @@ export interface EnvironmentRenderResult {
   activeMaskCount: number
 }
 
-export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition, requestedMode: KampungRenderMode = 'baked'): EnvironmentRenderResult {
+export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition, requestedMode: KampungRenderMode = 'baked', minimal = false): EnvironmentRenderResult {
   const visuals = getAreaVisuals(area.id)
   scene.add.rectangle(0, 0, area.width, area.height, visuals.ground).setOrigin(0)
   const bakedKampung = area.id === KAMPUNG_ILMU_AREA_ID && requestedMode === 'baked'
     ? renderBakedKampungGround(scene, area)
     : false
   if (area.id === KAMPUNG_ILMU_AREA_ID && !bakedKampung) renderKampungGround(scene, area)
+  if (minimal && bakedKampung) return { requestedMode, modeUsed: 'baked', activeMaskCount: 0 }
   const ground = scene.add.graphics()
   drawZones(scene, ground, area)
   if (area.id !== KAMPUNG_ILMU_AREA_ID) {

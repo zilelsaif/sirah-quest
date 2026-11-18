@@ -40,6 +40,15 @@ export interface SceneRenderDiagnostics {
   requestedRenderMode: DevelopmentRenderingConfig['kampungRenderMode']
   renderModeUsed: DevelopmentRenderingConfig['kampungRenderMode']
   fogEdgeMode: DevelopmentRenderingConfig['fogEdgeMode']
+  renderer: string
+  gpuRenderer: string
+  canvasPhysicalWidth: number
+  canvasPhysicalHeight: number
+  devicePixelRatio: number
+  discoveryPointCount: number
+  exploredGeometryCommands: number
+  explorationStrategy: string
+  fogIsolationMode: DevelopmentRenderingConfig['fogIsolationMode']
 }
 
 export class TestScene extends Phaser.Scene {
@@ -111,15 +120,24 @@ export class TestScene extends Phaser.Scene {
     this.player = player
     const gameContainer = this.game.canvas.parentElement
 
+    const syntheticDiscoveryPoints = this.renderingConfig.syntheticDiscoveryPointCount > 0
+      ? Array.from({ length: this.renderingConfig.syntheticDiscoveryPointCount }, (_, index) => ({
+        x: 80 + ((index * 97) % Math.max(1, this.area.width - 160)),
+        y: 80 + ((index * 193) % Math.max(1, this.area.height - 160)),
+        radius: this.effectiveStats.visionRadius,
+      }))
+      : undefined
+    const initialFogPoints = syntheticDiscoveryPoints ?? this.initialSession.fogDiscoveryPoints
     this.fogOfWar = new FogOfWar(
       this,
       this.area.width,
       this.area.height,
-      this.initialSession.fogDiscoveryPoints,
-      (points) => {
+      initialFogPoints,
+      this.renderingConfig.fogIsolationMode === 'normal' && !syntheticDiscoveryPoints ? (points) => {
         this.fogDiscoveryPoints = points
-      },
+      } : undefined,
       this.area.id === KAMPUNG_ILMU_AREA_ID && this.renderingConfig.fogEdgeMode === 'soft',
+      this.renderingConfig.fogIsolationMode,
     )
     this.fogOfWar.update(player.x, player.y, this.effectiveStats.visionRadius)
 
@@ -142,6 +160,9 @@ export class TestScene extends Phaser.Scene {
           gameContainer.dataset.discoveryUpdates = String(
             this.fogOfWar?.getDebugState().discoveryUpdates ?? 0,
           )
+          gameContainer.dataset.visibilityUpdates = String(this.fogOfWar?.getDebugState().visibilityUpdates ?? 0)
+          gameContainer.dataset.discoveryPointCount = String(this.fogOfWar?.getDebugState().discoveryPointCount ?? 0)
+          gameContainer.dataset.explorationStrategy = this.fogOfWar?.getDebugState().explorationStrategy ?? 'unknown'
         }
 
         if (this.time.now - this.lastSessionUpdate >= 150) {
@@ -151,7 +172,7 @@ export class TestScene extends Phaser.Scene {
       },
     )
 
-    this.clueManager = new ClueManager(
+    if (!this.renderingConfig.minimalScene) this.clueManager = new ClueManager(
       this,
       this.area.clues,
       this.initialSession.questionRun.assignments,
@@ -165,7 +186,7 @@ export class TestScene extends Phaser.Scene {
       (clues) => this.emitSessionState(player.x, player.y, clues),
     )
 
-    this.npcManager = new NpcManager(
+    if (!this.renderingConfig.minimalScene) this.npcManager = new NpcManager(
       this,
       getNpcsForArea(this.area.id),
       this.onNearbyNpcChange,
@@ -176,7 +197,7 @@ export class TestScene extends Phaser.Scene {
       },
     )
 
-    this.worldObjectManager = new WorldObjectManager(
+    if (!this.renderingConfig.minimalScene) this.worldObjectManager = new WorldObjectManager(
       this,
       [...getWorldObjectsForArea(this.area.id), ...getLandmarksForArea(this.area.id)],
       this.initialWorldObjectState,
@@ -230,6 +251,15 @@ export class TestScene extends Phaser.Scene {
         .setDepth(200)
     }
 
+    const fogDiagnostics = this.fogOfWar.getDebugState()
+    const renderer = this.game.renderer
+    const gl = renderer.type === Phaser.WEBGL
+      ? (renderer as Phaser.Renderer.WebGL.WebGLRenderer).gl
+      : undefined
+    const webgl = gl?.getExtension('WEBGL_debug_renderer_info')
+    const gpuRenderer = webgl && gl
+      ? gl.getParameter(webgl.UNMASKED_RENDERER_WEBGL)
+      : 'unavailable'
     this.onSceneReady({
       sceneLoadMs: performance.now() - sceneLoadStartedAt,
       displayObjectCount: this.children.list.length,
@@ -239,6 +269,15 @@ export class TestScene extends Phaser.Scene {
       requestedRenderMode: this.renderingConfig.kampungRenderMode,
       renderModeUsed: this.environmentDiagnostics?.modeUsed ?? 'modular',
       fogEdgeMode: this.renderingConfig.fogEdgeMode,
+      renderer: renderer.type === Phaser.WEBGL ? 'WebGL' : 'Canvas',
+      gpuRenderer: String(gpuRenderer),
+      canvasPhysicalWidth: this.game.canvas.width,
+      canvasPhysicalHeight: this.game.canvas.height,
+      devicePixelRatio: window.devicePixelRatio,
+      discoveryPointCount: fogDiagnostics.discoveryPointCount,
+      exploredGeometryCommands: fogDiagnostics.exploredGeometryCommands,
+      explorationStrategy: fogDiagnostics.explorationStrategy,
+      fogIsolationMode: this.renderingConfig.fogIsolationMode,
     })
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -380,7 +419,12 @@ export class TestScene extends Phaser.Scene {
   }
 
   private drawMap() {
-    this.environmentDiagnostics = renderEnvironment(this, this.area, this.renderingConfig.kampungRenderMode)
+    this.environmentDiagnostics = renderEnvironment(
+      this,
+      this.area,
+      this.renderingConfig.kampungRenderMode,
+      this.renderingConfig.minimalScene,
+    )
   }
 
   private createPlayer(x: number, y: number) {

@@ -41,7 +41,7 @@ assert.match(fog, /useSoftVisibleEdge = false/)
 assert.match(fog, /this\.visibleFeather = scene\.add\.graphics\(\)\.setDepth\(90\.5\)/)
 assert.match(fog, /visionRadius - inset/)
 assert.match(fog, /visibleMaskSource\.clear\(\)\.fillStyle\(0xffffff\)\.fillCircle\(playerX, playerY, visionRadius\)/)
-assert.match(fog, /exploredMaskSource\.fillStyle\(0xffffff\)\.fillCircle\(playerX, playerY, visionRadius\)/)
+assert.match(fog, /exploredMaskSource\?\.fillStyle\(0xffffff\)\.fillCircle\(playerX, playerY, visionRadius\)/)
 assert.match(scene, /this\.area\.id === KAMPUNG_ILMU_AREA_ID && this\.renderingConfig\.fogEdgeMode === 'soft'/)
 assert.equal(JSON.parse(packageJson).scripts['n09d:verify'], 'node scripts/verify-n09d-environment-refinement.mjs')
 

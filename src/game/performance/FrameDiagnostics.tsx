@@ -17,6 +17,10 @@ export interface FrameDiagnosticSnapshot {
   activeMaskCount: number
   textureCount: number
   renderLabel: string
+  runtimeLabel: string
+  rawFrameIntervals: readonly number[]
+  miniMapRedraws: number
+  reactCommits: number
 }
 
 const EMPTY_SNAPSHOT: FrameDiagnosticSnapshot = {
@@ -31,6 +35,10 @@ const EMPTY_SNAPSHOT: FrameDiagnosticSnapshot = {
   activeMaskCount: 0,
   textureCount: 0,
   renderLabel: 'pending',
+  runtimeLabel: 'runtime pending',
+  rawFrameIntervals: [],
+  miniMapRedraws: 0,
+  reactCommits: 0,
 }
 
 function percentile(sorted: readonly number[], fraction: number) {
@@ -45,8 +53,12 @@ export class FrameDiagnostics {
   private lastPublishedAt = 0
   private skipNextSample = true
   private listeners = new Set<(snapshot: FrameDiagnosticSnapshot) => void>()
+  private rawRecent: number[] = []
+  private miniMapRedraws = 0
+  private reactCommits = 0
   private sceneMetrics = {
-    sceneLoadMs: 0, displayObjectCount: 0, activeMaskCount: 0, textureCount: 0, renderLabel: 'pending',
+    sceneLoadMs: 0, displayObjectCount: 0, activeMaskCount: 0, textureCount: 0,
+    renderLabel: 'pending', runtimeLabel: 'runtime pending',
   }
 
   record(deltaMs: number, now = performance.now()) {
@@ -60,6 +72,7 @@ export class FrameDiagnostics {
     }
 
     this.samples[this.writeIndex] = deltaMs
+    this.rawRecent = [...this.rawRecent.slice(-11), deltaMs]
     this.writeIndex = (this.writeIndex + 1) % FRAME_DIAGNOSTIC_BUFFER_SIZE
     this.sampleCount = Math.min(this.sampleCount + 1, FRAME_DIAGNOSTIC_BUFFER_SIZE)
 
@@ -71,6 +84,7 @@ export class FrameDiagnostics {
 
   pause() {
     this.skipNextSample = true
+    this.rawRecent = []
   }
 
   clear() {
@@ -86,8 +100,15 @@ export class FrameDiagnostics {
     this.publish()
   }
 
+  recordMiniMapDraw() { this.miniMapRedraws += 1 }
+  recordReactCommit() { this.reactCommits += 1 }
+
   snapshot(): FrameDiagnosticSnapshot {
-    if (this.sampleCount === 0) return { ...EMPTY_SNAPSHOT, ...this.sceneMetrics }
+    const activity = {
+      miniMapRedraws: this.miniMapRedraws,
+      reactCommits: this.reactCommits,
+    }
+    if (this.sampleCount === 0) return { ...EMPTY_SNAPSHOT, ...this.sceneMetrics, ...activity }
     const ordered = Array.from(this.samples.slice(0, this.sampleCount)).sort((a, b) => a - b)
     const medianFrameMs = percentile(ordered, 0.5)
     return {
@@ -97,6 +118,8 @@ export class FrameDiagnostics {
       p95FrameMs: percentile(ordered, 0.95),
       over33Ms: ordered.filter((value) => value > 33).length,
       over50Ms: ordered.filter((value) => value > 50).length,
+      rawFrameIntervals: [...this.rawRecent],
+      ...activity,
       ...this.sceneMetrics,
     }
   }
@@ -120,6 +143,7 @@ export function FrameDiagnosticsOverlay({ diagnostics }: { diagnostics: FrameDia
   const slowRef = useRef<HTMLElement>(null)
   const sampleRef = useRef<HTMLElement>(null)
   const sceneRef = useRef<HTMLElement>(null)
+  const activityRef = useRef<HTMLElement>(null)
 
   useEffect(() => diagnostics.subscribe((snapshot) => {
     if (fpsRef.current) fpsRef.current.textContent = `${snapshot.medianFps.toFixed(0)} FPS`
@@ -128,6 +152,7 @@ export function FrameDiagnosticsOverlay({ diagnostics }: { diagnostics: FrameDia
     if (slowRef.current) slowRef.current.textContent = `>33 ms ${snapshot.over33Ms} · >50 ms ${snapshot.over50Ms}`
     if (sampleRef.current) sampleRef.current.textContent = `${snapshot.sampleCount}/${FRAME_DIAGNOSTIC_BUFFER_SIZE} sampel`
     if (sceneRef.current) sceneRef.current.textContent = `${snapshot.renderLabel} · load ${snapshot.sceneLoadMs.toFixed(0)} ms · obj ${snapshot.displayObjectCount} · mask ${snapshot.activeMaskCount} · tex ${snapshot.textureCount}`
+    if (activityRef.current) activityRef.current.textContent = `${snapshot.runtimeLabel} · map ${snapshot.miniMapRedraws} · React ${snapshot.reactCommits}`
   }), [diagnostics])
 
   return (
@@ -138,6 +163,7 @@ export function FrameDiagnosticsOverlay({ diagnostics }: { diagnostics: FrameDia
       <small ref={slowRef}>&gt;33 ms 0 · &gt;50 ms 0</small>
       <small ref={sampleRef}>0/{FRAME_DIAGNOSTIC_BUFFER_SIZE} sampel</small>
       <small ref={sceneRef}>Menunggu diagnostik scene</small>
+      <small ref={activityRef}>Menunggu metrik runtime</small>
     </aside>
   )
 }

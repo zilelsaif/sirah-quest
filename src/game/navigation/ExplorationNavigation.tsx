@@ -15,6 +15,8 @@ interface ExplorationNavigationProps {
   disabled: boolean
   onWaypointChange: (waypoint: PlayerPosition | undefined) => void
   onExpandedChange: (open: boolean) => void
+  disabledRendering?: boolean
+  onMapRender?: () => void
 }
 
 interface MapCanvasProps {
@@ -26,6 +28,7 @@ interface MapCanvasProps {
   interactive?: boolean
   onSelect?: (position: PlayerPosition) => void
   label: string
+  onRender?: () => void
 }
 
 const MAP_DRAW_WIDTH = 720
@@ -175,6 +178,7 @@ function MapCanvas({
   interactive = false,
   onSelect,
   label,
+  onRender,
 }: MapCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -183,9 +187,10 @@ function MapCanvas({
     if (!canvas) return
     const frame = window.requestAnimationFrame(() => {
       renderMap(canvas, area, session, visionRadius, waypoint, questTarget)
+      onRender?.()
     })
     return () => window.cancelAnimationFrame(frame)
-  }, [area, session.playerPosition, session.fogDiscoveryPoints, session.clues, visionRadius, waypoint, questTarget])
+  }, [area, session.playerPosition, session.fogDiscoveryPoints, session.clues, visionRadius, waypoint, questTarget, onRender])
 
   const selectPosition = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current
@@ -222,6 +227,8 @@ export function ExplorationNavigation({
   disabled,
   onWaypointChange,
   onExpandedChange,
+  disabledRendering = false,
+  onMapRender,
 }: ExplorationNavigationProps) {
   const [expanded, setExpanded] = useState(false)
   const [collapsed, setCollapsed] = useState(() =>
@@ -276,6 +283,8 @@ export function ExplorationNavigation({
     setMessage('Tanda destinasi telah ditetapkan.')
   }
 
+  if (disabledRendering) return null
+
   return (
     <>
       <svg className="north-star" viewBox="0 0 48 48" role="img" aria-label={NORTH_STAR_LABEL.bm}>
@@ -304,6 +313,7 @@ export function ExplorationNavigation({
               waypoint={waypoint}
               questTarget={questNavigation.status === 'known' ? questNavigation.target : undefined}
               label={`Mini Map ${area.nameBM}`}
+              onRender={onMapRender}
             />
             <button type="button" className="mini-map__expand" disabled={disabled} onClick={() => setExpanded(true)}>
               Peta Kawasan
@@ -347,6 +357,7 @@ export function ExplorationNavigation({
                 interactive
                 onSelect={placeWaypoint}
                 label={`Peta Kawasan ${area.nameBM}. Pilih kawasan diterokai untuk meletakkan tanda destinasi.`}
+                onRender={onMapRender}
               />
             </div>
             <div className="exploration-map-legend" aria-label="Petunjuk peta">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type Phaser from 'phaser'
 import { createGame } from './bootstrap'
 import type { CluePanelData } from './clues/types'
@@ -99,6 +99,8 @@ export function GameCanvas({
   const lastPlayerPositionRef = useRef(session.playerPosition)
   const questsRef = useRef(quests)
   questsRef.current = quests
+  useEffect(() => { diagnosticsRef.current?.recordReactCommit() })
+  const recordMiniMapDraw = useCallback(() => diagnosticsRef.current?.recordMiniMapDraw(), [])
 
   useEffect(() => {
     const container = containerRef.current
@@ -167,6 +169,7 @@ export function GameCanvas({
           activeMaskCount: sceneDiagnostics.activeMaskCount,
           textureCount: sceneDiagnostics.textureCount,
           renderLabel: `${sceneDiagnostics.renderModeUsed}/${sceneDiagnostics.fogEdgeMode}`,
+          runtimeLabel: `${sceneDiagnostics.renderer} (${sceneDiagnostics.gpuRenderer}) · ${sceneDiagnostics.canvasPhysicalWidth}×${sceneDiagnostics.canvasPhysicalHeight} · DPR ${sceneDiagnostics.devicePixelRatio} · ${sceneDiagnostics.explorationStrategy} ${sceneDiagnostics.discoveryPointCount}pt/${sceneDiagnostics.exploredGeometryCommands}cmd · ${sceneDiagnostics.fogIsolationMode}`,
         })
         setIsSceneReady(true)
       },
@@ -190,7 +193,7 @@ export function GameCanvas({
       game.destroy(true)
       gameRef.current = null
     }
-  }, [area.id, session.questionRun.assignments, onSessionChange, onPlayerMoved, onNpcDialogueOpen, onWorldObjectStateChange, renderingConfig.kampungRenderMode, renderingConfig.fogEdgeMode])
+  }, [area.id, session.questionRun.assignments, onSessionChange, onPlayerMoved, onNpcDialogueOpen, onWorldObjectStateChange, renderingConfig.kampungRenderMode, renderingConfig.fogEdgeMode, renderingConfig.fogIsolationMode, renderingConfig.minimalScene, renderingConfig.syntheticDiscoveryPointCount])
 
   const getScene = () =>
     gameRef.current?.scene.getScene('movement-prototype') as TestScene | undefined
@@ -372,6 +375,8 @@ export function GameCanvas({
           disabled={interfaceLocked || openClue !== null || openDialogue !== null || openWorldObject !== null}
           onWaypointChange={onWaypointChange}
           onExpandedChange={setIsExplorationMapOpen}
+          disabledRendering={renderingConfig.miniMapDisabled}
+          onMapRender={recordMiniMapDraw}
         />
         {nearbyNpc && !openDialogue && !openClue && !interfaceLocked && !isExplorationMapOpen && (
           <button
