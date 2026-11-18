@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import type { AreaDefinition, AreaObstacle, AreaObstacleVisual, AreaZone } from '../areas/types'
 import { BAZAR_LAMA_AREA_ID, KAMPUNG_ILMU_AREA_ID, PERPUSTAKAAN_HIKMAH_AREA_ID } from '../areas/areaRegistry'
 import { getAreaVisuals, VISUAL_PALETTE } from './visualTheme'
-import { KAMPUNG_OBSTACLE_TEXTURES, KAMPUNG_TEXTURES } from './kampungEnvironmentManifest'
+import { kampungWorldDepth, KAMPUNG_OBSTACLE_TEXTURES, KAMPUNG_TEXTURES } from './kampungEnvironmentManifest'
 
 type EnvironmentGraphics = Phaser.GameObjects.Graphics
 
@@ -137,67 +137,109 @@ function drawLightwell(graphics: EnvironmentGraphics, x: number, y: number, radi
   graphics.fillEllipse(x - radius * 0.22, y - radius * 0.25, radius * 0.75, radius * 0.34)
 }
 
-function addTexturedPathSegment(
+function createOrganicTerrainMask(
   scene: Phaser.Scene,
-  fromX: number,
-  fromY: number,
-  toX: number,
-  toY: number,
+  points: readonly Phaser.Math.Vector2[],
   width: number,
+  phase: number,
 ) {
-  const length = Phaser.Math.Distance.Between(fromX, fromY, toX, toY)
-  const angle = Phaser.Math.Angle.Between(fromX, fromY, toX, toY)
-  scene.add.tileSprite((fromX + toX) / 2, (fromY + toY) / 2, length, width, KAMPUNG_TEXTURES.dirtFill)
-    .setRotation(angle).setDepth(0.2)
-  const normalX = Math.cos(angle + Math.PI / 2) * (width / 2)
-  const normalY = Math.sin(angle + Math.PI / 2) * (width / 2)
-  ;[-1, 1].forEach((side) => {
-    scene.add.tileSprite(
-      (fromX + toX) / 2 + normalX * side,
-      (fromY + toY) / 2 + normalY * side,
-      length,
-      22,
-      KAMPUNG_TEXTURES.dirtEdge,
-    ).setRotation(angle + (side < 0 ? Math.PI : 0)).setDepth(0.21).setAlpha(0.72)
+  const source = new Phaser.GameObjects.Graphics(scene)
+  source.fillStyle(0xffffff, 1)
+  points.slice(0, -1).forEach((point, segmentIndex) => {
+    const next = points[segmentIndex + 1]
+    const distance = point.distance(next)
+    const steps = Math.ceil(distance / 30)
+    for (let step = 0; step <= steps; step += 1) {
+      const progress = step / steps
+      const x = Phaser.Math.Linear(point.x, next.x, progress)
+      const y = Phaser.Math.Linear(point.y, next.y, progress)
+      const irregularity = Math.sin((step + segmentIndex * 11 + phase) * 1.71) * 5
+        + Math.cos((step + phase) * 0.83) * 3
+      source.fillCircle(x, y, width / 2 + irregularity)
+    }
   })
+  const mask = source.createGeometryMask()
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    mask.destroy()
+    source.destroy()
+  })
+  return mask
+}
+
+function createLandscapeVariationMask(scene: Phaser.Scene) {
+  const source = new Phaser.GameObjects.Graphics(scene).fillStyle(0xffffff, 1)
+  const clusters = [
+    [410, 1180, 300, 210], [1810, 330, 350, 250],
+    [1810, 900, 360, 250], [250, 1390, 280, 180],
+  ] as const
+  clusters.forEach(([x, y, width, height], index) => {
+    source.fillEllipse(x, y, width, height)
+    source.fillEllipse(x + 70 - index * 11, y - 55, width * 0.72, height * 0.68)
+    source.fillEllipse(x - 80 + index * 9, y + 45, width * 0.64, height * 0.58)
+  })
+  const mask = source.createGeometryMask()
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    mask.destroy()
+    source.destroy()
+  })
+  return mask
 }
 
 function renderKampungGround(scene: Phaser.Scene, area: AreaDefinition) {
   scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.grassBase)
     .setOrigin(0).setDepth(0)
-  const variationPatches = [
-    [280, 1030, 520, 370], [1510, 80, 610, 510], [1480, 680, 650, 440], [40, 1200, 500, 330],
+  const variation = scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.grassVariation)
+    .setOrigin(0).setDepth(0.05).setAlpha(0.34).setTilePosition(173, 89)
+  variation.setMask(createLandscapeVariationMask(scene))
+
+  const pathCenterline = [
+    new Phaser.Math.Vector2(area.spawn.x, area.spawn.y),
+    new Phaser.Math.Vector2(area.width / 2, area.height / 2),
+    new Phaser.Math.Vector2(area.width * 0.78, area.height * 0.3),
   ] as const
-  variationPatches.forEach(([x, y, width, height], index) => {
-    scene.add.tileSprite(x, y, width, height, KAMPUNG_TEXTURES.grassVariation)
-      .setOrigin(0).setDepth(0.05).setAlpha(index % 2 === 0 ? 0.36 : 0.28)
-  })
-  addTexturedPathSegment(scene, area.spawn.x, area.spawn.y, area.width / 2, area.height / 2, 126)
-  addTexturedPathSegment(scene, area.width / 2, area.height / 2, area.width * 0.78, area.height * 0.3, 126)
+  const pathEdge = scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.dirtEdge)
+    .setOrigin(0).setDepth(0.18).setAlpha(0.52).setTilePosition(91, 147)
+  pathEdge.setMask(createOrganicTerrainMask(scene, pathCenterline, 154, 7))
+  const pathFill = scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.dirtFill)
+    .setOrigin(0).setDepth(0.19).setTilePosition(37, 61)
+  pathFill.setMask(createOrganicTerrainMask(scene, pathCenterline, 126, 19))
 
   const decorationKeys = [
     KAMPUNG_TEXTURES.grassTuft, KAMPUNG_TEXTURES.wildflowers,
     KAMPUNG_TEXTURES.shrub, KAMPUNG_TEXTURES.smallRocks,
   ] as const
   const decorationPoints = [
-    [180, 500], [410, 610], [810, 370], [1130, 250], [1430, 560], [2050, 570],
-    [1440, 1130], [1210, 1460], [540, 1450], [210, 1090], [2080, 1160], [1510, 1470],
+    [145, 470], [190, 650], [790, 355], [840, 890], [1120, 265], [1410, 610],
+    [1530, 350], [2070, 560], [1490, 1160], [1230, 1480], [545, 1480], [175, 1080],
+    [2080, 1160], [1510, 1470], [620, 1180], [1160, 1190], [1480, 720], [2110, 1390],
+    [90, 850], [850, 1160], [1260, 1030], [2020, 390], [1600, 1120], [430, 940],
   ] as const
   decorationPoints.forEach(([x, y], index) => {
     scene.add.image(x, y, decorationKeys[index % decorationKeys.length])
-      .setOrigin(0.5, 1).setScale(0.34 + (index % 3) * 0.035).setDepth(1)
+      .setOrigin(0.5, 1).setScale(0.29 + (index % 4) * 0.028).setDepth(kampungWorldDepth(y, -4))
   })
-  scene.add.image(362, 613, KAMPUNG_TEXTURES.trailSign).setOrigin(0.5, 1).setScale(0.23).setDepth(4)
-  scene.add.text(362, 573, 'Jejak Ilmu', {
-    color: '#fff2c9', fontFamily: 'Georgia, serif', fontSize: '12px', fontStyle: 'bold',
-    backgroundColor: '#3d2a1dcc', padding: { x: 5, y: 3 },
-  }).setOrigin(0.5).setDepth(5)
+  scene.add.image(362, 613, KAMPUNG_TEXTURES.trailSign).setOrigin(0.5, 1).setScale(0.23)
+    .setDepth(kampungWorldDepth(613))
+  scene.add.text(362, 552, 'Jejak Ilmu', {
+    color: '#fff2c9', fontFamily: 'Georgia, serif', fontSize: '11px', fontStyle: 'bold',
+    padding: { x: 3, y: 2 },
+  }).setOrigin(0.5).setDepth(kampungWorldDepth(613, 1))
+}
+
+function addKampungContactShadow(scene: Phaser.Scene, obstacle: AreaObstacle) {
+  const centerX = obstacle.x + obstacle.width / 2 + 8
+  const bottomY = obstacle.y + obstacle.height
+  const width = Math.max(48, obstacle.width * 0.78)
+  scene.add.ellipse(centerX, bottomY + 6, width, Math.min(28, obstacle.height * 0.2), 0x07101d, 0.22)
+    .setDepth(kampungWorldDepth(bottomY, -2))
 }
 
 function renderKampungObstacle(scene: Phaser.Scene, obstacle: AreaObstacle, index: number) {
   const mapping = KAMPUNG_OBSTACLE_TEXTURES[index]
   if (!mapping) return false
   const keys = typeof mapping === 'string' ? [mapping] : mapping
+  if (keys.some((key) => !scene.textures.exists(key))) return false
+  addKampungContactShadow(scene, obstacle)
   const segmentHeight = obstacle.height / keys.length
   keys.forEach((key, pieceIndex) => {
     const texture = scene.textures.get(key).getSourceImage() as { width: number, height: number }
@@ -208,7 +250,8 @@ function renderKampungObstacle(scene: Phaser.Scene, obstacle: AreaObstacle, inde
       obstacle.x + obstacle.width / 2,
       obstacle.y + segmentHeight * (pieceIndex + 1),
       key,
-    ).setOrigin(0.5, 1).setScale(scale).setDepth(4)
+    ).setOrigin(0.5, 1).setScale(scale)
+      .setDepth(kampungWorldDepth(obstacle.y + segmentHeight * (pieceIndex + 1)))
   })
   return true
 }
@@ -227,21 +270,24 @@ const ZONE_COLORS: Record<AreaZone['environment'], number> = {
   study: 0x6e654f,
 }
 
-function drawZones(scene: Phaser.Scene, graphics: EnvironmentGraphics, zones: AreaZone[]) {
+function drawZones(scene: Phaser.Scene, graphics: EnvironmentGraphics, area: AreaDefinition) {
+  const zones = area.zones
   zones.forEach((zone) => {
     const color = ZONE_COLORS[zone.environment]
-    graphics.fillStyle(color, 0.13)
-    graphics.fillRoundedRect(zone.x, zone.y, zone.width, zone.height, 24)
-    graphics.lineStyle(3, color, 0.34)
-    graphics.strokeRoundedRect(zone.x, zone.y, zone.width, zone.height, 24)
+    if (area.id !== KAMPUNG_ILMU_AREA_ID) {
+      graphics.fillStyle(color, 0.13)
+      graphics.fillRoundedRect(zone.x, zone.y, zone.width, zone.height, 24)
+      graphics.lineStyle(3, color, 0.34)
+      graphics.strokeRoundedRect(zone.x, zone.y, zone.width, zone.height, 24)
+    }
     scene.add.text(zone.x + 22, zone.y + 20, zone.nameBM, {
-      color: '#fff7df',
+      color: area.id === KAMPUNG_ILMU_AREA_ID ? '#f7e8bc' : '#fff7df',
       fontFamily: 'Georgia, serif',
-      fontSize: '18px',
+      fontSize: area.id === KAMPUNG_ILMU_AREA_ID ? '14px' : '18px',
       fontStyle: 'bold',
-      backgroundColor: '#0b1628aa',
-      padding: { x: 9, y: 5 },
-    }).setDepth(2)
+      backgroundColor: area.id === KAMPUNG_ILMU_AREA_ID ? '#263a2db8' : '#0b1628aa',
+      padding: area.id === KAMPUNG_ILMU_AREA_ID ? { x: 7, y: 4 } : { x: 9, y: 5 },
+    }).setDepth(area.id === KAMPUNG_ILMU_AREA_ID ? 6 : 2)
   })
 }
 
@@ -264,7 +310,7 @@ export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition) {
   scene.add.rectangle(0, 0, area.width, area.height, visuals.ground).setOrigin(0)
   if (area.id === KAMPUNG_ILMU_AREA_ID) renderKampungGround(scene, area)
   const ground = scene.add.graphics()
-  drawZones(scene, ground, area.zones)
+  drawZones(scene, ground, area)
   if (area.id !== KAMPUNG_ILMU_AREA_ID) {
     drawFloorPattern(ground, area, area.gridColor)
     ground.lineStyle(42, visuals.path, 0.34)
@@ -277,8 +323,8 @@ export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition) {
 
   const environment = scene.add.graphics()
   area.obstacles.forEach((obstacle, index) => {
-    drawGroundShadow(environment, obstacle, visuals.shadow)
     if (area.id === KAMPUNG_ILMU_AREA_ID && renderKampungObstacle(scene, obstacle, index)) return
+    drawGroundShadow(environment, obstacle, visuals.shadow)
     if (obstacle.visualType) drawByVisualType(environment, obstacle, obstacle.visualType, visuals.structureTrim)
     else if (area.id === PERPUSTAKAAN_HIKMAH_AREA_ID) {
       if (index <= 2 || index === 13 || index === 14) drawWall(environment, obstacle, visuals.structureTrim)
@@ -292,7 +338,7 @@ export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition) {
     } else drawVillageStructure(environment, obstacle, visuals.structureTrim)
   })
 
-  area.landmarks.forEach((landmark) => {
+  if (area.id !== KAMPUNG_ILMU_AREA_ID) area.landmarks.forEach((landmark) => {
     if (area.id === PERPUSTAKAAN_HIKMAH_AREA_ID && landmark.type === 'circle') drawLightwell(environment, landmark.x, landmark.y, landmark.size)
     else if (landmark.type === 'circle') {
       environment.fillStyle(landmark.color, 0.9)

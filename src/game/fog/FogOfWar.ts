@@ -9,6 +9,7 @@ const MAX_DISCOVERY_STEP = 32
 export class FogOfWar {
   private readonly exploredMaskSource: Phaser.GameObjects.Graphics
   private readonly visibleMaskSource: Phaser.GameObjects.Graphics
+  private readonly visibleFeather?: Phaser.GameObjects.Graphics
   private lastVisiblePosition?: Phaser.Math.Vector2
   private lastDiscoveredPosition?: Phaser.Math.Vector2
   private lastVisionRadius?: number
@@ -20,6 +21,7 @@ export class FogOfWar {
     mapHeight: number,
     initialDiscoveryPoints: readonly FogDiscoveryPoint[] = [],
     private readonly onDiscoveryChange?: (points: FogDiscoveryPoint[]) => void,
+    private readonly useSoftVisibleEdge = false,
   ) {
     this.exploredMaskSource = new Phaser.GameObjects.Graphics(scene)
     this.visibleMaskSource = new Phaser.GameObjects.Graphics(scene)
@@ -33,6 +35,10 @@ export class FogOfWar {
       .rectangle(0, 0, mapWidth, mapHeight, 0x02050a, FOG_APPEARANCE.unexploredOpacity)
       .setOrigin(0)
       .setDepth(91)
+
+    if (useSoftVisibleEdge) {
+      this.visibleFeather = scene.add.graphics().setDepth(90.5)
+    }
 
     const visibleMask = this.visibleMaskSource.createGeometryMask()
     visibleMask.invertAlpha = true
@@ -60,6 +66,19 @@ export class FogOfWar {
       this.lastVisiblePosition.distance(position) >= VISIBILITY_UPDATE_DISTANCE
     ) {
       this.visibleMaskSource.clear().fillStyle(0xffffff).fillCircle(playerX, playerY, visionRadius)
+      if (this.visibleFeather) {
+        this.visibleFeather.clear()
+        const featherBands = [
+          { inset: 5, width: 10, alpha: 0.2 },
+          { inset: 15, width: 10, alpha: 0.14 },
+          { inset: 25, width: 10, alpha: 0.09 },
+          { inset: 35, width: 10, alpha: 0.045 },
+        ] as const
+        featherBands.forEach(({ inset, width, alpha }) => {
+          this.visibleFeather?.lineStyle(width, 0x07101d, alpha)
+            .strokeCircle(playerX, playerY, Math.max(1, visionRadius - inset))
+        })
+      }
       this.lastVisiblePosition = position.clone()
     }
 

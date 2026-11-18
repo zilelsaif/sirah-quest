@@ -8,7 +8,8 @@ import type {
 } from './types'
 import { applyWorldObjectInteraction } from './worldObjectRules'
 import { attemptLandmarkDiscovery } from './landmarkDiscovery'
-import { KAMPUNG_TEXTURES } from '../visuals/kampungEnvironmentManifest'
+import { kampungWorldDepth, KAMPUNG_TEXTURES } from '../visuals/kampungEnvironmentManifest'
+import { KAMPUNG_ILMU_AREA_ID } from '../areas/areaRegistry'
 
 interface WorldObjectRuntime {
   definition: WorldObjectDefinition
@@ -46,11 +47,13 @@ export class WorldObjectManager {
     this.interactionPrompt = scene.add.text(0, 0, 'E / Tap: Interaksi', {
       color: '#fff7df', fontFamily: 'system-ui, sans-serif', fontSize: '14px', fontStyle: 'bold',
       backgroundColor: '#66431fe6', padding: { x: 9, y: 6 },
-    }).setOrigin(0.5, 1).setDepth(25).setVisible(false).setInteractive({ useHandCursor: true })
+    }).setOrigin(0.5, 1).setDepth(definitions.some(({ areaId }) => areaId === KAMPUNG_ILMU_AREA_ID) ? 80 : 25)
+      .setVisible(false).setInteractive({ useHandCursor: true })
     this.feedbackText = scene.add.text(0, 0, '', {
       color: '#fff7df', fontFamily: 'system-ui, sans-serif', fontSize: '13px', fontStyle: 'bold',
       backgroundColor: '#172033dd', padding: { x: 8, y: 5 },
-    }).setOrigin(0.5).setDepth(26).setVisible(false)
+    }).setOrigin(0.5).setDepth(definitions.some(({ areaId }) => areaId === KAMPUNG_ILMU_AREA_ID) ? 81 : 26)
+      .setVisible(false)
   }
 
   update(playerX: number, playerY: number, visionRadius: number) {
@@ -202,7 +205,10 @@ export class WorldObjectManager {
       stateShape = mark
       pieces.push(post, board, mark)
     }
-    const visual = this.scene.add.container(definition.position.x, definition.position.y, pieces).setDepth(7)
+    const visual = this.scene.add.container(definition.position.x, definition.position.y, pieces)
+      .setDepth(definition.areaId === KAMPUNG_ILMU_AREA_ID
+        ? kampungWorldDepth(definition.position.y)
+        : 7)
     pieces.forEach((piece) => piece.setData('worldObjectId', definition.id))
     visual.setData('worldObjectId', definition.id).setInteractive(
       new Phaser.Geom.Circle(0, 0, 34), Phaser.Geom.Circle.Contains,

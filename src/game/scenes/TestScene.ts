@@ -28,7 +28,7 @@ import {
   preloadCharacterVisuals,
   type CharacterDirection,
 } from '../visuals/characterVisualManifest'
-import { preloadKampungEnvironmentVisuals } from '../visuals/kampungEnvironmentManifest'
+import { kampungWorldDepth, preloadKampungEnvironmentVisuals } from '../visuals/kampungEnvironmentManifest'
 import { KAMPUNG_ILMU_AREA_ID } from '../areas/areaRegistry'
 
 export class TestScene extends Phaser.Scene {
@@ -105,6 +105,7 @@ export class TestScene extends Phaser.Scene {
       (points) => {
         this.fogDiscoveryPoints = points
       },
+      this.area.id === KAMPUNG_ILMU_AREA_ID,
     )
     this.fogOfWar.update(player.x, player.y, this.effectiveStats.visionRadius)
 
@@ -237,6 +238,7 @@ export class TestScene extends Phaser.Scene {
 
     if (this.player && previousPlayerPosition) {
       this.updatePlayerVisual(previousPlayerPosition, delta)
+      if (this.area.id === KAMPUNG_ILMU_AREA_ID) this.player.setDepth(kampungWorldDepth(this.player.y))
     }
 
     if (this.player) {
@@ -370,6 +372,7 @@ export class TestScene extends Phaser.Scene {
     const direction = this.add.triangle(0, -26, -5, 7, 5, 7, 0, -4, VISUAL_PALETTE.parchment)
     const fallbackParts = [cloak, scarf, head, satchel, direction]
     const player = this.add.container(x, y, [shadow, ...fallbackParts]).setDepth(10)
+    if (this.area.id === KAMPUNG_ILMU_AREA_ID) player.setDepth(kampungWorldDepth(y))
     if (this.area.id === PLAYER_KAMPUNG_VISUAL.areaId) {
       const sprite = createCharacterSprite(this, PLAYER_KAMPUNG_VISUAL)
       if (sprite) {

@@ -38,6 +38,13 @@ export const KAMPUNG_TEXTURES = {
   stoneWall: 'n09c-ki-p06-stone-wall',
 } as const
 
+export const KAMPUNG_WORLD_DEPTH_BASE = 10
+export const KAMPUNG_WORLD_DEPTH_SCALE = 0.03
+
+export function kampungWorldDepth(worldY: number, offset = 0) {
+  return KAMPUNG_WORLD_DEPTH_BASE + worldY * KAMPUNG_WORLD_DEPTH_SCALE + offset
+}
+
 const KAMPUNG_TEXTURE_URLS: ReadonlyArray<readonly [string, string]> = [
   [KAMPUNG_TEXTURES.grassBase, grassBaseUrl], [KAMPUNG_TEXTURES.grassVariation, grassVariationUrl],
   [KAMPUNG_TEXTURES.dirtFill, dirtFillUrl], [KAMPUNG_TEXTURES.dirtEdge, dirtEdgeUrl],

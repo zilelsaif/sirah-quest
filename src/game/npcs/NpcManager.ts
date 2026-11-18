@@ -1,6 +1,8 @@
 import Phaser from 'phaser'
 import { createNpcVisual } from './NpcRenderer'
 import type { NpcDefinition } from './types'
+import { KAMPUNG_ILMU_AREA_ID } from '../areas/areaRegistry'
+import { kampungWorldDepth } from '../visuals/kampungEnvironmentManifest'
 
 interface NpcRuntime {
   definition: NpcDefinition
@@ -21,10 +23,13 @@ export class NpcManager {
     private readonly onDialogueChange: (npc: NpcDefinition | null) => void,
     private readonly onMovementLockChange: (locked: boolean) => void,
   ) {
-    this.npcs = definitions.map((definition) => ({
-      definition,
-      visual: createNpcVisual(scene, definition),
-    }))
+    this.npcs = definitions.map((definition) => {
+      const visual = createNpcVisual(scene, definition)
+      if (definition.areaId === KAMPUNG_ILMU_AREA_ID) {
+        visual.setDepth(kampungWorldDepth(definition.position.y))
+      }
+      return { definition, visual }
+    })
     this.interactionPrompt = scene.add.text(0, 0, 'E / Tap: Bercakap', {
       color: '#fff7df',
       fontFamily: 'system-ui, sans-serif',
@@ -34,7 +39,7 @@ export class NpcManager {
       padding: { x: 9, y: 6 },
     })
       .setOrigin(0.5, 1)
-      .setDepth(25)
+      .setDepth(definitions.some(({ areaId }) => areaId === KAMPUNG_ILMU_AREA_ID) ? 80 : 25)
       .setVisible(false)
       .setInteractive({ useHandCursor: true })
   }

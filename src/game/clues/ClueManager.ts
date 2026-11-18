@@ -3,6 +3,7 @@ import type { QuestionAssignment } from '../questions/types'
 import type { ClueSessionState } from '../session/types'
 import type { ClueCounts, ClueDefinition, CluePanelData, ClueState } from './types'
 import { VISUAL_PALETTE } from '../visuals/visualTheme'
+import { KAMPUNG_ILMU_AREA_ID } from '../areas/areaRegistry'
 
 interface ClueRuntime {
   definition: ClueDefinition
@@ -53,7 +54,7 @@ export class ClueManager {
         padding: { x: 9, y: 6 },
       })
       .setOrigin(0.5, 1)
-      .setDepth(25)
+      .setDepth(scene.registry.get('areaId') === KAMPUNG_ILMU_AREA_ID ? 80 : 25)
       .setVisible(false)
       .setInteractive({ useHandCursor: true })
   }
@@ -228,7 +229,7 @@ export class ClueManager {
 
     const visual = this.scene.add
       .container(definition.x, definition.y, [base, glow, marker, symbol])
-      .setDepth(8)
+      .setDepth(this.scene.registry.get('areaId') === KAMPUNG_ILMU_AREA_ID ? 70 : 8)
       .setVisible((initialState?.state ?? definition.state) !== 'hidden')
 
     marker.setData('clueId', definition.id)
@@ -271,7 +272,7 @@ export class ClueManager {
         padding: { x: 7, y: 4 },
       })
       .setOrigin(0.5)
-      .setDepth(24)
+      .setDepth(this.scene.registry.get('areaId') === KAMPUNG_ILMU_AREA_ID ? 80 : 24)
 
     this.scene.tweens.add({
       targets: notice,
