@@ -50,6 +50,10 @@ import { ImmersiveModeControl } from './game/ui/ImmersiveModeControl'
 import type { ImmersiveMode } from './game/ui/ImmersiveModeControl'
 import { AdventureHUD } from './game/ui/AdventureHUD'
 import type { CameraViewMode } from './game/camera/cameraConfig'
+import {
+  PERFORMANCE_MONITOR_INCLUDED,
+  PERFORMANCE_MONITOR_PREFERENCE_KEY,
+} from './game/performance/FrameDiagnostics'
 
 const GameCanvas = lazy(() => import('./game/GameCanvas').then((module) => ({ default: module.GameCanvas })))
 const ReviewPanel = lazy(() => import('./game/review/ReviewPanel').then((module) => ({ default: module.ReviewPanel })))
@@ -103,6 +107,9 @@ function App() {
   const [immersiveMode, setImmersiveMode] = useState<ImmersiveMode>('windowed')
   const [isAdventureMenuOpen, setIsAdventureMenuOpen] = useState(false)
   const [cameraViewMode, setCameraViewMode] = useState<CameraViewMode>('normal')
+  const [performanceMonitorEnabled, setPerformanceMonitorEnabled] = useState(() =>
+    PERFORMANCE_MONITOR_INCLUDED && localStorage.getItem(PERFORMANCE_MONITOR_PREFERENCE_KEY) === 'true',
+  )
   const [mapViewMode, setMapViewMode] = useState<'region' | 'location'>('region')
   const [initialLoad] = useState<SaveLoadResult>(() => loadGameSave())
   const [initialState] = useState<PersistedGameState>(() => initialLoad.state ?? createFreshState())
@@ -563,10 +570,15 @@ function App() {
         cameraViewMode={cameraViewMode}
         mapViewMode={mapViewMode}
         visionRadius={effectiveStats.visionRadius}
+        performanceMonitorEnabled={performanceMonitorEnabled}
         saveStatus={[saveMessage || 'Kemajuan disimpan secara automatik pada peranti ini.', manualMessage].filter(Boolean).join(' · ')}
         manualSaveStatus={`Simpanan Manual: ${manualSave.status === 'loaded' && manualSave.metadata ? `${new Date(manualSave.metadata.savedAt).toLocaleString('ms-MY')} · ${manualSave.metadata.locationNameBM} · Tahap ${manualSave.metadata.level}` : (manualSave.message ?? 'Tiada simpanan manual')}`}
         immersiveControl={<ImmersiveModeControl hostRef={appShellRef} mode={immersiveMode} escapeBlocked={isInterfaceLocked || isGameOverlayOpen || isWorldContextMenuOpen || isTutorialOpen} onModeChange={setImmersiveMode} />}
         audioControl={<BackgroundMusicPlayer />}
+        onPerformanceMonitorChange={(enabled) => {
+          setPerformanceMonitorEnabled(enabled)
+          localStorage.setItem(PERFORMANCE_MONITOR_PREFERENCE_KEY, String(enabled))
+        }}
         onMenuOpenChange={setIsAdventureMenuOpen}
         onOpenQuestLog={openQuestLog}
         onOpenJournal={openJournal}
@@ -639,6 +651,7 @@ function App() {
               onLandmarkDiscovered={recordLandmarkDiscovery}
               onOverlayStateChange={setIsGameOverlayOpen}
               cameraViewMode={cameraViewMode}
+              performanceMonitorEnabled={performanceMonitorEnabled}
               onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
                 if (waypoint) return { ...current, [currentArea.id]: waypoint }
                 const next = { ...current }

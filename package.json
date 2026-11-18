@@ -36,7 +36,8 @@
     "n09c:verify": "node scripts/verify-n09c-environment-integration.mjs",
     "n09d:verify": "node scripts/verify-n09d-environment-refinement.mjs",
     "n09d-h1:verify": "node scripts/verify-n09d-h1-level-design.mjs",
-    "n09e:verify": "node scripts/verify-n09e-final-environment.mjs"
+    "n09e:verify": "node scripts/verify-n09e-final-environment.mjs",
+    "n09f:verify": "node scripts/verify-n09f-performance-map.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

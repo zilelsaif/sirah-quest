@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { getCurrentLevelProgress } from '../progression/PlayerProgression'
 import type { PlayerProgressionState } from '../progression/types'
 import type { CameraViewMode } from '../camera/cameraConfig'
+import { PERFORMANCE_MONITOR_INCLUDED } from '../performance/FrameDiagnostics'
 
 interface AdventureHUDProps {
   title: string
@@ -16,6 +17,7 @@ interface AdventureHUDProps {
   cameraViewMode: CameraViewMode
   mapViewMode: 'region' | 'location'
   visionRadius: number
+  performanceMonitorEnabled: boolean
   saveStatus: string
   manualSaveStatus: string
   immersiveControl: ReactNode
@@ -29,6 +31,7 @@ interface AdventureHUDProps {
   onOpenReview: () => void
   onCameraViewModeChange: (mode: CameraViewMode) => void
   onMapViewModeChange: (mode: 'region' | 'location') => void
+  onPerformanceMonitorChange: (enabled: boolean) => void
   onManualSave: () => void
   onManualLoad: () => void
   manualLoadDisabled: boolean
@@ -137,6 +140,14 @@ export function AdventureHUD(props: AdventureHUDProps) {
                 <div className="adventure-menu__actions"><button type="button" aria-pressed={props.mapViewMode === 'region'} onClick={() => props.onMapViewModeChange('region')}>Rantau</button><button type="button" aria-pressed={props.mapViewMode === 'location'} onClick={() => props.onMapViewModeChange('location')}>Lokasi</button></div>
               </>}
               {props.audioControl}
+              {PERFORMANCE_MONITOR_INCLUDED && <label className="adventure-menu__toggle">
+                <input
+                  type="checkbox"
+                  checked={props.performanceMonitorEnabled}
+                  onChange={(event) => props.onPerformanceMonitorChange(event.target.checked)}
+                />
+                <span>Monitor FPS pembangunan</span>
+              </label>}
             </div></details>
             <details><summary>Simpanan</summary><div className="adventure-menu__section">
               <small role="status">{props.saveStatus}</small><small>{props.manualSaveStatus}</small>

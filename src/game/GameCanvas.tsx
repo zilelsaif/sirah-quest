@@ -24,6 +24,11 @@ import type { QuestAcceptanceResult } from './quests/QuestManager'
 import type { QuestSessionState } from './quests/types'
 import type { WorldObjectDefinition, WorldObjectPanelData, WorldObjectSessionState } from './worldObjects/types'
 import { WorldObjectPanel } from './worldObjects/WorldObjectPanel'
+import {
+  FrameDiagnostics,
+  FrameDiagnosticsOverlay,
+  PERFORMANCE_MONITOR_INCLUDED,
+} from './performance/FrameDiagnostics'
 
 interface GameCanvasProps {
   area: AreaDefinition
@@ -45,6 +50,7 @@ interface GameCanvasProps {
   onLandmarkDiscovered: (landmarkId: string) => void
   onOverlayStateChange: (open: boolean) => void
   cameraViewMode: CameraViewMode
+  performanceMonitorEnabled: boolean
 }
 
 export function GameCanvas({
@@ -67,9 +73,12 @@ export function GameCanvas({
   onLandmarkDiscovered,
   onOverlayStateChange,
   cameraViewMode,
+  performanceMonitorEnabled,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
+  const diagnosticsRef = useRef<FrameDiagnostics | null>(null)
+  if (!diagnosticsRef.current) diagnosticsRef.current = new FrameDiagnostics()
   const resetRequestedRef = useRef(false)
   const [openClue, setOpenClue] = useState<CluePanelData | null>(null)
   const [selectedClueOptionId, setSelectedClueOptionId] = useState('')
@@ -148,6 +157,13 @@ export function GameCanvas({
       },
       () => { if (!disposed) setIsSceneReady(true) },
     )
+    const diagnostics = diagnosticsRef.current
+    const recordFrame = (_time: number, delta: number) => diagnostics?.record(delta)
+    const pauseDiagnostics = () => diagnostics?.pause()
+    if (PERFORMANCE_MONITOR_INCLUDED) {
+      game.events.on('step', recordFrame)
+      document.addEventListener('visibilitychange', pauseDiagnostics)
+    }
     gameRef.current = game
     resetRequestedRef.current = false
 
@@ -155,6 +171,8 @@ export function GameCanvas({
       // Phaser emits SHUTDOWN synchronously from destroy(). Ignore callbacks from
       // the retiring scene so it cannot overwrite a freshly restored save/area.
       disposed = true
+      game.events.off('step', recordFrame)
+      document.removeEventListener('visibilitychange', pauseDiagnostics)
       game.destroy(true)
       gameRef.current = null
     }
@@ -328,6 +346,9 @@ export function GameCanvas({
           role="application"
           tabIndex={0}
         />
+        {PERFORMANCE_MONITOR_INCLUDED && performanceMonitorEnabled && diagnosticsRef.current && (
+          <FrameDiagnosticsOverlay diagnostics={diagnosticsRef.current} />
+        )}
         <ExplorationNavigation
           area={area}
           session={session}

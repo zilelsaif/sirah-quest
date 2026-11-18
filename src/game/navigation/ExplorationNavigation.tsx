@@ -4,6 +4,7 @@ import { Pathfinder } from './Pathfinder'
 import type { AreaPlaySession, PlayerPosition } from '../session/types'
 import type { QuestNavigationState, QuestNavigationTarget } from './questNavigation'
 import type { BilingualText } from '../questions/types'
+import { getStaticAreaMap } from './illustratedAreaMap'
 
 interface ExplorationNavigationProps {
   area: AreaDefinition
@@ -37,51 +38,6 @@ function isExplored(session: AreaPlaySession, position: PlayerPosition) {
   return session.fogDiscoveryPoints.some(
     (point) => Math.hypot(position.x - point.x, position.y - point.y) <= point.radius,
   )
-}
-
-function drawTerrain(
-  context: CanvasRenderingContext2D,
-  area: AreaDefinition,
-  scaleX: number,
-  scaleY: number,
-  visible: boolean,
-) {
-  context.fillStyle = visible ? '#315f54' : '#183830'
-  context.fillRect(0, 0, area.width * scaleX, area.height * scaleY)
-
-  context.strokeStyle = visible ? 'rgba(244, 213, 141, 0.16)' : 'rgba(219, 228, 240, 0.08)'
-  context.lineWidth = 1
-  const gridStep = 160
-  for (let x = gridStep; x < area.width; x += gridStep) {
-    context.beginPath()
-    context.moveTo(x * scaleX, 0)
-    context.lineTo(x * scaleX, area.height * scaleY)
-    context.stroke()
-  }
-  for (let y = gridStep; y < area.height; y += gridStep) {
-    context.beginPath()
-    context.moveTo(0, y * scaleY)
-    context.lineTo(area.width * scaleX, y * scaleY)
-    context.stroke()
-  }
-
-  context.fillStyle = visible ? '#8d704f' : '#594c3c'
-  context.strokeStyle = visible ? '#d4b77b' : '#75664f'
-  context.lineWidth = 1.5
-  area.obstacles.forEach((obstacle) => {
-    context.fillRect(
-      obstacle.x * scaleX,
-      obstacle.y * scaleY,
-      obstacle.width * scaleX,
-      obstacle.height * scaleY,
-    )
-    context.strokeRect(
-      obstacle.x * scaleX,
-      obstacle.y * scaleY,
-      obstacle.width * scaleX,
-      obstacle.height * scaleY,
-    )
-  })
 }
 
 function clipDiscovery(
@@ -122,13 +78,16 @@ function renderMap(
 
   const scaleX = canvas.width / area.width
   const scaleY = canvas.height / area.height
+  const staticBaseMap = getStaticAreaMap(area, canvas.width, canvas.height)
   context.clearRect(0, 0, canvas.width, canvas.height)
   context.fillStyle = '#030711'
   context.fillRect(0, 0, canvas.width, canvas.height)
 
   context.save()
   clipDiscovery(context, session.fogDiscoveryPoints, scaleX, scaleY)
-  drawTerrain(context, area, scaleX, scaleY, false)
+  context.drawImage(staticBaseMap, 0, 0)
+  context.fillStyle = 'rgba(3, 12, 18, 0.42)'
+  context.fillRect(0, 0, canvas.width, canvas.height)
   context.restore()
 
   context.save()
@@ -143,7 +102,7 @@ function renderMap(
     Math.PI * 2,
   )
   context.clip()
-  drawTerrain(context, area, scaleX, scaleY, true)
+  context.drawImage(staticBaseMap, 0, 0)
   context.restore()
 
   area.clues.forEach((clue) => {
