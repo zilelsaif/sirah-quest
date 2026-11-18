@@ -31,7 +31,7 @@ const [scene, renderer, environmentManifest, manager, packageJson, saveConfig] =
 ])
 assert.match(scene, /this\.area\.id === KAMPUNG_ILMU_AREA_ID\) preloadKampungEnvironmentVisuals\(this\)/)
 assert.match(renderer, /renderKampungGround\(scene, area\)/)
-assert.match(renderer, /renderKampungObstacle\(scene, obstacle, index\)/)
+assert.match(renderer, /renderKampungObstacle\(scene, obstacle, index, bakedKampung\)/)
 assert.match(renderer, /setScale\(scale\)/)
 assert.doesNotMatch(renderer, /setDisplaySize/)
 assert.match(environmentManifest, /KAMPUNG_OBSTACLE_TEXTURES/)

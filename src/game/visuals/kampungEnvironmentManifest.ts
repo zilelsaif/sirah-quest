@@ -22,6 +22,7 @@ import toolChestClosedUrl from '../../assets/environments/kampung-ilmu/ki-p03_to
 import toolChestOpenUrl from '../../assets/environments/kampung-ilmu/ki-p04_tool_chest_open.png'
 import raisedPlanterUrl from '../../assets/environments/kampung-ilmu/ki-p05_raised_planter.png'
 import stoneWallUrl from '../../assets/environments/kampung-ilmu/ki-p06_stone_wall.png'
+import bakedBackgroundUrl from '../../assets/environments/kampung-ilmu/kampung-ilmu-background.webp'
 
 export const KAMPUNG_TEXTURES = {
   grassBase: 'n09c-ki-g01-grass-base', grassVariation: 'n09c-ki-g02-grass-variation',
@@ -36,6 +37,7 @@ export const KAMPUNG_TEXTURES = {
   trailSign: 'n09c-ki-p02-trail-sign', toolChestClosed: 'n09c-ki-p03-tool-chest-closed',
   toolChestOpen: 'n09c-ki-p04-tool-chest-open', raisedPlanter: 'n09c-ki-p05-raised-planter',
   stoneWall: 'n09c-ki-p06-stone-wall',
+  bakedBackground: 'n09g-kampung-ilmu-background',
 } as const
 
 export const KAMPUNG_WORLD_DEPTH_BASE = 10
@@ -66,6 +68,9 @@ export const KAMPUNG_RESERVED_TEXTURE_URLS = {
 } as const
 
 export function preloadKampungEnvironmentVisuals(scene: Phaser.Scene) {
+  if (!scene.textures.exists(KAMPUNG_TEXTURES.bakedBackground)) {
+    scene.load.image(KAMPUNG_TEXTURES.bakedBackground, bakedBackgroundUrl)
+  }
   KAMPUNG_TEXTURE_URLS.forEach(([key, url]) => {
     if (!scene.textures.exists(key)) scene.load.image(key, url)
   })

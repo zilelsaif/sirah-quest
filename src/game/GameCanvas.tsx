@@ -29,6 +29,7 @@ import {
   FrameDiagnosticsOverlay,
   PERFORMANCE_MONITOR_INCLUDED,
 } from './performance/FrameDiagnostics'
+import type { DevelopmentRenderingConfig } from './performance/renderingConfig'
 
 interface GameCanvasProps {
   area: AreaDefinition
@@ -51,6 +52,7 @@ interface GameCanvasProps {
   onOverlayStateChange: (open: boolean) => void
   cameraViewMode: CameraViewMode
   performanceMonitorEnabled: boolean
+  renderingConfig: DevelopmentRenderingConfig
 }
 
 export function GameCanvas({
@@ -74,6 +76,7 @@ export function GameCanvas({
   onOverlayStateChange,
   cameraViewMode,
   performanceMonitorEnabled,
+  renderingConfig,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameRef = useRef<Phaser.Game | null>(null)
@@ -121,6 +124,7 @@ export function GameCanvas({
       },
       effectiveStats,
       cameraViewMode,
+      renderingConfig,
       setNearbyNpc,
       (npc) => {
         if (disposed) return
@@ -155,7 +159,17 @@ export function GameCanvas({
           : null
         setOpenWorldObject(object)
       },
-      () => { if (!disposed) setIsSceneReady(true) },
+      (sceneDiagnostics) => {
+        if (disposed) return
+        diagnosticsRef.current?.setSceneMetrics({
+          sceneLoadMs: sceneDiagnostics.sceneLoadMs,
+          displayObjectCount: sceneDiagnostics.displayObjectCount,
+          activeMaskCount: sceneDiagnostics.activeMaskCount,
+          textureCount: sceneDiagnostics.textureCount,
+          renderLabel: `${sceneDiagnostics.renderModeUsed}/${sceneDiagnostics.fogEdgeMode}`,
+        })
+        setIsSceneReady(true)
+      },
     )
     const diagnostics = diagnosticsRef.current
     const recordFrame = (_time: number, delta: number) => diagnostics?.record(delta)
@@ -176,7 +190,7 @@ export function GameCanvas({
       game.destroy(true)
       gameRef.current = null
     }
-  }, [area.id, session.questionRun.assignments, onSessionChange, onPlayerMoved, onNpcDialogueOpen, onWorldObjectStateChange])
+  }, [area.id, session.questionRun.assignments, onSessionChange, onPlayerMoved, onNpcDialogueOpen, onWorldObjectStateChange, renderingConfig.kampungRenderMode, renderingConfig.fogEdgeMode])
 
   const getScene = () =>
     gameRef.current?.scene.getScene('movement-prototype') as TestScene | undefined

@@ -79,7 +79,7 @@ try {
   assert.match(panel, /aria-expanded=\{expanded\}[\s\S]*Kecilkan[\s\S]*Besarkan/)
   assert.match(styles, /@media \(max-width: 40rem\), \(max-height: 32rem\)[\s\S]*grid-template-columns: 1fr/)
   assert.match(environment, /KAMPUNG_TEXTURES\.trailSign/)
-  assert.match(environment, /if \(area\.id === KAMPUNG_ILMU_AREA_ID\) renderKampungGround\(scene, area\)/)
+  assert.match(environment, /if \(area\.id === KAMPUNG_ILMU_AREA_ID && !bakedKampung\) renderKampungGround\(scene, area\)/)
   assert.doesNotMatch(environment, /obstacles\.push|setCollision/)
   assert.doesNotMatch(questManager, /n07d|Jejak Ilmu|Laluan yang Terputus/i)
 

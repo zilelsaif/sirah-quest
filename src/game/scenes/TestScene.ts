@@ -11,7 +11,7 @@ import type { EffectivePlayerStats } from '../progression/types'
 import type { AreaDefinition } from '../areas/types'
 import { Pathfinder } from '../navigation/Pathfinder'
 import { VISUAL_PALETTE } from '../visuals/visualTheme'
-import { renderEnvironment } from '../visuals/EnvironmentRenderer'
+import { renderEnvironment, type EnvironmentRenderResult } from '../visuals/EnvironmentRenderer'
 import { getCameraMetrics, type CameraViewMode } from '../camera/cameraConfig'
 import { getNpcsForArea } from '../npcs/npcData'
 import { NpcManager } from '../npcs/NpcManager'
@@ -30,6 +30,17 @@ import {
 } from '../visuals/characterVisualManifest'
 import { kampungWorldDepth, preloadKampungEnvironmentVisuals } from '../visuals/kampungEnvironmentManifest'
 import { KAMPUNG_ILMU_AREA_ID } from '../areas/areaRegistry'
+import type { DevelopmentRenderingConfig } from '../performance/renderingConfig'
+
+export interface SceneRenderDiagnostics {
+  sceneLoadMs: number
+  displayObjectCount: number
+  activeMaskCount: number
+  textureCount: number
+  requestedRenderMode: DevelopmentRenderingConfig['kampungRenderMode']
+  renderModeUsed: DevelopmentRenderingConfig['kampungRenderMode']
+  fogEdgeMode: DevelopmentRenderingConfig['fogEdgeMode']
+}
 
 export class TestScene extends Phaser.Scene {
   private keyboardInput?: KeyboardInput
@@ -51,6 +62,7 @@ export class TestScene extends Phaser.Scene {
   private playerSprite?: Phaser.GameObjects.Sprite
   private playerFacing: CharacterDirection = 'front'
   private playerWalkElapsedMs = 0
+  private environmentDiagnostics?: EnvironmentRenderResult
 
   constructor(
     private readonly onCluePanelChange: (clue: CluePanelData | null) => void,
@@ -59,6 +71,7 @@ export class TestScene extends Phaser.Scene {
     private readonly onSessionChange: (session: AreaPlaySession) => void,
     private effectiveStats: EffectivePlayerStats,
     initialCameraViewMode: CameraViewMode,
+    private readonly renderingConfig: DevelopmentRenderingConfig,
     private readonly onNearbyNpcChange: (npc: NpcDefinition | null) => void,
     private readonly onNpcDialogueChange: (npc: NpcDefinition | null) => void,
     private readonly initialWorldObjectState: WorldObjectSessionState,
@@ -67,7 +80,7 @@ export class TestScene extends Phaser.Scene {
     private readonly onLandmarkDiscovered: (landmarkId: string) => void,
     private readonly onNearbyWorldObjectChange: (object: WorldObjectDefinition | null) => void,
     private readonly onWorldObjectPanelChange: (object: WorldObjectPanelData | null) => void,
-    private readonly onSceneReady: () => void,
+    private readonly onSceneReady: (diagnostics: SceneRenderDiagnostics) => void,
   ) {
     super('movement-prototype')
     this.remainingHints = initialSession.remainingHints
@@ -81,6 +94,7 @@ export class TestScene extends Phaser.Scene {
   }
 
   create() {
+    const sceneLoadStartedAt = performance.now()
     this.registry.set('areaId', this.area.id)
     this.cameras.main.setBounds(0, 0, this.area.width, this.area.height)
     this.drawMap()
@@ -105,7 +119,7 @@ export class TestScene extends Phaser.Scene {
       (points) => {
         this.fogDiscoveryPoints = points
       },
-      this.area.id === KAMPUNG_ILMU_AREA_ID,
+      this.area.id === KAMPUNG_ILMU_AREA_ID && this.renderingConfig.fogEdgeMode === 'soft',
     )
     this.fogOfWar.update(player.x, player.y, this.effectiveStats.visionRadius)
 
@@ -216,7 +230,16 @@ export class TestScene extends Phaser.Scene {
         .setDepth(200)
     }
 
-    this.onSceneReady()
+    this.onSceneReady({
+      sceneLoadMs: performance.now() - sceneLoadStartedAt,
+      displayObjectCount: this.children.list.length,
+      activeMaskCount: (this.environmentDiagnostics?.activeMaskCount ?? 0)
+        + (this.fogOfWar?.getDebugState().activeMaskCount ?? 0),
+      textureCount: this.textures.getTextureKeys().length,
+      requestedRenderMode: this.renderingConfig.kampungRenderMode,
+      renderModeUsed: this.environmentDiagnostics?.modeUsed ?? 'modular',
+      fogEdgeMode: this.renderingConfig.fogEdgeMode,
+    })
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.emitSessionState(player.x, player.y)
@@ -357,7 +380,7 @@ export class TestScene extends Phaser.Scene {
   }
 
   private drawMap() {
-    renderEnvironment(this, this.area)
+    this.environmentDiagnostics = renderEnvironment(this, this.area, this.renderingConfig.kampungRenderMode)
   }
 
   private createPlayer(x: number, y: number) {

@@ -107,6 +107,8 @@ export class FogOfWar {
     return {
       discoveryUpdates: this.discoveryUpdates,
       visionRadius: this.lastVisionRadius ?? 0,
+      softVisibleEdge: this.useSoftVisibleEdge,
+      activeMaskCount: this.useSoftVisibleEdge ? 3 : 2,
     }
   }
 }

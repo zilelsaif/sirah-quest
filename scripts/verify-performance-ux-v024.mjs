@@ -20,8 +20,8 @@ try {
   assert.match(app, /<Suspense fallback=\{<div className="game-loading" role="status">/)
   assert.match(canvas, /isSceneReady/)
   assert.match(canvas, /game-scene-loading/)
-  assert.match(bootstrap, /onSceneReady: \(\) => void/)
-  assert.match(scene, /this\.onSceneReady\(\)/)
+  assert.match(bootstrap, /onSceneReady: \(diagnostics: SceneRenderDiagnostics\) => void/)
+  assert.match(scene, /this\.onSceneReady\(\{[\s\S]*sceneLoadMs:[\s\S]*displayObjectCount:[\s\S]*activeMaskCount:/)
   assert.match(styles, /prefers-reduced-motion: reduce[\s\S]*game-scene-loading::before/)
 
   assert.equal((audio.match(/new Audio\(/g) ?? []).length, 1)

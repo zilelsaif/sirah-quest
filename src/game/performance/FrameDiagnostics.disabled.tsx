@@ -4,6 +4,7 @@ export const PERFORMANCE_MONITOR_PREFERENCE_KEY = 'sirahQuest.performanceMonitor
 export class FrameDiagnostics {
   record() {}
   pause() {}
+  setSceneMetrics() {}
 }
 
 export function FrameDiagnosticsOverlay() {

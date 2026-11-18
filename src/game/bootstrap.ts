@@ -7,6 +7,8 @@ import type { AreaDefinition } from './areas/types'
 import type { CameraViewMode } from './camera/cameraConfig'
 import type { NpcDefinition } from './npcs/types'
 import type { WorldObjectDefinition, WorldObjectPanelData, WorldObjectSessionState } from './worldObjects/types'
+import type { DevelopmentRenderingConfig } from './performance/renderingConfig'
+import type { SceneRenderDiagnostics } from './scenes/TestScene'
 
 export function createGame(
   parent: HTMLElement,
@@ -16,6 +18,7 @@ export function createGame(
   onSessionChange: (session: AreaPlaySession) => void,
   effectiveStats: EffectivePlayerStats,
   cameraViewMode: CameraViewMode,
+  renderingConfig: DevelopmentRenderingConfig,
   onNearbyNpcChange: (npc: NpcDefinition | null) => void,
   onNpcDialogueChange: (npc: NpcDefinition | null) => void,
   worldObjectState: WorldObjectSessionState,
@@ -24,7 +27,7 @@ export function createGame(
   onLandmarkDiscovered: (landmarkId: string) => void,
   onNearbyWorldObjectChange: (object: WorldObjectDefinition | null) => void,
   onWorldObjectPanelChange: (object: WorldObjectPanelData | null) => void,
-  onSceneReady: () => void,
+  onSceneReady: (diagnostics: SceneRenderDiagnostics) => void,
 ) {
   return new Phaser.Game({
     type: Phaser.AUTO,
@@ -49,6 +52,7 @@ export function createGame(
       onSessionChange,
       effectiveStats,
       cameraViewMode,
+      renderingConfig,
       onNearbyNpcChange,
       onNpcDialogueChange,
       worldObjectState,

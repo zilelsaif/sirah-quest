@@ -12,6 +12,7 @@ import {
   KAMPUNG_TREE_PLACEMENT,
   type KampungRoadPath,
 } from './kampungEnvironmentLayout'
+import type { KampungRenderMode } from '../performance/renderingConfig'
 
 type EnvironmentGraphics = Phaser.GameObjects.Graphics
 
@@ -197,7 +198,7 @@ function createLandscapeVariationMask(scene: Phaser.Scene) {
   return mask
 }
 
-function renderKampungGround(scene: Phaser.Scene, area: AreaDefinition) {
+function renderKampungGround(scene: Phaser.Scene, area: AreaDefinition, includeBakedStaticDetails = true) {
   scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.grassBase)
     .setOrigin(0).setDepth(0)
   const variation = scene.add.tileSprite(0, 0, area.width, area.height, KAMPUNG_TEXTURES.grassVariation)
@@ -221,30 +222,48 @@ function renderKampungGround(scene: Phaser.Scene, area: AreaDefinition) {
     .setOrigin(0).setDepth(0.21).setTilePosition(109, 73)
   doorstepFill.setMask(createOrganicTerrainMask(scene, KAMPUNG_ENTRANCE_PATHS, 0, 47))
 
-  const decorationKeys = [
+  if (includeBakedStaticDetails) {
+    const decorationKeys = [
     KAMPUNG_TEXTURES.grassTuft, KAMPUNG_TEXTURES.wildflowers,
     KAMPUNG_TEXTURES.shrub, KAMPUNG_TEXTURES.smallRocks,
   ] as const
-  KAMPUNG_DECORATION_POINTS.forEach(([x, y], index) => {
-    scene.add.image(x, y, decorationKeys[index % decorationKeys.length])
-      .setOrigin(0.5, 1).setScale(0.29 + (index % 4) * 0.028).setDepth(kampungWorldDepth(y, -4))
-  })
-  const detailTextures = {
+    KAMPUNG_DECORATION_POINTS.forEach(([x, y], index) => {
+      scene.add.image(x, y, decorationKeys[index % decorationKeys.length])
+        .setOrigin(0.5, 1).setScale(0.29 + (index % 4) * 0.028).setDepth(kampungWorldDepth(y, -4))
+    })
+    const detailTextures = {
     grassTuft: KAMPUNG_TEXTURES.grassTuft,
     wildflowers: KAMPUNG_TEXTURES.wildflowers,
     shrub: KAMPUNG_TEXTURES.shrub,
     smallRocks: KAMPUNG_TEXTURES.smallRocks,
   } as const
-  KAMPUNG_FRONT_YARD_DETAILS.forEach(({ texture, point: [x, y], scale }) => {
-    scene.add.image(x, y, detailTextures[texture])
-      .setOrigin(0.5, 1).setScale(scale).setDepth(kampungWorldDepth(y, -3))
-  })
+    KAMPUNG_FRONT_YARD_DETAILS.forEach(({ texture, point: [x, y], scale }) => {
+      scene.add.image(x, y, detailTextures[texture])
+        .setOrigin(0.5, 1).setScale(scale).setDepth(kampungWorldDepth(y, -3))
+    })
+  }
   scene.add.image(362, 613, KAMPUNG_TEXTURES.trailSign).setOrigin(0.5, 1).setScale(0.23)
     .setDepth(kampungWorldDepth(613))
   scene.add.text(362, 552, 'Jejak Ilmu', {
     color: '#fff2c9', fontFamily: 'Georgia, serif', fontSize: '11px', fontStyle: 'bold',
     padding: { x: 3, y: 2 },
   }).setOrigin(0.5).setDepth(kampungWorldDepth(613, 1))
+}
+
+function renderBakedKampungGround(scene: Phaser.Scene, area: AreaDefinition) {
+  if (!scene.textures.exists(KAMPUNG_TEXTURES.bakedBackground)) return false
+  const renderer = scene.game.renderer as Phaser.Renderer.WebGL.WebGLRenderer | Phaser.Renderer.Canvas.CanvasRenderer
+  const gl = 'gl' in renderer ? renderer.gl : undefined
+  const maximumTextureSize = gl ? Number(gl.getParameter(gl.MAX_TEXTURE_SIZE)) : Number.POSITIVE_INFINITY
+  if (maximumTextureSize < Math.max(area.width, area.height)) return false
+  scene.add.image(0, 0, KAMPUNG_TEXTURES.bakedBackground).setOrigin(0).setDepth(0)
+  scene.add.image(362, 613, KAMPUNG_TEXTURES.trailSign).setOrigin(0.5, 1).setScale(0.23)
+    .setDepth(kampungWorldDepth(613))
+  scene.add.text(362, 552, 'Jejak Ilmu', {
+    color: '#fff2c9', fontFamily: 'Georgia, serif', fontSize: '11px', fontStyle: 'bold',
+    padding: { x: 3, y: 2 },
+  }).setOrigin(0.5).setDepth(kampungWorldDepth(613, 1))
+  return true
 }
 
 function addKampungContactShadow(
@@ -269,15 +288,17 @@ function renderKampungTree(scene: Phaser.Scene, obstacle: AreaObstacle, index: n
   return obstacle.x <= x && x <= obstacle.x + obstacle.width
 }
 
-function renderKampungGardenRow(scene: Phaser.Scene, obstacle: AreaObstacle, index: number) {
+function renderKampungGardenRow(scene: Phaser.Scene, obstacle: AreaObstacle, index: number, bakedStaticDetails: boolean) {
   const row = KAMPUNG_GARDEN_ROWS.find(({ obstacleIndex }) => obstacleIndex === index)
   if (!row || !scene.textures.exists(KAMPUNG_TEXTURES.raisedPlanter)) return false
 
-  const soil = scene.add.graphics().setDepth(0.3)
-  soil.fillStyle(0x6f4b2d, 0.78)
-  soil.fillRoundedRect(obstacle.x + 7, obstacle.y + 5, obstacle.width - 14, obstacle.height - 10, 18)
-  soil.lineStyle(3, 0x9b7445, 0.58)
-  soil.strokeRoundedRect(obstacle.x + 7, obstacle.y + 5, obstacle.width - 14, obstacle.height - 10, 18)
+  if (!bakedStaticDetails) {
+    const soil = scene.add.graphics().setDepth(0.3)
+    soil.fillStyle(0x6f4b2d, 0.78)
+    soil.fillRoundedRect(obstacle.x + 7, obstacle.y + 5, obstacle.width - 14, obstacle.height - 10, 18)
+    soil.lineStyle(3, 0x9b7445, 0.58)
+    soil.strokeRoundedRect(obstacle.x + 7, obstacle.y + 5, obstacle.width - 14, obstacle.height - 10, 18)
+  }
 
   const planterSource = scene.textures.get(KAMPUNG_TEXTURES.raisedPlanter).getSourceImage() as {
     width: number, height: number,
@@ -288,10 +309,12 @@ function renderKampungGardenRow(scene: Phaser.Scene, obstacle: AreaObstacle, ind
     addKampungContactShadow(scene, obstacle.x + obstacle.width / 2, bottomY, 52, 12)
     scene.add.image(obstacle.x + obstacle.width / 2, bottomY, KAMPUNG_TEXTURES.raisedPlanter)
       .setOrigin(0.5, 1).setScale(planterScale).setDepth(kampungWorldDepth(bottomY))
-    const cropKey = cropTextures[(index + cropIndex) % cropTextures.length]
-    scene.add.image(obstacle.x + obstacle.width / 2, bottomY - 42, cropKey)
-      .setOrigin(0.5, 1).setScale(0.18 + cropIndex * 0.015)
-      .setDepth(kampungWorldDepth(bottomY, 1))
+    if (!bakedStaticDetails) {
+      const cropKey = cropTextures[(index + cropIndex) % cropTextures.length]
+      scene.add.image(obstacle.x + obstacle.width / 2, bottomY - 42, cropKey)
+        .setOrigin(0.5, 1).setScale(0.18 + cropIndex * 0.015)
+        .setDepth(kampungWorldDepth(bottomY, 1))
+    }
   })
 
   if (row.boundaryFence && scene.textures.exists(KAMPUNG_TEXTURES.fenceVertical)) {
@@ -305,9 +328,9 @@ function renderKampungGardenRow(scene: Phaser.Scene, obstacle: AreaObstacle, ind
   return true
 }
 
-function renderKampungObstacle(scene: Phaser.Scene, obstacle: AreaObstacle, index: number) {
+function renderKampungObstacle(scene: Phaser.Scene, obstacle: AreaObstacle, index: number, bakedStaticDetails: boolean) {
   if (renderKampungTree(scene, obstacle, index)) return true
-  if (renderKampungGardenRow(scene, obstacle, index)) return true
+  if (renderKampungGardenRow(scene, obstacle, index, bakedStaticDetails)) return true
   const mapping = KAMPUNG_OBSTACLE_TEXTURES[index]
   if (!mapping) return false
   const keys = typeof mapping === 'string' ? [mapping] : mapping
@@ -385,10 +408,19 @@ function drawByVisualType(
   else drawVillageStructure(graphics, obstacle, trim)
 }
 
-export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition) {
+export interface EnvironmentRenderResult {
+  requestedMode: KampungRenderMode
+  modeUsed: KampungRenderMode
+  activeMaskCount: number
+}
+
+export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition, requestedMode: KampungRenderMode = 'baked'): EnvironmentRenderResult {
   const visuals = getAreaVisuals(area.id)
   scene.add.rectangle(0, 0, area.width, area.height, visuals.ground).setOrigin(0)
-  if (area.id === KAMPUNG_ILMU_AREA_ID) renderKampungGround(scene, area)
+  const bakedKampung = area.id === KAMPUNG_ILMU_AREA_ID && requestedMode === 'baked'
+    ? renderBakedKampungGround(scene, area)
+    : false
+  if (area.id === KAMPUNG_ILMU_AREA_ID && !bakedKampung) renderKampungGround(scene, area)
   const ground = scene.add.graphics()
   drawZones(scene, ground, area)
   if (area.id !== KAMPUNG_ILMU_AREA_ID) {
@@ -403,7 +435,7 @@ export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition) {
 
   const environment = scene.add.graphics()
   area.obstacles.forEach((obstacle, index) => {
-    if (area.id === KAMPUNG_ILMU_AREA_ID && renderKampungObstacle(scene, obstacle, index)) return
+    if (area.id === KAMPUNG_ILMU_AREA_ID && renderKampungObstacle(scene, obstacle, index, bakedKampung)) return
     drawGroundShadow(environment, obstacle, visuals.shadow)
     if (obstacle.visualType) drawByVisualType(environment, obstacle, obstacle.visualType, visuals.structureTrim)
     else if (area.id === PERPUSTAKAAN_HIKMAH_AREA_ID) {
@@ -440,4 +472,9 @@ export function renderEnvironment(scene: Phaser.Scene, area: AreaDefinition) {
       environment.strokeCircle(landmark.x, landmark.y, landmark.size * 0.75)
     }
   })
+  return {
+    requestedMode,
+    modeUsed: bakedKampung ? 'baked' : 'modular',
+    activeMaskCount: area.id === KAMPUNG_ILMU_AREA_ID && !bakedKampung ? 6 : 0,
+  }
 }

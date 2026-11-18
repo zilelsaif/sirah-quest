@@ -4,6 +4,7 @@ import { getCurrentLevelProgress } from '../progression/PlayerProgression'
 import type { PlayerProgressionState } from '../progression/types'
 import type { CameraViewMode } from '../camera/cameraConfig'
 import { PERFORMANCE_MONITOR_INCLUDED } from '../performance/FrameDiagnostics'
+import type { FogEdgeMode, KampungRenderMode } from '../performance/renderingConfig'
 
 interface AdventureHUDProps {
   title: string
@@ -18,6 +19,8 @@ interface AdventureHUDProps {
   mapViewMode: 'region' | 'location'
   visionRadius: number
   performanceMonitorEnabled: boolean
+  kampungRenderMode: KampungRenderMode
+  fogEdgeMode: FogEdgeMode
   saveStatus: string
   manualSaveStatus: string
   immersiveControl: ReactNode
@@ -32,6 +35,8 @@ interface AdventureHUDProps {
   onCameraViewModeChange: (mode: CameraViewMode) => void
   onMapViewModeChange: (mode: 'region' | 'location') => void
   onPerformanceMonitorChange: (enabled: boolean) => void
+  onKampungRenderModeChange: (mode: KampungRenderMode) => void
+  onFogEdgeModeChange: (mode: FogEdgeMode) => void
   onManualSave: () => void
   onManualLoad: () => void
   manualLoadDisabled: boolean
@@ -148,6 +153,15 @@ export function AdventureHUD(props: AdventureHUDProps) {
                 />
                 <span>Monitor FPS pembangunan</span>
               </label>}
+              {PERFORMANCE_MONITOR_INCLUDED && props.mode === 'AREA_MAP' && <div className="adventure-menu__diagnostic-controls">
+                <small>Perbandingan renderer pembangunan</small>
+                <div className="adventure-menu__actions">
+                  <button type="button" aria-pressed={props.kampungRenderMode === 'baked'} onClick={() => props.onKampungRenderModeChange('baked')}>Baked</button>
+                  <button type="button" aria-pressed={props.kampungRenderMode === 'modular'} onClick={() => props.onKampungRenderModeChange('modular')}>Modular</button>
+                  <button type="button" aria-pressed={props.fogEdgeMode === 'classic'} onClick={() => props.onFogEdgeModeChange('classic')}>Classic Fog</button>
+                  <button type="button" aria-pressed={props.fogEdgeMode === 'soft'} onClick={() => props.onFogEdgeModeChange('soft')}>Soft Fog</button>
+                </div>
+              </div>}
             </div></details>
             <details><summary>Simpanan</summary><div className="adventure-menu__section">
               <small role="status">{props.saveStatus}</small><small>{props.manualSaveStatus}</small>

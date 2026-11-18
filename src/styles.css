@@ -3549,6 +3549,8 @@ h1 {
 .adventure-menu__section { display: grid; gap: 0.55rem; padding: 0 0.35rem 0.75rem; }
 .adventure-menu__toggle { display: flex; min-height: 44px; align-items: center; gap: 0.65rem; font-weight: 800; }
 .adventure-menu__toggle input { width: 1.25rem; height: 1.25rem; accent-color: #245f5b; }
+.adventure-menu__diagnostic-controls { display: grid; gap: 0.35rem; padding-top: 0.25rem; border-top: 1px solid #d8c79b; }
+.adventure-menu__diagnostic-controls .adventure-menu__actions { padding: 0; }
 .adventure-menu__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; padding: 0 0.35rem 0.75rem; }
 .adventure-menu button { min-height: 44px; padding: 0.55rem 0.65rem; font-weight: 800; border: 1px solid #b99a53; border-radius: 0.5rem; background: #f2d58a; cursor: pointer; }
 .adventure-menu button[aria-pressed="true"] { color: #fff7df; background: #245f5b; }

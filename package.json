@@ -37,7 +37,9 @@
     "n09d:verify": "node scripts/verify-n09d-environment-refinement.mjs",
     "n09d-h1:verify": "node scripts/verify-n09d-h1-level-design.mjs",
     "n09e:verify": "node scripts/verify-n09e-final-environment.mjs",
-    "n09f:verify": "node scripts/verify-n09f-performance-map.mjs"
+    "n09f:verify": "node scripts/verify-n09f-performance-map.mjs",
+    "n09g:bake": "node scripts/bake-kampung-map.mjs",
+    "n09g:verify": "node scripts/verify-n09g-rendering-optimization.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

@@ -12,6 +12,11 @@ export interface FrameDiagnosticSnapshot {
   p95FrameMs: number
   over33Ms: number
   over50Ms: number
+  sceneLoadMs: number
+  displayObjectCount: number
+  activeMaskCount: number
+  textureCount: number
+  renderLabel: string
 }
 
 const EMPTY_SNAPSHOT: FrameDiagnosticSnapshot = {
@@ -21,6 +26,11 @@ const EMPTY_SNAPSHOT: FrameDiagnosticSnapshot = {
   p95FrameMs: 0,
   over33Ms: 0,
   over50Ms: 0,
+  sceneLoadMs: 0,
+  displayObjectCount: 0,
+  activeMaskCount: 0,
+  textureCount: 0,
+  renderLabel: 'pending',
 }
 
 function percentile(sorted: readonly number[], fraction: number) {
@@ -35,6 +45,9 @@ export class FrameDiagnostics {
   private lastPublishedAt = 0
   private skipNextSample = true
   private listeners = new Set<(snapshot: FrameDiagnosticSnapshot) => void>()
+  private sceneMetrics = {
+    sceneLoadMs: 0, displayObjectCount: 0, activeMaskCount: 0, textureCount: 0, renderLabel: 'pending',
+  }
 
   record(deltaMs: number, now = performance.now()) {
     if (document.hidden || !Number.isFinite(deltaMs) || deltaMs <= 0) {
@@ -68,8 +81,13 @@ export class FrameDiagnostics {
     this.publish()
   }
 
+  setSceneMetrics(metrics: typeof this.sceneMetrics) {
+    this.sceneMetrics = metrics
+    this.publish()
+  }
+
   snapshot(): FrameDiagnosticSnapshot {
-    if (this.sampleCount === 0) return EMPTY_SNAPSHOT
+    if (this.sampleCount === 0) return { ...EMPTY_SNAPSHOT, ...this.sceneMetrics }
     const ordered = Array.from(this.samples.slice(0, this.sampleCount)).sort((a, b) => a - b)
     const medianFrameMs = percentile(ordered, 0.5)
     return {
@@ -79,6 +97,7 @@ export class FrameDiagnostics {
       p95FrameMs: percentile(ordered, 0.95),
       over33Ms: ordered.filter((value) => value > 33).length,
       over50Ms: ordered.filter((value) => value > 50).length,
+      ...this.sceneMetrics,
     }
   }
 
@@ -100,6 +119,7 @@ export function FrameDiagnosticsOverlay({ diagnostics }: { diagnostics: FrameDia
   const p95Ref = useRef<HTMLElement>(null)
   const slowRef = useRef<HTMLElement>(null)
   const sampleRef = useRef<HTMLElement>(null)
+  const sceneRef = useRef<HTMLElement>(null)
 
   useEffect(() => diagnostics.subscribe((snapshot) => {
     if (fpsRef.current) fpsRef.current.textContent = `${snapshot.medianFps.toFixed(0)} FPS`
@@ -107,6 +127,7 @@ export function FrameDiagnosticsOverlay({ diagnostics }: { diagnostics: FrameDia
     if (p95Ref.current) p95Ref.current.textContent = `P95 ${snapshot.p95FrameMs.toFixed(1)} ms`
     if (slowRef.current) slowRef.current.textContent = `>33 ms ${snapshot.over33Ms} · >50 ms ${snapshot.over50Ms}`
     if (sampleRef.current) sampleRef.current.textContent = `${snapshot.sampleCount}/${FRAME_DIAGNOSTIC_BUFFER_SIZE} sampel`
+    if (sceneRef.current) sceneRef.current.textContent = `${snapshot.renderLabel} · load ${snapshot.sceneLoadMs.toFixed(0)} ms · obj ${snapshot.displayObjectCount} · mask ${snapshot.activeMaskCount} · tex ${snapshot.textureCount}`
   }), [diagnostics])
 
   return (
@@ -116,6 +137,7 @@ export function FrameDiagnosticsOverlay({ diagnostics }: { diagnostics: FrameDia
       <small ref={p95Ref}>P95 0.0 ms</small>
       <small ref={slowRef}>&gt;33 ms 0 · &gt;50 ms 0</small>
       <small ref={sampleRef}>0/{FRAME_DIAGNOSTIC_BUFFER_SIZE} sampel</small>
+      <small ref={sceneRef}>Menunggu diagnostik scene</small>
     </aside>
   )
 }

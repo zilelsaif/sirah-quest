@@ -54,6 +54,13 @@ import {
   PERFORMANCE_MONITOR_INCLUDED,
   PERFORMANCE_MONITOR_PREFERENCE_KEY,
 } from './game/performance/FrameDiagnostics'
+import {
+  FOG_MODE_PREFERENCE_KEY,
+  readDevelopmentRenderingConfig,
+  RENDER_MODE_PREFERENCE_KEY,
+  type FogEdgeMode,
+  type KampungRenderMode,
+} from './game/performance/renderingConfig'
 
 const GameCanvas = lazy(() => import('./game/GameCanvas').then((module) => ({ default: module.GameCanvas })))
 const ReviewPanel = lazy(() => import('./game/review/ReviewPanel').then((module) => ({ default: module.ReviewPanel })))
@@ -110,6 +117,7 @@ function App() {
   const [performanceMonitorEnabled, setPerformanceMonitorEnabled] = useState(() =>
     PERFORMANCE_MONITOR_INCLUDED && localStorage.getItem(PERFORMANCE_MONITOR_PREFERENCE_KEY) === 'true',
   )
+  const [renderingConfig, setRenderingConfig] = useState(readDevelopmentRenderingConfig)
   const [mapViewMode, setMapViewMode] = useState<'region' | 'location'>('region')
   const [initialLoad] = useState<SaveLoadResult>(() => loadGameSave())
   const [initialState] = useState<PersistedGameState>(() => initialLoad.state ?? createFreshState())
@@ -571,6 +579,8 @@ function App() {
         mapViewMode={mapViewMode}
         visionRadius={effectiveStats.visionRadius}
         performanceMonitorEnabled={performanceMonitorEnabled}
+        kampungRenderMode={renderingConfig.kampungRenderMode}
+        fogEdgeMode={renderingConfig.fogEdgeMode}
         saveStatus={[saveMessage || 'Kemajuan disimpan secara automatik pada peranti ini.', manualMessage].filter(Boolean).join(' · ')}
         manualSaveStatus={`Simpanan Manual: ${manualSave.status === 'loaded' && manualSave.metadata ? `${new Date(manualSave.metadata.savedAt).toLocaleString('ms-MY')} · ${manualSave.metadata.locationNameBM} · Tahap ${manualSave.metadata.level}` : (manualSave.message ?? 'Tiada simpanan manual')}`}
         immersiveControl={<ImmersiveModeControl hostRef={appShellRef} mode={immersiveMode} escapeBlocked={isInterfaceLocked || isGameOverlayOpen || isWorldContextMenuOpen || isTutorialOpen} onModeChange={setImmersiveMode} />}
@@ -578,6 +588,14 @@ function App() {
         onPerformanceMonitorChange={(enabled) => {
           setPerformanceMonitorEnabled(enabled)
           localStorage.setItem(PERFORMANCE_MONITOR_PREFERENCE_KEY, String(enabled))
+        }}
+        onKampungRenderModeChange={(kampungRenderMode: KampungRenderMode) => {
+          localStorage.setItem(RENDER_MODE_PREFERENCE_KEY, kampungRenderMode)
+          setRenderingConfig((current) => ({ ...current, kampungRenderMode }))
+        }}
+        onFogEdgeModeChange={(fogEdgeMode: FogEdgeMode) => {
+          localStorage.setItem(FOG_MODE_PREFERENCE_KEY, fogEdgeMode)
+          setRenderingConfig((current) => ({ ...current, fogEdgeMode }))
         }}
         onMenuOpenChange={setIsAdventureMenuOpen}
         onOpenQuestLog={openQuestLog}
@@ -652,6 +670,7 @@ function App() {
               onOverlayStateChange={setIsGameOverlayOpen}
               cameraViewMode={cameraViewMode}
               performanceMonitorEnabled={performanceMonitorEnabled}
+              renderingConfig={renderingConfig}
               onWaypointChange={(waypoint) => setAreaWaypoints((current) => {
                 if (waypoint) return { ...current, [currentArea.id]: waypoint }
                 const next = { ...current }

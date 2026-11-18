@@ -42,7 +42,7 @@ assert.match(fog, /this\.visibleFeather = scene\.add\.graphics\(\)\.setDepth\(90
 assert.match(fog, /visionRadius - inset/)
 assert.match(fog, /visibleMaskSource\.clear\(\)\.fillStyle\(0xffffff\)\.fillCircle\(playerX, playerY, visionRadius\)/)
 assert.match(fog, /exploredMaskSource\.fillStyle\(0xffffff\)\.fillCircle\(playerX, playerY, visionRadius\)/)
-assert.match(scene, /this\.area\.id === KAMPUNG_ILMU_AREA_ID,[\s\S]*\)/)
+assert.match(scene, /this\.area\.id === KAMPUNG_ILMU_AREA_ID && this\.renderingConfig\.fogEdgeMode === 'soft'/)
 assert.equal(JSON.parse(packageJson).scripts['n09d:verify'], 'node scripts/verify-n09d-environment-refinement.mjs')
 
 const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' })
@@ -79,4 +79,4 @@ try {
   await server.close()
 }
 
-console.log('Verified N09-D organic static terrain masks, contact shadows, deterministic composition, shared Kampung Y-depth, suppressed legacy geometry, soft-fog logical-radius preservation, cleanup/fallback and unchanged spawn/NPC/clue/object/landmark positions.')
+console.log('Verified N09-D organic static terrain masks, contact shadows, deterministic composition, shared Kampung Y-depth, suppressed legacy geometry, selectable soft-fog logical-radius preservation, cleanup/fallback and unchanged spawn/NPC/clue/object/landmark positions.')
