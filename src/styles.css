@@ -3618,6 +3618,64 @@ h1 {
 .clue-panel__actions button { min-height: 44px; padding: 0.45rem 0.55rem; }
 .clue-panel__answer-button { color: #172033; background: #f2d58a; }
 
+.clue-inspection-panel {
+  position: absolute;
+  z-index: 10;
+  right: max(0.55rem, env(safe-area-inset-right));
+  bottom: max(0.55rem, env(safe-area-inset-bottom));
+  left: max(0.55rem, env(safe-area-inset-left));
+  display: grid;
+  grid-template-columns: 5.25rem minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: center;
+  max-height: min(52%, 17rem);
+  overflow: auto;
+  padding: 0.7rem;
+  color: #172033;
+  border: 2px solid #d5a83f;
+  border-radius: 0.75rem;
+  background: linear-gradient(100deg, #fff2c9, #fff9e7 38%);
+  box-shadow: 0 0.8rem 2rem rgb(0 0 0 / 45%);
+  pointer-events: auto;
+  overscroll-behavior: contain;
+}
+.clue-inspection-panel > img {
+  width: 5.25rem;
+  height: 5.25rem;
+  object-fit: contain;
+  border: 1px solid rgb(185 141 56 / 55%);
+  border-radius: 0.55rem;
+  background: #1b2a42;
+}
+.clue-inspection-panel__content { min-width: 0; }
+.clue-inspection-panel__content > p:first-child {
+  margin: 0;
+  color: #7c5b18;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+.clue-inspection-panel h3 { margin: 0.15rem 0 0.3rem; font-family: Georgia, serif; }
+.clue-inspection-panel__content > p { margin: 0.25rem 0; line-height: 1.4; }
+.clue-inspection-panel details { font-size: 0.8rem; }
+.clue-inspection-panel summary { min-height: 44px; padding-block: 0.65rem; font-weight: 800; cursor: pointer; }
+.clue-inspection-panel small { color: #52606d; }
+.clue-inspection-panel__actions { display: grid; gap: 0.45rem; min-width: min(12rem, 28vw); }
+.clue-inspection-panel button { min-height: 44px; padding: 0.55rem 0.7rem; font-weight: 800; }
+.clue-inspection-panel .button-secondary { color: #fff7df; background: #52647b; }
+.clue-inspection-panel:focus-visible,
+.clue-inspection-panel button:focus-visible { outline: 3px solid #315f83; outline-offset: 2px; }
+
+@media (max-width: 40rem), (max-height: 32rem) {
+  .clue-inspection-panel {
+    grid-template-columns: 4rem minmax(0, 1fr);
+    max-height: min(65%, 18rem);
+    padding: 0.55rem;
+  }
+  .clue-inspection-panel > img { width: 4rem; height: 4rem; }
+  .clue-inspection-panel__actions { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) auto; min-width: 0; }
+}
+
 .dialogue-overlay { padding: 0.45rem; }
 .dialogue-panel {
   grid-template-columns: minmax(0, 1fr);

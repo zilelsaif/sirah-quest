@@ -35,7 +35,7 @@ assert.match(environmentManifest, /KAMPUNG_RESERVED_TEXTURE_URLS/)
 assert.match(npcManager, /kampungWorldDepth\(definition\.position\.y\)/)
 assert.match(objectManager, /kampungWorldDepth\(definition\.position\.y\)/)
 assert.match(scene, /this\.player\.setDepth\(kampungWorldDepth\(this\.player\.y\)\)/)
-assert.match(clueManager, /KAMPUNG_ILMU_AREA_ID \? 70 : 8/)
+assert.match(clueManager, /kampungWorldDepth\(definition\.y\) \+ 0\.5/)
 
 assert.match(fog, /useSoftVisibleEdge = false/)
 assert.match(fog, /this\.visibleFeather = scene\.add\.graphics\(\)\.setDepth\(90\.5\)/)

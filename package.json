@@ -40,7 +40,8 @@
     "n09f:verify": "node scripts/verify-n09f-performance-map.mjs",
     "n09g:bake": "node scripts/bake-kampung-map.mjs",
     "n09g:verify": "node scripts/verify-n09g-rendering-optimization.mjs",
-    "n09g-h1:verify": "node scripts/verify-n09g-h1-fog-isolation.mjs"
+    "n09g-h1:verify": "node scripts/verify-n09g-h1-fog-isolation.mjs",
+    "n09h:verify": "node scripts/verify-n09h-physical-clues.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0",

@@ -1,19 +1,23 @@
 import Phaser from 'phaser'
 import type { QuestionAssignment } from '../questions/types'
 import type { ClueSessionState } from '../session/types'
-import type { ClueCounts, ClueDefinition, CluePanelData, ClueState } from './types'
+import type { ClueCounts, ClueDefinition, ClueInspectionData, ClueOverlayData, CluePanelData, ClueState } from './types'
 import { VISUAL_PALETTE } from '../visuals/visualTheme'
 import { KAMPUNG_ILMU_AREA_ID } from '../areas/areaRegistry'
+import { getKampungClueVisual } from './kampungClueVisualManifest'
+import { kampungWorldDepth } from '../visuals/kampungEnvironmentManifest'
 
 interface ClueRuntime {
   definition: ClueDefinition
   assignment: QuestionAssignment
   state: ClueState
   visual: Phaser.GameObjects.Container
-  marker: Phaser.GameObjects.Arc
-  glow: Phaser.GameObjects.Arc
-  base: Phaser.GameObjects.Ellipse
-  symbol: Phaser.GameObjects.Text
+  marker?: Phaser.GameObjects.Arc
+  glow?: Phaser.GameObjects.Arc
+  base?: Phaser.GameObjects.Ellipse
+  symbol?: Phaser.GameObjects.Text
+  physicalSprite?: Phaser.GameObjects.Image
+  statusBadge?: Phaser.GameObjects.Container
   lastAnswerWasIncorrect: boolean
   incorrectAttemptOccurred: boolean
   hintUsed: boolean
@@ -25,6 +29,7 @@ export class ClueManager {
   private readonly interactionPrompt: Phaser.GameObjects.Text
   private activeClue?: ClueRuntime
   private openClue?: ClueRuntime
+  private openStage?: 'inspection' | 'question'
   private interactionSuppressed = false
 
   constructor(
@@ -32,7 +37,7 @@ export class ClueManager {
     clueData: ClueDefinition[],
     questionAssignments: QuestionAssignment[],
     private readonly discoveryRadius: number,
-    private readonly onPanelChange: (clue: CluePanelData | null) => void,
+    private readonly onPanelChange: (clue: ClueOverlayData | null) => void,
     private readonly onMovementLockChange: (locked: boolean) => void,
     initialState: Record<string, ClueSessionState>,
     private readonly onStateChange: (state: Record<string, ClueSessionState>) => void,
@@ -97,7 +102,19 @@ export class ClueManager {
     this.openClue = this.activeClue
     this.setActiveClue(undefined)
     this.onMovementLockChange(true)
-    this.onStateChange(this.getSessionState())
+    const usesPhysicalInspection =
+      this.scene.registry.get('areaId') === KAMPUNG_ILMU_AREA_ID &&
+      getKampungClueVisual(this.openClue.definition.id) !== undefined
+    this.openStage = usesPhysicalInspection ? 'inspection' : 'question'
+    this.onPanelChange(
+      usesPhysicalInspection ? this.toInspectionData(this.openClue) : this.toPanelData(this.openClue),
+    )
+    return true
+  }
+
+  continueOpenClue() {
+    if (!this.openClue || this.openStage !== 'inspection') return false
+    this.openStage = 'question'
     this.onPanelChange(this.toPanelData(this.openClue))
     return true
   }
@@ -128,7 +145,7 @@ export class ClueManager {
   }
 
   answerOpenClue(optionId: string) {
-    if (!this.openClue || this.openClue.state === 'completed') return
+    if (!this.openClue || this.openStage !== 'question' || this.openClue.state === 'completed') return
 
     const isKnownOption = this.openClue.assignment.shuffledOptions.some(
       (option) => option.id === optionId && !this.openClue?.eliminatedOptionIds.includes(option.id),
@@ -149,7 +166,7 @@ export class ClueManager {
   }
 
   useHint() {
-    if (!this.openClue || this.openClue.state === 'completed') return false
+    if (!this.openClue || this.openStage !== 'question' || this.openClue.state === 'completed') return false
 
     const incorrectOptions = this.openClue.assignment.shuffledOptions.filter(
       (option) =>
@@ -170,6 +187,7 @@ export class ClueManager {
     if (!this.openClue) return
 
     this.openClue = undefined
+    this.openStage = undefined
     this.onMovementLockChange(false)
     this.onPanelChange(null)
   }
@@ -211,31 +229,63 @@ export class ClueManager {
     assignment: QuestionAssignment,
     initialState?: ClueSessionState,
   ) {
-    const base = this.scene.add.ellipse(0, 13, 34, 13, VISUAL_PALETTE.ink, 0.38)
-      .setStrokeStyle(2, VISUAL_PALETTE.softGold, 0.28)
-    const glow = this.scene.add.circle(0, -2, 27, VISUAL_PALETTE.softGold, 0.13)
-    const marker = this.scene.add
-      .circle(0, -3, 15, VISUAL_PALETTE.gold)
-      .setStrokeStyle(3, VISUAL_PALETTE.parchment)
-      .setInteractive({ useHandCursor: true })
-    const symbol = this.scene.add
-      .text(0, -4, '?', {
-        color: '#172033',
-        fontFamily: 'Georgia, serif',
-        fontSize: '19px',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
+    const physicalMetadata = this.scene.registry.get('areaId') === KAMPUNG_ILMU_AREA_ID
+      ? getKampungClueVisual(definition.id)
+      : undefined
+    const usePhysicalVisual = Boolean(
+      physicalMetadata && this.scene.textures.exists(physicalMetadata.textureKey),
+    )
+    let base: Phaser.GameObjects.Ellipse | undefined
+    let glow: Phaser.GameObjects.Arc | undefined
+    let marker: Phaser.GameObjects.Arc | undefined
+    let symbol: Phaser.GameObjects.Text | undefined
+    let physicalSprite: Phaser.GameObjects.Image | undefined
+    let statusBadge: Phaser.GameObjects.Container | undefined
+    const children: Phaser.GameObjects.GameObject[] = []
+
+    if (physicalMetadata && usePhysicalVisual) {
+      physicalSprite = this.scene.add.image(0, 0, physicalMetadata.textureKey)
+        .setOrigin(...physicalMetadata.origin)
+        .setScale(physicalMetadata.scale)
+        .setData('clueId', definition.id)
+        .setInteractive(new Phaser.Geom.Rectangle(
+          physicalMetadata.alphaBounds.x,
+          physicalMetadata.alphaBounds.y,
+          physicalMetadata.alphaBounds.width,
+          physicalMetadata.alphaBounds.height,
+        ), Phaser.Geom.Rectangle.Contains)
+      physicalSprite.input!.cursor = 'pointer'
+      const badgeCircle = this.scene.add.circle(0, 0, 9, VISUAL_PALETTE.softGold, 0.88)
+        .setStrokeStyle(2, VISUAL_PALETTE.parchment, 0.9)
+      const badgeSymbol = this.scene.add.text(0, -1, '✦', {
+        color: '#fff7df', fontFamily: 'Georgia, serif', fontSize: '11px', fontStyle: 'bold',
+      }).setOrigin(0.5)
+      statusBadge = this.scene.add.container(20, -31, [badgeCircle, badgeSymbol])
+      statusBadge.setData('badgeCircle', badgeCircle).setData('badgeSymbol', badgeSymbol)
+      children.push(physicalSprite, statusBadge)
+    } else {
+      base = this.scene.add.ellipse(0, 13, 34, 13, VISUAL_PALETTE.ink, 0.38)
+        .setStrokeStyle(2, VISUAL_PALETTE.softGold, 0.28)
+      glow = this.scene.add.circle(0, -2, 27, VISUAL_PALETTE.softGold, 0.13)
+      marker = this.scene.add.circle(0, -3, 15, VISUAL_PALETTE.gold)
+        .setStrokeStyle(3, VISUAL_PALETTE.parchment)
+        .setInteractive({ useHandCursor: true })
+      symbol = this.scene.add.text(0, -4, '?', {
+        color: '#172033', fontFamily: 'Georgia, serif', fontSize: '19px', fontStyle: 'bold',
+      }).setOrigin(0.5)
+      marker.setData('clueId', definition.id)
+      symbol.setData('clueId', definition.id).setInteractive({ useHandCursor: true })
+      children.push(base, glow, marker, symbol)
+    }
 
     const visual = this.scene.add
-      .container(definition.x, definition.y, [base, glow, marker, symbol])
-      .setDepth(this.scene.registry.get('areaId') === KAMPUNG_ILMU_AREA_ID ? 70 : 8)
+      .container(definition.x, definition.y, children)
+      .setDepth(this.scene.registry.get('areaId') === KAMPUNG_ILMU_AREA_ID
+        ? kampungWorldDepth(definition.y) + 0.5
+        : 8)
       .setVisible((initialState?.state ?? definition.state) !== 'hidden')
 
-    marker.setData('clueId', definition.id)
-    symbol.setData('clueId', definition.id).setInteractive({ useHandCursor: true })
-
-    const clue = {
+    const clue: ClueRuntime = {
       definition,
       assignment,
       state: initialState?.state ?? definition.state,
@@ -244,6 +294,8 @@ export class ClueManager {
       glow,
       base,
       symbol,
+      physicalSprite,
+      statusBadge,
       lastAnswerWasIncorrect: initialState?.lastAnswerWasIncorrect ?? false,
       incorrectAttemptOccurred: initialState?.incorrectAttemptOccurred ?? false,
       hintUsed: initialState?.hintUsed ?? false,
@@ -293,22 +345,52 @@ export class ClueManager {
 
     this.interactionPrompt
       .setText(clue.state === 'completed' ? 'E / Tap: Review clue' : 'E / Tap: Open clue')
-      .setPosition(clue.definition.x, clue.definition.y - 28)
+      .setPosition(clue.definition.x, clue.definition.y - (clue.physicalSprite ? 48 : 28))
       .setData('clueId', clue.definition.id)
       .setVisible(true)
   }
 
   private updateVisual(clue: ClueRuntime) {
+    if (clue.statusBadge) {
+      const circle = clue.statusBadge.getData('badgeCircle') as Phaser.GameObjects.Arc
+      const symbol = clue.statusBadge.getData('badgeSymbol') as Phaser.GameObjects.Text
+      if (clue.state === 'completed') {
+        circle.setFillStyle(VISUAL_PALETTE.success, 0.92)
+        symbol.setText('✓')
+      } else {
+        circle.setFillStyle(VISUAL_PALETTE.softGold, 0.88)
+        symbol.setText('✦')
+      }
+      clue.statusBadge.setVisible(clue.state !== 'hidden')
+      return
+    }
     if (clue.state === 'completed') {
-      clue.marker.setFillStyle(VISUAL_PALETTE.success).setStrokeStyle(3, VISUAL_PALETTE.parchment)
-      clue.glow.setFillStyle(VISUAL_PALETTE.success, 0.1)
-      clue.base.setStrokeStyle(2, VISUAL_PALETTE.success, 0.48)
-      clue.symbol.setText('✓').setColor('#fff7df')
+      clue.marker?.setFillStyle(VISUAL_PALETTE.success).setStrokeStyle(3, VISUAL_PALETTE.parchment)
+      clue.glow?.setFillStyle(VISUAL_PALETTE.success, 0.1)
+      clue.base?.setStrokeStyle(2, VISUAL_PALETTE.success, 0.48)
+      clue.symbol?.setText('✓').setColor('#fff7df')
     } else {
-      clue.marker.setFillStyle(VISUAL_PALETTE.gold).setStrokeStyle(3, VISUAL_PALETTE.parchment)
-      clue.glow.setFillStyle(VISUAL_PALETTE.softGold, 0.14)
-      clue.base.setStrokeStyle(2, VISUAL_PALETTE.softGold, 0.28)
-      clue.symbol.setText('?').setColor('#172033')
+      clue.marker?.setFillStyle(VISUAL_PALETTE.gold).setStrokeStyle(3, VISUAL_PALETTE.parchment)
+      clue.glow?.setFillStyle(VISUAL_PALETTE.softGold, 0.14)
+      clue.base?.setStrokeStyle(2, VISUAL_PALETTE.softGold, 0.28)
+      clue.symbol?.setText('?').setColor('#172033')
+    }
+  }
+
+  private toInspectionData(clue: ClueRuntime): ClueInspectionData {
+    const metadata = getKampungClueVisual(clue.definition.id)
+    return {
+      kind: 'inspection',
+      id: clue.definition.id,
+      state: clue.state === 'completed' ? 'completed' : 'discovered',
+      title: clue.definition.title,
+      physicalName: metadata?.name ?? { bm: clue.definition.title, en: clue.definition.title },
+      inspect: metadata?.inspect ?? {
+        bm: 'Petunjuk pembelajaran ini sedia untuk diperiksa.',
+        en: 'This learning clue is ready to inspect.',
+      },
+      assetUrl: metadata?.assetUrl ?? '',
+      assetStatus: 'PROTOTYPE_VISUAL_QA_PENDING',
     }
   }
 
@@ -317,6 +399,7 @@ export class ClueManager {
     const question = clue.assignment.question
 
     return {
+      kind: 'question',
       id: clue.definition.id,
       title: clue.definition.title,
       state: clue.state,

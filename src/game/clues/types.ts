@@ -18,6 +18,7 @@ export interface ClueDefinition {
 }
 
 export interface CluePanelData {
+  kind: 'question'
   id: string
   title: string
   state: ClueState
@@ -36,6 +37,19 @@ export interface CluePanelData {
   }
   reviewStatus: QuestionReviewStatus
 }
+
+export interface ClueInspectionData {
+  kind: 'inspection'
+  id: string
+  state: Exclude<ClueState, 'hidden'>
+  title: string
+  physicalName: BilingualText
+  inspect: BilingualText
+  assetUrl: string
+  assetStatus: 'PROTOTYPE_VISUAL_QA_PENDING'
+}
+
+export type ClueOverlayData = CluePanelData | ClueInspectionData
 
 export interface ClueCounts {
   total: number

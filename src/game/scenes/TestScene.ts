@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 import { CLUE_DISCOVERY_RADIUS } from '../clues/clueData'
 import { ClueManager } from '../clues/ClueManager'
-import type { CluePanelData } from '../clues/types'
+import type { ClueOverlayData } from '../clues/types'
 import { FogOfWar } from '../fog/FogOfWar'
 import { KeyboardInput } from '../input/KeyboardInput'
 import { PointerInput } from '../input/PointerInput'
@@ -30,6 +30,7 @@ import {
 } from '../visuals/characterVisualManifest'
 import { kampungWorldDepth, preloadKampungEnvironmentVisuals } from '../visuals/kampungEnvironmentManifest'
 import { KAMPUNG_ILMU_AREA_ID } from '../areas/areaRegistry'
+import { preloadKampungClueVisuals } from '../clues/kampungClueVisualManifest'
 import type { DevelopmentRenderingConfig } from '../performance/renderingConfig'
 
 export interface SceneRenderDiagnostics {
@@ -74,7 +75,7 @@ export class TestScene extends Phaser.Scene {
   private environmentDiagnostics?: EnvironmentRenderResult
 
   constructor(
-    private readonly onCluePanelChange: (clue: CluePanelData | null) => void,
+    private readonly onCluePanelChange: (clue: ClueOverlayData | null) => void,
     private readonly area: AreaDefinition,
     private readonly initialSession: AreaPlaySession,
     private readonly onSessionChange: (session: AreaPlaySession) => void,
@@ -99,7 +100,10 @@ export class TestScene extends Phaser.Scene {
 
   preload() {
     preloadCharacterVisuals(this, this.area.id)
-    if (this.area.id === KAMPUNG_ILMU_AREA_ID) preloadKampungEnvironmentVisuals(this)
+    if (this.area.id === KAMPUNG_ILMU_AREA_ID) {
+      preloadKampungEnvironmentVisuals(this)
+      preloadKampungClueVisuals(this)
+    }
   }
 
   create() {
@@ -334,6 +338,10 @@ export class TestScene extends Phaser.Scene {
 
   closeClue() {
     this.clueManager?.closeOpenClue()
+  }
+
+  continueClueInspection() {
+    return this.clueManager?.continueOpenClue() ?? false
   }
 
   interactWithNpc() {

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type Phaser from 'phaser'
 import { createGame } from './bootstrap'
-import type { CluePanelData } from './clues/types'
+import type { ClueOverlayData } from './clues/types'
+import { ClueInspectionPanel } from './clues/ClueInspectionPanel'
 import type { AreaPlaySession } from './session/types'
 import { TestScene } from './scenes/TestScene'
 import type { EffectivePlayerStats } from './progression/types'
@@ -83,7 +84,7 @@ export function GameCanvas({
   const diagnosticsRef = useRef<FrameDiagnostics | null>(null)
   if (!diagnosticsRef.current) diagnosticsRef.current = new FrameDiagnostics()
   const resetRequestedRef = useRef(false)
-  const [openClue, setOpenClue] = useState<CluePanelData | null>(null)
+  const [openClue, setOpenClue] = useState<ClueOverlayData | null>(null)
   const [selectedClueOptionId, setSelectedClueOptionId] = useState('')
   const [isExplorationMapOpen, setIsExplorationMapOpen] = useState(false)
   const [nearbyNpc, setNearbyNpc] = useState<NpcDefinition | null>(null)
@@ -96,6 +97,8 @@ export function GameCanvas({
   } | null>(null)
   const [dialogueFeedback, setDialogueFeedback] = useState<DialogueActionFeedback | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
+  const previousClueFocusRef = useRef<HTMLElement | null>(null)
+  const clueOverlayOpenRef = useRef(false)
   const lastPlayerPositionRef = useRef(session.playerPosition)
   const questsRef = useRef(quests)
   questsRef.current = quests
@@ -111,7 +114,24 @@ export function GameCanvas({
 
     const game = createGame(
       container,
-      setOpenClue,
+      (clue) => {
+        if (clue && !clueOverlayOpenRef.current) {
+          previousClueFocusRef.current = document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null
+          clueOverlayOpenRef.current = true
+        }
+        if (!clue && clueOverlayOpenRef.current) {
+          clueOverlayOpenRef.current = false
+          window.requestAnimationFrame(() => {
+            const previous = previousClueFocusRef.current
+            if (previous?.isConnected && previous !== document.body && previous !== document.documentElement) previous.focus()
+            else containerRef.current?.focus()
+            previousClueFocusRef.current = null
+          })
+        }
+        setOpenClue(clue)
+      },
       area,
       session,
       (nextSession) => {
@@ -214,15 +234,13 @@ export function GameCanvas({
     return () => window.removeEventListener('keydown', closeClueOnEscape)
   }, [openClue])
 
-  useEffect(() => {
-    setSelectedClueOptionId('')
-  }, [openClue?.id, openClue?.state])
+  useEffect(() => { setSelectedClueOptionId('') }, [openClue?.id, openClue?.kind, openClue?.state])
 
   useEffect(() => {
-    if (selectedClueOptionId && openClue?.eliminatedOptionIds.includes(selectedClueOptionId)) {
+    if (selectedClueOptionId && openClue?.kind === 'question' && openClue.eliminatedOptionIds.includes(selectedClueOptionId)) {
       setSelectedClueOptionId('')
     }
-  }, [openClue?.eliminatedOptionIds, selectedClueOptionId])
+  }, [openClue, selectedClueOptionId])
 
   useEffect(() => {
     getScene()?.setInterfaceLocked(interfaceLocked || isExplorationMapOpen || openDialogue !== null || openWorldObject !== null)
@@ -249,7 +267,7 @@ export function GameCanvas({
   }
 
   const submitClueAnswer = () => {
-    if (!openClue || openClue.state === 'completed' || !selectedClueOptionId || openClue.eliminatedOptionIds.includes(selectedClueOptionId)) return
+    if (!openClue || openClue.kind !== 'question' || openClue.state === 'completed' || !selectedClueOptionId || openClue.eliminatedOptionIds.includes(selectedClueOptionId)) return
     getScene()?.answerClue(selectedClueOptionId)
     setSelectedClueOptionId('')
   }
@@ -337,6 +355,8 @@ export function GameCanvas({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [openDialogue])
 
+  const openQuestion = openClue?.kind === 'question' ? openClue : null
+
   return (
     <div
       className="game-stage"
@@ -409,8 +429,15 @@ export function GameCanvas({
             onClose={closeDialogue}
           />
         )}
+        {openClue?.kind === 'inspection' && (
+          <ClueInspectionPanel
+            clue={openClue}
+            onContinue={() => getScene()?.continueClueInspection()}
+            onClose={() => getScene()?.closeClue()}
+          />
+        )}
       </div>
-      {openClue && (
+      {openQuestion && (
         <div className="clue-overlay" role="presentation">
           <section
             className="clue-panel"
@@ -418,19 +445,19 @@ export function GameCanvas({
             aria-modal="true"
             aria-labelledby="clue-title"
           >
-            <p className="clue-panel__label">Soalan Sirah · {openClue.title}</p>
-            <h3 id="clue-title">{openClue.prompt.bm}</h3>
+            <p className="clue-panel__label">Soalan Sirah · {openQuestion.title}</p>
+            <h3 id="clue-title">{openQuestion.prompt.bm}</h3>
             <label className="clue-panel__answer-field">
               <span>Jawapan</span>
               <select
-                value={openClue.state === 'completed' ? (openClue.correctOptionId ?? '') : selectedClueOptionId}
-                disabled={openClue.state === 'completed'}
+                value={openQuestion.state === 'completed' ? (openQuestion.correctOptionId ?? '') : selectedClueOptionId}
+                disabled={openQuestion.state === 'completed'}
                 onChange={(event) => setSelectedClueOptionId(event.target.value)}
               >
                 <option value="">Pilih jawapan…</option>
-                {openClue.options.map((option) => (
-                  <option key={option.id} value={option.id} disabled={openClue.eliminatedOptionIds.includes(option.id)}>
-                    {option.text.bm}{openClue.eliminatedOptionIds.includes(option.id) ? ' — disingkirkan' : ''}
+                {openQuestion.options.map((option) => (
+                  <option key={option.id} value={option.id} disabled={openQuestion.eliminatedOptionIds.includes(option.id)}>
+                    {option.text.bm}{openQuestion.eliminatedOptionIds.includes(option.id) ? ' — disingkirkan' : ''}
                   </option>
                 ))}
               </select>
@@ -438,31 +465,31 @@ export function GameCanvas({
 
             <details className="clue-panel__english">
               <summary>English translation</summary>
-              <p lang="en">{openClue.prompt.en}</p>
-              <ol lang="en">{openClue.options.map((option) => <li key={option.id}>{option.text.en}</li>)}</ol>
+              <p lang="en">{openQuestion.prompt.en}</p>
+              <ol lang="en">{openQuestion.options.map((option) => <li key={option.id}>{option.text.en}</li>)}</ol>
             </details>
 
-            {openClue.feedback && (
+            {openQuestion.feedback && (
               <div
-                className={`clue-panel__feedback is-${openClue.feedback.tone}`}
+                className={`clue-panel__feedback is-${openQuestion.feedback.tone}`}
                 role="status"
                 aria-live="polite"
               >
-                <strong>{openClue.feedback.message.bm}</strong>
-                <span lang="en">{openClue.feedback.message.en}</span>
+                <strong>{openQuestion.feedback.message.bm}</strong>
+                <span lang="en">{openQuestion.feedback.message.en}</span>
               </div>
             )}
 
-            {openClue.explanation && (
+            {openQuestion.explanation && (
               <div className="clue-panel__explanation">
                 <h4>Pelajaran / Learning note</h4>
-                <p>{openClue.explanation.bm}</p>
-                <p lang="en">{openClue.explanation.en}</p>
+                <p>{openQuestion.explanation.bm}</p>
+                <p lang="en">{openQuestion.explanation.en}</p>
               </div>
             )}
 
             <p className="clue-panel__review-note">
-              Content status: {openClue.reviewStatus.replaceAll('-', ' ')}
+              Content status: {openQuestion.reviewStatus.replaceAll('-', ' ')}
             </p>
 
             <div className="clue-panel__actions">
@@ -471,8 +498,8 @@ export function GameCanvas({
                 className="hint-button"
                 disabled={
                   session.remainingHints <= 0 ||
-                  !openClue.canUseHint ||
-                  openClue.state === 'completed'
+                  !openQuestion.canUseHint ||
+                  openQuestion.state === 'completed'
                 }
                 onClick={() => getScene()?.useHint()}
               >
@@ -481,13 +508,13 @@ export function GameCanvas({
               <button
                 type="button"
                 className="clue-panel__answer-button"
-                disabled={openClue.state === 'completed' || !selectedClueOptionId}
+                disabled={openQuestion.state === 'completed' || !selectedClueOptionId}
                 onClick={submitClueAnswer}
               >
                 Jawab
               </button>
               <button type="button" onClick={() => getScene()?.closeClue()}>
-                {openClue.state === 'completed' ? 'Teruskan' : 'Tutup'}
+                {openQuestion.state === 'completed' ? 'Teruskan' : 'Tutup'}
               </button>
             </div>
           </section>

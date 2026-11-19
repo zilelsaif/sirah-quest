@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import type { CluePanelData } from './clues/types'
+import type { ClueOverlayData } from './clues/types'
 import { TestScene } from './scenes/TestScene'
 import type { AreaPlaySession } from './session/types'
 import type { EffectivePlayerStats } from './progression/types'
@@ -12,7 +12,7 @@ import type { SceneRenderDiagnostics } from './scenes/TestScene'
 
 export function createGame(
   parent: HTMLElement,
-  onCluePanelChange: (clue: CluePanelData | null) => void,
+  onCluePanelChange: (clue: ClueOverlayData | null) => void,
   area: AreaDefinition,
   session: AreaPlaySession,
   onSessionChange: (session: AreaPlaySession) => void,

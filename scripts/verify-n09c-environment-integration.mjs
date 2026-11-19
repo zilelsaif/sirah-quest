@@ -29,7 +29,7 @@ const [scene, renderer, environmentManifest, manager, packageJson, saveConfig] =
   text('src/game/visuals/kampungEnvironmentManifest.ts'), text('src/game/worldObjects/WorldObjectManager.ts'),
   text('package.json'), text('src/game/save/config.ts'),
 ])
-assert.match(scene, /this\.area\.id === KAMPUNG_ILMU_AREA_ID\) preloadKampungEnvironmentVisuals\(this\)/)
+assert.match(scene, /this\.area\.id === KAMPUNG_ILMU_AREA_ID\) \{[\s\S]*preloadKampungEnvironmentVisuals\(this\)/)
 assert.match(renderer, /renderKampungGround\(scene, area\)/)
 assert.match(renderer, /renderKampungObstacle\(scene, obstacle, index, bakedKampung\)/)
 assert.match(renderer, /setScale\(scale\)/)

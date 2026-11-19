@@ -79,7 +79,7 @@ try {
   assert.match(clueManager, /bm: 'Betul\. Petunjuk ini telah diselesaikan\.'/); assert.match(clueManager, /bm: 'Belum Tepat\./)
   assert.match(clueManager, /explanation: isCompleted \? question\.explanation : undefined/)
   assert.match(clueManager, /this\.openClue\.lastAnswerWasIncorrect = true/); assert.match(clueManager, /this\.openClue\.incorrectAttemptOccurred = true/)
-  assert.match(canvas, /openClue\.state === 'completed' \? 'Teruskan' : 'Tutup'/)
+  assert.match(canvas, /openQuestion\.state === 'completed' \? 'Teruskan' : 'Tutup'/)
   assert.match(masteryPanel, /Petunjuk selesai:/); assert.match(masteryPanel, /Soalan dengan rekod skor terbaik:/); assert.match(masteryPanel, /Cubaan yang belum diselesaikan tidak disimpan/)
   assert.match(reviewPanel, /disabled=\{answered\}/); assert.match(reviewPanel, /assignment\.question\.explanation\.bm/); assert.match(reviewPanel, /previousFocusRef/); assert.match(reviewPanel, /min-height|Ulang Kaji/)
   assert.match(app, /lazy\(\(\) => import\('\.\/game\/GameCanvas'\)/); assert.match(app, /lazy\(\(\) => import\('\.\/game\/review\/ReviewPanel'\)/); assert.doesNotMatch(app, /import \{ GameCanvas \}/)
